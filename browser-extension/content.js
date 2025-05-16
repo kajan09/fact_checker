@@ -59,31 +59,28 @@ function showPopup() {
       <div class="dial-background">
         <div class="dial-needle" style="transform: rotate(${needleRotation}deg);"></div>
       </div>
+      <span style="display: none;" id="percent-number" class=".score-percentage .${scoreColor}">${medicalScore}%</span>
     </div>
     
     <div class="dropdown-container">
       <div class="dropdown-header">
-        <span class="dropdown-arrow">▼</span>
-        <div class="feedback-buttons">
-          <button class="feedback-button" title="Agree with analysis">
-            <svg viewBox="0 0 24 24" fill="currentColor">
+        <span id="arrow1" class="dropdown-arrow">↓</span>
+        </div>
+        <div class="dropdown-content">
+        <ul>
+          <li>Lorem ipsum dolor sit amet <button class="feedback-button" title="Agree with analysis">
+            <svg viewBox="0 0 24 24" fill="green">
               <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/>
             </svg>
-          </button>
-          <button class="feedback-button" title="Disagree with analysis">
-            <svg viewBox="0 0 24 24" fill="currentColor">
+          </button></li>
+          <li>Consectetur adipiscing elit <button class="feedback-button" title="Disagree with analysis">
+            <svg viewBox="0 0 24 24" fill="red">
               <path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.58-6.59c.37-.36.59-.86.59-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/>
             </svg>
-          </button>
-        </div>
-      </div>
-      <div class="dropdown-content">
-        <p>Detected medical claims:</p>
-        <ul>
-          <li>Lorem ipsum dolor sit amet</li>
-          <li>Consectetur adipiscing elit</li>
-          <li>Sed do eiusmod tempor incididunt</li>
+          </button></li>
         </ul>
+        <span id="arrow2" style="display: none;" class="dropdown-arrow">↑</span>
+      </div>
       </div>
     </div>
     <button id="close-alert">×</button>
@@ -91,14 +88,38 @@ function showPopup() {
 
   // Add dropdown toggle functionality
   const dropdownHeader = popup.querySelector(".dropdown-header");
-  const dropdownArrow = popup.querySelector(".dropdown-arrow");
+  const dropdownArrow = popup.querySelector("#arrow1");
+  const goUpArrow = popup.querySelector("#arrow2");
+  const percentNumber = popup.querySelector("#percent-number");
   const dropdownContent = popup.querySelector(".dropdown-content");
 
   dropdownHeader.addEventListener("click", () => {
     popup.classList.toggle("expanded");
-    dropdownArrow.style.transform = popup.classList.contains("expanded")
-      ? "rotate(180deg)"
-      : "rotate(0deg)";
+    dropdownArrow.style.display = popup.classList.contains("expanded")
+      ? "none"
+      : "block";
+    goUpArrow.style.display = popup.classList.contains("expanded")
+      ? "block"
+      : "none";
+
+    percentNumber.style.display = popup.classList.contains("expanded")
+      ? "block"
+      : "none";
+  });
+
+  goUpArrow.addEventListener("click", () => {
+    popup.classList.toggle("expanded");
+    goUpArrow.style.display = popup.classList.contains("expanded")
+      ? "block"
+      : "none";
+
+    dropdownArrow.style.display = popup.classList.contains("expanded")
+      ? "none"
+      : "block";
+
+    percentNumber.style.display = popup.classList.contains("expanded")
+      ? "block"
+      : "none";
   });
   popup.querySelector("#close-alert").addEventListener("click", () => {
     popup.remove();
