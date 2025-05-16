@@ -3,20 +3,33 @@
   "statements": [
     {
       "id": 1,
-      "text": "Example factual statement.",
+      "text": "Kidney fibrosis is the last stage of kidney cancer.",
       "verdict": "true | false | uncertain",
       "rationale": "LLM explanation …",
       "confidence": 0.87,
-      "query": "Example query …",
+      "query": "Kidney fibrosis",
       "evidence": [
         {
-        "pubmed_id": "38471722",
-        "url": "https://example.com/paper",
-        "summary": "summary of the evidence",
-        "relevance": "yes | no"
-        }]
+          "pubmed_id": "40377641",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/40377641/",
+          "summary": "This case study details the successful treatment of acute kidney injury (AKI) caused by retroperitoneal fibrosis (RPF) in a 65-year-old patient. Imaging (contrast-enhanced CT) revealed right-sided hydronephrosis and signs of RPF including ureteral dilation, aortic aneurysms, and vascular atherosclerosis. The patient was initially treated with hemodialysis.\n\nDiagnosis confirmed IgG4-related RPF. Placement of a ureteral stent in the right ureter successfully resolved the AKI. \n\nThe case highlights that RPF is a rare but potential cause of postrenal AKI and emphasizes the need for a multidisciplinary approach to both diagnose and effectively treat this complex condition. Stent placement proved crucial in restoring kidney function in this patient.",
+          "relevance": ""
+        },
+        {
+          "pubmed_id": "40377546",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/40377546/",
+          "summary": "This study investigated the expression of profibrotic markers – TGF-β1, MMP-9, and FGFR – in kidney tissue of 17 patients with urolithiasis (kidney stones) and varying degrees of chronic kidney disease (CKD), assessed by glomerular filtration rate (GFR). Researchers analyzed kidney biopsies obtained during percutaneous nephrolithotripsy (laser stone removal).\n\n**Results showed a significant correlation only between the progression of chronic pyelonephritis (CPN) and the expression of TGF-β1.** Specifically, increased TGF-β1 expression was associated with more pronounced atrophic changes in the proximal renal tubule epithelium. \n\nThe study concludes that increased TGF-β1 expression likely triggers tubulointerstitial fibrosis, playing a role in the progression of CKD in patients with urolithiasis. No significant correlations were found for MMP-9 or FGFR expression.",
+          "relevance": ""
+        },
+        {
+          "pubmed_id": "40376197",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/40376197/",
+          "summary": "This review article demonstrates a significant link between **inflammation and the progression of Chronic Kidney Disease (CKD), identifying Klotho deficiency as a key driver.** Research suggests that inflammation in CKD leads to reduced Klotho expression – a protective protein with anti-inflammatory, anti-fibrotic, and antioxidant properties – thereby accelerating kidney damage.\n\nThe study outlines that this Klotho reduction is likely caused by both **epigenetic mechanisms** (DNA methylation, histone modifications, miRNA/lncRNA regulation) *and* **non-epigenetic factors** (ER stress and protein degradation) triggered by inflammation. Importantly, Klotho itself possesses anti-inflammatory properties, creating a complex, bidirectional relationship. \n\n**The primary finding is that suppressing Klotho expression via inflammation significantly contributes to CKD development and worsening.** Consequently, the review proposes targeting the inflammation-Klotho axis – specifically, correcting epigenetic and non-epigenetic abnormalities – as a potential novel therapeutic strategy for managing CKD.",
+          "relevance": ""
+        }
+      ]
     }
   ],
-  "overall_truthiness": 0.82       
+  "overall_truthiness": 0.82,
+  "generated_at": "2025-05-16T20:19:58Z"
 }
-
