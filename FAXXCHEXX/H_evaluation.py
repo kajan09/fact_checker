@@ -7,8 +7,9 @@ import openai
 
 def H_evaluation(
     filename: str | Path,
-    model_name: str = "meditron:70b",
+    model_name: str = "gemma3:27b",
     temperature: float = 0.1,
+    max_completion_tokens: int = 512,
 ) -> None:
     """
     One-stop function that opens the given JSON file, sends every statement
@@ -24,6 +25,7 @@ def H_evaluation(
     temperature : float
         Sampling temperature for the chat completion.
     """
+    
     base = Path(__file__).parent
     FILE_PATH = base / filename
     json_path = Path(FILE_PATH)
@@ -76,6 +78,7 @@ def H_evaluation(
                 model=model_name,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=temperature,
+                max_tokens=max_completion_tokens,
             )
             print(f"response: {res}")
             reply: str = res.choices[0].message.content.strip()

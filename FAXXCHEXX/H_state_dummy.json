@@ -4,9 +4,9 @@
     {
       "id": 1,
       "text": "Smoking gives you cancer",
-      "verdict": null,
-      "rationale": null,
-      "confidence": null,
+      "verdict": "true",
+      "rationale": "VERDICT: true\nFINALSCORE: 0.95",
+      "confidence": 0.95,
       "query": "smoking cancer etiology neoplasm",
       "evidence": [
         {
@@ -32,25 +32,18 @@
     {
       "id": 2,
       "text": "Doing sport is super unhealthy",
-      "verdict": null,
-      "rationale": null,
-      "confidence": null,
+      "verdict": "uncertain",
+      "rationale": "VERDICT: uncertain\nFINALSCORE: 0.05",
+      "confidence": 0.05,
       "query": "exercise health risks adverse",
-      "evidence": [
-        {
-          "pubmed_id": "40374231",
-          "url": "https://pubmed.ncbi.nlm.nih.gov/40374231/",
-          "summary": "This study protocol details a randomized controlled trial (RCT) at Nordsjaellands Hospital in Denmark investigating the effectiveness of a telemedicine-supported “hospital-at-home” (HaH) program versus standard in-hospital care. Researchers will enroll 110 clinically stable patients admitted to internal medicine wards, randomly assigning them to either continue conventional hospital admission or transition to a virtual HaH model receiving treatment at home.\n\nThe primary outcomes being measured are **physical activity levels** (assessed via daily step count during the first 24 hours) and **patient satisfaction**. Secondary outcomes include rates of **adverse events, escalation of care, 30 & 90-day readmission, mortality (7, 30, & 90 days post-discharge)**, teleconsultation frequency, and a health economic evaluation. \n\nThe study aims to determine if HaH improves patient activity and satisfaction while maintaining safety, potentially offering a solution to hospital capacity challenges and staff shortages. Results will be disseminated through peer-reviewed publications and presentations. The study has received ethical approval and is currently underway.",
-          "relevance": ""
-        }
-      ]
+      "evidence": []
     },
     {
       "id": 3,
       "text": "Sleeping well lets you die early.",
-      "verdict": null,
-      "rationale": null,
-      "confidence": null,
+      "verdict": "uncertain",
+      "rationale": "VERDICT: uncertain\nFINALSCORE: 0.05",
+      "confidence": 0.05,
       "query": "sleep mortality aging paradox",
       "evidence": []
     }
