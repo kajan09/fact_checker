@@ -29,6 +29,33 @@ AGENT_CHAIN: List[Type] = [
     SynthesisAgent,
 ]
 
+BASE_PROMPT_TMPL = (
+    "You are a professional fact‑checker. "
+    "You will receive a transcript of spoken English. "
+)
+
+CHECK_PROMPT_TMPL = (
+    "You are a professional fact‑checker. Classify the statement as true, false, or uncertain. "
+    "Return ONLY valid JSON of the form: {\n  \"verdict\": \"true|false|uncertain\",\n  \"rationale\": <string>,\n  \"confidence\": <float between 0 and 1>\n} \n\nSTATEMENT:\n{statement}"
+)
+
+ANALYSE_PROMPT_TMPL = (
+    "You will receive a biomedical statement and a list of PubMed abstracts. "
+    "For EACH abstract decide whether it supports, refutes, or is irrelevant to the statement. "
+    "Return ONLY valid JSON list under key 'evidence': [\n  {\n    \"pubmed_id\": <string>,\n    \"title\": <string>,\n    \"verdict\": \"support|refute|irrelevant\",\n    \"snippet\": <string>\n  }\n]"
+)
+
+STATEMENT_PROMPT = (
+    "You will receive a transcript of spoken English. "
+    "Extract concise, fact‑checkable statements. "
+    "Return ONLY valid JSON: {\n  \"statements\": [\n    {\"id\": <int>, \"text\": <string>}\n  ]\n}"
+)
+
+SUMMARY_PROMPT = (
+    "Compose a brief fact‑check summary for end users based on the JSON below. "
+    "Return ONLY valid JSON with keys: headline, body (40‑80 words), and optional call_to_action."
+)
+
 
 class LLMHandler:
     """Central orchestrator that streams JSON payload through every agent."""
