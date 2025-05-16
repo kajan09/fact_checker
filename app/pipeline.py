@@ -6,6 +6,7 @@ from step_3_statement_to_query import update_query
 from step_4_query_to_link import query_to_link
 from step_5_link_to_summary import link_to_summary
 from step_6_reduce_to_evidence import reduce_to_evidence
+from step_7_statement_to_truthness import statement_to_truthness
 
 CHECK_PROMPT_TMPL = (
     "You are a medical fact-checker.\n"
@@ -28,4 +29,5 @@ def run_pipeline(tmp_path: str) -> dict:
     link = query_to_link(query)
     summary = link_to_summary(link)
     evidence = reduce_to_evidence(summary)
-    print(f"Transcription: {evidence}")
+    truthness = statement_to_truthness(evidence)
+    print(f"Transcription: {truthness}")
