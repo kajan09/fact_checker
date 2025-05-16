@@ -25,6 +25,25 @@ def H_evaluation(
         Sampling temperature for the chat completion.
     """
     
+    base = Path(__file__).parent
+    FILE_PATH = base / filename
+    json_path = Path(FILE_PATH)
+
+    # -------- initialise client once --------
+    client = openai.OpenAI(
+        base_url="http://localhost:11434/v1",
+        api_key="ollama",   # any placeholder works for Ollama
+    )
+
+    # -------- open JSON --------
+    if not json_path.exists():
+        raise FileNotFoundError(f"{json_path!s} does not exist")
+
+    with json_path.open("r", encoding="utf-8") as fh:
+        data: Dict[str, Any] = json.load(fh)
+
+    # -------- iterate over statements --------
+    for stmt in data.get("statements", []):
         claim_text: str = stmt.get("text", "").strip()
         evidences   = stmt.get("evidence", [])
 
@@ -97,23 +116,3 @@ def H_evaluation(
 
 # ---- example call ----
 H_evaluation("H_state_dummy.json")
-
-    base = Path(__file__).parent
-    FILE_PATH = base / filename
-    json_path = Path(FILE_PATH)
-
-    # -------- initialise client once --------
-    client = openai.OpenAI(
-        base_url="http://localhost:11434/v1",
-        api_key="ollama",   # any placeholder works for Ollama
-    )
-
-    # -------- open JSON --------
-    if not json_path.exists():
-        raise FileNotFoundError(f"{json_path!s} does not exist")
-
-    with json_path.open("r", encoding="utf-8") as fh:
-        data: Dict[str, Any] = json.load(fh)
-
-    # -------- iterate over statements --------
-    for stmt in data.get("statements", []):
