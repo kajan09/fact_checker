@@ -15,19 +15,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Any, List, Type
 
-# --- import the agent classes -------------------------------------------------
-# The AGENT_CHAIN order defines the pipeline.
-from agents.statement_agent import StatementAgent
-from agents.claim_check_agent import ClaimCheckAgent
-from agents.pubmed_search_agent import PubMedSearchAgent
-from agents.synthesis_agent import SynthesisAgent
-
-AGENT_CHAIN: List[Type] = [
-    StatementAgent,
-    ClaimCheckAgent,
-    PubMedSearchAgent,
-    SynthesisAgent,
-]
 
 BASE_PROMPT_TMPL = (
     "You are a professional fact‑checker. "
