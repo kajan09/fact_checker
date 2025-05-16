@@ -6,7 +6,7 @@ ffmpeg-python  # Optional: only if you want to manipulate ffmpeg via Python
 llama-cpp-python
 
 
-instaloader==4.10.1
+instaloader==4.11
 moviepy==1.0.3
 numpy==1.23.5
 requests==2.31.0

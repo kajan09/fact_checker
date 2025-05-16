@@ -7,29 +7,16 @@
       "verdict": "true | false | uncertain",
       "rationale": "LLM explanation …",
       "confidence": 0.87,
+      "query": "Example query …",
       "evidence": [
         {
         "pubmed_id": "38471722",
         "url": "https://example.com/paper",
-        "summary": "summary of the evidence"
-        }
-        ],
-      "metadata": [
-        {
-            "source": "source of the claim",
-            "date": "2025-05-16",
-            "author": "author name",
-            "url": "https://example.com/claim"
-        }
-        ]
+        "summary": "summary of the evidence",
+        "relevance": "yes | no"
+        }]
     }
   ],
-  "summary": {
-    "headline": "Concise headline",
-    "body": "40-80-word reader-friendly explanation.",
-    "call_to_action": "optional next-step link or advice"
-  },
-  "overall_truthiness": 0.82,         
-  "generated_at": "2025-05-16T08:21:30Z"
+  "overall_truthiness": 0.82       
 }
 

@@ -12,6 +12,41 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Any, List, Type
 
+import json, pathlib, datetime as dt
+
+
+base = Path(__file__).parent
+path = base / "state.json"
+
+# Load from file or string
+with open(path, "r", encoding="utf-8") as f:
+    state = json.load(f)         # state is now a dict
+
+transcript = state["transcript"]
+print(f"Transcript: {transcript}")
+
+truthiness = state["overall_truthiness"]
+print(f"Overall truthiness: {truthiness}")
+
+statements = state["statements"]   # a list of dicts
+print(f"Statements: {statements}")
+
+first_stmt = statements[0]         # the dict with id, text, verdict, etc.
+print(f"First statement: {first_stmt}")
+
+evidence_list = first_stmt["evidence"]  # list of dicts
+print(f"Evidence list: {evidence_list}")
+
+first_evidence = evidence_list[0]       # the first evidence dict
+print(f"First evidence: {first_evidence}")
+
+# Save back
+with open(path, "w", encoding="utf-8") as f:
+    json.dump(state, f, indent=2, ensure_ascii=False)
+
+
+
+
 
 BASE_PROMPT_TMPL = (
     "You are a professional fact‑checker. "
@@ -66,47 +101,28 @@ def high_model_exchange(self, transcript: str, agent):
 
 
 
-def update_json(json_str: str, key: str, value: Any) -> str:
-    """Update a JSON string with a new key-value pair."""
-    json_obj = json.loads(json_str)
-    json_obj[key] = value
-    return json.dumps(json_obj, indent=2, ensure_ascii=False)
+def load_state() -> dict:
+    if path.exists():
+        return json.loads(path.read_text())
+    else:
+        # start from fresh skeleton
+        return {
+            "transcript": None,
+            "statements": [],
+            "summary": {"headline": None, "body": None, "call_to_action": None},
+            "overall_truthiness": None,
+            "generated_at": None,
+        }
 
+def add_statement(text: str, idx: int) -> None:
+    state["statements"].append({
+        "id": idx,
+        "text": text,
+        "verdict": None,
+        "rationale": None,
+        "confidence": None,
+        "evidence": [],
+        "metadata": []
+    })
 
-def get_json_value(json_str: str, key: str) -> Any:
-    """Get a value from a JSON string by key."""
-    json_obj = json.loads(json_str)
-    return json_obj.get(key, None)
-
-
-def get_json_keys(json_str: str) -> List[str]:
-    """Get all keys from a JSON string."""
-    json_obj = json.loads(json_str)
-    return list(json_obj.keys())
-
-
-def get_json_values(json_str: str) -> List[Any]:
-    """Get all values from a JSON string."""
-    json_obj = json.loads(json_str)
-    return list(json_obj.values())
-
-
-def get_json_items(json_str: str) -> List[tuple]:
-    """Get all items (key-value pairs) from a JSON string."""
-    json_obj = json.loads(json_str)
-    return list(json_obj.items())
-
-
-def get_json_length(json_str: str) -> int:
-    """Get the length of a JSON string."""
-    json_obj = json.loads(json_str)
-    return len(json_obj)
-
-class agent:
-    def __init__(self, name: str, preprompt: str):
-        self.name = name
-        self.prompt = preprompt
-
-    def __repr__(self):
-        return f"Agent(name={self.name}, prompt={self.preprompt})"
     

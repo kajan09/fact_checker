@@ -6,29 +6,17 @@
       "text": "string | null",
       "verdict": "string | null  // one of: \"true\", \"false\", \"uncertain\", \"common_knowledge\"",
       "rationale": "string | null",
-      "confidence": "number | null  // 0-1",
+      "truthiness": "number | null  // 0-1",
+      "query": "string | null",
       "evidence": [
         {
           "pubmed_id": "string | null",
           "url": "string | null  // URL",
-          "summary": "string | null"
-        }
-      ],
-      "metadata": [
-        {
-          "source": "string | null",
-          "date": "string | null  // ISO date YYYY-MM-DD",
-          "author": "string | null",
-          "url": "string | null  // URL"
+          "summary": "string | null",
+          "relevance": "string | null  // one of: \"yes\", \"no\""
         }
       ]
     }
   ],
-  "summary": {
-    "headline": "string | null",
-    "body": "string | null",
-    "call_to_action": "string | null"
-  },
-  "overall_truthiness": "number | null  // 0-1",
-  "generated_at": "string | null  // ISO-8601 timestamp"
+  "overall_truthiness": "number | null  // 0-1"
 }
