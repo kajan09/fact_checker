@@ -3,14 +3,16 @@
   "statements": [
     {
       "id": 1,
-      "text": "Renal fibrosis is the last stage of kidney cancer.",
+
+      "text": "kidney fibrosis is the last state of kidney cancer.",
+
       "verdict": "true | false | uncertain",
       "rationale": "LLM explanation …",
-      "confidence": 0.87,
+      "confidence": null,
       "query": "kidney fibrosis",
       "evidence": []
     }
   ],
-  "overall_truthiness": 0.82,
+  "overall_truthiness": null,
   "generated_at": "2025-05-16T19:10:46Z"
 }
