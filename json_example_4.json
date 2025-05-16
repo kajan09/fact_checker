@@ -7,7 +7,7 @@
       "verdict": null,
       "rationale": null,
       "confidence": null,
-      "query": "<think>",
+      "query": "Smoking cancer lung neoplasms etiology",
       "evidence": []
     },
     {
@@ -16,7 +16,7 @@
       "verdict": null,
       "rationale": null,
       "confidence": null,
-      "query": "<think>",
+      "query": "exercise health risks adverse effects",
       "evidence": []
     },
     {
@@ -25,10 +25,10 @@
       "verdict": null,
       "rationale": null,
       "confidence": null,
-      "query": "<think>",
+      "query": "sleep mortality early death lifespan",
       "evidence": []
     }
   ],
   "overall_truthiness": 0.82,
-  "generated_at": "2025-05-16T19:10:36Z"
+  "generated_at": "2025-05-16T19:27:48Z"
 }
