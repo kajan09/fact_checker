@@ -51,9 +51,10 @@ def H_evaluation(
         for ev in evidences:
             pmid = ev.get("pubmed_id") or "N/A"
             summary = (ev.get("summary") or "").strip().replace("\n", " ")
+            print(f"Evidence: {summary}")
             evidence_lines.append(f"- PMID {pmid}: {summary}")
         evidence_block = "\n".join(evidence_lines) or "No evidence provided."
-        
+
 
         # final prompt
         prompt = (
@@ -67,7 +68,7 @@ def H_evaluation(
             "FINALSCORE: <number between 0.00 and 1.00>\n"
             "Only those two lines, nothing else."
         )
-
+        print(f"Prompt:\n{prompt}")
         # call model
         try:
             start = time.time()
@@ -76,6 +77,7 @@ def H_evaluation(
                 messages=[{"role": "user", "content": prompt}],
                 temperature=temperature,
             )
+            print(f"response: {res}")
             reply: str = res.choices[0].message.content.strip()
         except Exception as exc:
             # fall back to uncertain if model call fails

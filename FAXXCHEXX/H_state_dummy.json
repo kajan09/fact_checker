@@ -3,9 +3,9 @@
   "statements": [
     {
       "id": 1,
-      "text": "Oat meal causes death in last state kidney cancer.",
+      "text": "kidney fibrosis is the last state of kidney cancer.",
       "verdict": "uncertain",
-      "rationale": "Unparsable model output:\nI'm sorry, I don't understand what you mean by \"oat meal causes death in last state kidney cancer\". Can you please rephrase your question or provide more context?",
+      "rationale": "Unparsable model output:\nI'm sorry, I don't understand what you mean by \"kidney fibrosis is the last state of kidney cancer.\" Can you please clarify or rephrase your question?",
       "confidence": 0.0,
       "query": "kidney fibrosis",
       "evidence": [
