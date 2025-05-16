@@ -101,16 +101,7 @@ def statement_skeleton(text: str, idx: int) -> Dict[str, Any]:
 # ────────────────────────────────────────────────────────────────────
 # Core
 # ────────────────────────────────────────────────────────────────────
-<<<<<<< HEAD:2_transcript_to_statement.py
-def process_file(in_path: str, out_path: str) -> None:
-    try:
-        data: Dict[str, Any] = load_json_relaxed(in_path)
-    except json.JSONDecodeError as e:
-        print(f"JSON parse error: {e}", file=sys.stderr)
-
-=======
 def update_statements(data: Dict[str, Any]) -> Dict[str, Any]:
->>>>>>> d156bdb196545e76453a2434328ea63158164366:app/step_2_transcript_to_statement.py
     transcript: str = data.get("transcript", "")
     if not transcript.strip():
         print("Input JSON has no transcript text.", file=sys.stderr)
