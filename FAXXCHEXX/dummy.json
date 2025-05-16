@@ -10,14 +10,8 @@
       "evidence": [
         {
         "pubmed_id": "38471722",
-        "title": "Paper title …",
-        "verdict": "support | refute | irrelevant",
-        "snippet": "Sentence fragment showing why …",
-        "doi": "10.1234/example.doi",
         "url": "https://example.com/paper",
-        "type": "journal article | news article | blog post | other",
-        "date": "2025-05-16",
-        "author": "author name",
+        "summary": "summary of the evidence",
         }
         ],
       "metadata": [
