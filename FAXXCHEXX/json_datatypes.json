@@ -13,22 +13,8 @@
           "url": "string | null  // URL",
           "summary": "string | null"
         }
-      ],
-      "metadata": [
-        {
-          "source": "string | null",
-          "date": "string | null  // ISO date YYYY-MM-DD",
-          "author": "string | null",
-          "url": "string | null  // URL"
-        }
       ]
     }
   ],
-  "summary": {
-    "headline": "string | null",
-    "body": "string | null",
-    "call_to_action": "string | null"
-  },
-  "overall_truthiness": "number | null  // 0-1",
-  "generated_at": "string | null  // ISO-8601 timestamp"
+  "overall_truthiness": "number | null  // 0-1"
 }
