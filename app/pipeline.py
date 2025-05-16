@@ -1,6 +1,7 @@
 # pipeline.py
 import os, re
-from startup import whisper_model, openai_client, LLM_MODEL
+from step_1_audio_to_transcript import update_transcript
+from step_2_transcript_to_statement import update_statements
 
 CHECK_PROMPT_TMPL = (
     "You are a medical fact-checker.\n"
@@ -17,22 +18,6 @@ def run_pipeline(tmp_path: str) -> dict:
     3) Return a dict you’ll JSON-encode later
     """
     # 1️⃣ Whisper
-    transcript = whisper_model.transcribe(tmp_path, task="translate", fp16=True)["text"]
-
-    # 2️⃣ Fact-check via Ollama-served model
-    prompt = CHECK_PROMPT_TMPL.format(statement=transcript)
-    raw = openai_client.chat.completions.create(
-        model=LLM_MODEL,
-        temperature=0,
-        max_tokens=5,
-        messages=[{"role": "user", "content": prompt}],
-    ).choices[0].message.content.strip()
-
-    m = score_re.search(raw)
-    score = int(m.group(1)) if m and 0 <= int(m.group(1)) <= 100 else None
-
-    return {
-        "transcript": transcript,
-        "fact_score": score,
-        "raw_factcheck_reply": raw,
-    }
+    transcript = update_transcript("json_example.json", tmp_path)
+    statments = update_statements(transcript)
+    print(f"Transcription: {statments}")
