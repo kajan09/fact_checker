@@ -5,7 +5,7 @@
   transform: translateX(-50%);
   background: white;
   color: #333;
-  padding: 20px;
+  padding: 15px;
   border-radius: 12px;
   z-index: 9999;
   display: flex;
@@ -15,6 +15,7 @@
   border: 1px solid #e0e0e0;
   max-width: 320px;
   align-items: center;
+  justify-content: center;
 }
 
 .dial-container {
@@ -62,6 +63,8 @@
 
 .score-text {
   flex: 1;
+  margin-top: 5px;
+  font-size: 15px;
 }
 
 .score-title {
@@ -88,6 +91,9 @@
 
 #close-alert {
   /* Keep previous close button styles */
+  position: absolute;
+  top: 2px;
+  right: 2px;
   background: none;
   border: none;
   color: #666;

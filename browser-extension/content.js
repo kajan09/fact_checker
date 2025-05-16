@@ -51,7 +51,6 @@ function showPopup() {
   popup.innerHTML = `
         <div class="dial-container">
             <div class="dial-background"><div class="dial-needle" style="transform: rotate(${needleRotation}deg);"></div></div>
-            <div class="score-percentage ${scoreColor}">${medicalScore}%</div>
         </div>
         <button id="close-alert">×</button>
     `;
