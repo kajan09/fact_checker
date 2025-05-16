@@ -1,6 +1,7 @@
 # pipeline.py
 import os, re
 from step_1_audio_to_transcript import update_transcript
+from step_2_transcript_to_statement import update_statements
 
 CHECK_PROMPT_TMPL = (
     "You are a medical fact-checker.\n"
@@ -18,4 +19,5 @@ def run_pipeline(tmp_path: str) -> dict:
     """
     # 1️⃣ Whisper
     transcript = update_transcript("json_example.json", tmp_path)
-    print(f"Transcription: {transcript}")
+    statments = update_statements(transcript)
+    print(f"Transcription: {statments}")

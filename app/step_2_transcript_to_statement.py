@@ -100,13 +100,7 @@ def statement_skeleton(text: str, idx: int) -> Dict[str, Any]:
 # ────────────────────────────────────────────────────────────────────
 # Core
 # ────────────────────────────────────────────────────────────────────
-def process_file(in_path: str, out_path: str) -> None:
-    try:
-        data: Dict[str, Any] = load_json_relaxed(in_path)
-    except json.JSONDecodeError as e:
-        print(f"JSON parse error: {e}", file=sys.stderr)
-        sys.exit(1)
-
+def update_statements(data: Dict[str, Any]) -> Dict[str, Any]:
     transcript: str = data.get("transcript", "")
     if not transcript.strip():
         print("Input JSON has no transcript text.", file=sys.stderr)
@@ -121,29 +115,4 @@ def process_file(in_path: str, out_path: str) -> None:
         dt.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
     )
 
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-    print(f"Extracted {len(claims)} medical statements → {out_path}")
-
-
-# ────────────────────────────────────────────────────────────────────
-# CLI
-# ────────────────────────────────────────────────────────────────────
-def main() -> None:
-    p = argparse.ArgumentParser(
-        description="Extract medically relevant statements from transcript"
-    )
-    p.add_argument("input_json", help="Path to input JSON")
-    p.add_argument("output_json", help="Path to output JSON")
-    args = p.parse_args()
-    process_file(args.input_json, args.output_json)
-
-
-# Uncomment if you prefer CLI usage; otherwise, call `process_file(...)`
-# from another module.
-# if __name__ == "__main__":
-#     main()
-
-# Direct call example (remove or adapt in production)
-process_file("json_example_2.json", "json_example_3.json")
+    return data
