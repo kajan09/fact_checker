@@ -7,12 +7,14 @@
       "verdict": "true | false | uncertain",
       "rationale": "LLM explanation …",
       "confidence": 0.87,
+      "query": "Example query …",
       "evidence": [
         {
         "pubmed_id": "38471722",
         "url": "https://example.com/paper",
-        "summary": "summary of the evidence"
-        }        ]
+        "summary": "summary of the evidence",
+        "relevance": "yes | no"
+        }]
     }
   ],
   "overall_truthiness": 0.82       

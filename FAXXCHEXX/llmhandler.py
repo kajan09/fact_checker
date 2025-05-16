@@ -16,17 +16,32 @@ import json, pathlib, datetime as dt
 
 path = pathlib.Path("state.json")
 
+# Load from file or string
+with open("state.json", "r", encoding="utf-8") as f:
+    state = json.load(f)         # state is now a dict
 
-state = load_state()
-state["transcript"] = None      # Add
-state["generated_at"] = dt.datetime.utcnow().isoformat(timespec="seconds") + "Z"
+transcript = state["transcript"]
+print(f"Transcript: {transcript}")
 
-save_state(state)
+truthiness = state["overall_truthiness"]
+print(f"Overall truthiness: {truthiness}")
 
-for i, stmt in enumerate(llm_splitter(state["transcript"]), start=1):
-    add_statement(stmt, i)
+statements = state["statements"]   # a list of dicts
+print(f"Statements: {statements}")
 
-save_state(state)
+first_stmt = statements[0]         # the dict with id, text, verdict, etc.
+print(f"First statement: {first_stmt}")
+
+evidence_list = first_stmt["evidence"]  # list of dicts
+print(f"Evidence list: {evidence_list}")
+
+first_evidence = evidence_list[0]       # the first evidence dict
+print(f"First evidence: {first_evidence}")
+
+# Save back
+with open("state.json", "w", encoding="utf-8") as f:
+    json.dump(state, f, indent=2, ensure_ascii=False)
+
 
 
 
