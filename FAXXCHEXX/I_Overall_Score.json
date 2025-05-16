@@ -4,9 +4,9 @@
     {
       "id": 1,
       "text": "Smoking gives you cancer",
-      "verdict": null,
-      "rationale": null,
-      "confidence": null,
+      "verdict": "true",
+      "rationale": "VERDICT: true\nFINALSCORE: 0.95",
+      "confidence": 0.95,
       "query": "smoking cancer etiology neoplasm",
       "evidence": [
         {
@@ -32,18 +32,18 @@
     {
       "id": 2,
       "text": "Doing sport is super unhealthy",
-      "verdict": null,
-      "rationale": null,
-      "confidence": null,
+      "verdict": "uncertain",
+      "rationale": "VERDICT: uncertain\nFINALSCORE: 0.05",
+      "confidence": 0.05,
       "query": "exercise health risks adverse",
       "evidence": []
     },
     {
       "id": 3,
       "text": "Sleeping well lets you die early.",
-      "verdict": null,
-      "rationale": null,
-      "confidence": null,
+      "verdict": "uncertain",
+      "rationale": "VERDICT: uncertain\nFINALSCORE: 0.05",
+      "confidence": 0.05,
       "query": "sleep mortality aging paradox",
       "evidence": []
     }
