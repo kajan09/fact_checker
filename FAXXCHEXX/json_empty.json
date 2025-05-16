@@ -7,12 +7,19 @@
       "verdict": null,
       "rationale": null,
       "confidence": null,
+      "query": null,
       "evidence": [
         {
           "pubmed_id": null,
           "url": null,
-          "summary": null
-        } ]
-      ],
+          "summary": null,
+          "relevance": null
+        }
+      ]
+    }
+  ],
   "overall_truthiness": null
 }
+
+
+
