@@ -3,4 +3,4 @@ uvicorn[standard]
 openai-whisper
 torch==2.4.1  # Required for Whisper
 ffmpeg-python  # Optional: only if you want to manipulate ffmpeg via Python
-
+llama-cpp-python
