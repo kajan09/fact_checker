@@ -38,7 +38,7 @@ def pubmed_fetch_abstract(pmid: str) -> Optional[str]:
 def summarize_with_gemma(text: str) -> str:
     """Use Ollama+Gemma3 to generate a concise summary."""
     prompt = (
-        "Please provide a short summary of the following text that does not exceed 300 words and focuses on the results: \n\n" + text
+        "Please provide a concise summary of the following text that does not exceed 300 words and focuses on the results:\n\n" + text
     )
     proc = subprocess.run(
         ["ollama", "run", "gemma3:27b"],
@@ -58,18 +58,15 @@ def load_json_relaxed(path: str) -> Any:
     return json.loads(cleaned)
 
 
-def process_file(input_path: str, output_path: str) -> None:
+def process_file(input_path: str, output_path: str) -> Dict[str, Any]:
+    """Load JSON, enrich evidence, write updated file, and return the data dict."""
     try:
         data: Dict[str, Any] = load_json_relaxed(input_path)
     except json.JSONDecodeError as e:
         print(f"Error parsing JSON: {e}", file=sys.stderr)
         sys.exit(1)
 
-    # Determine if evidence is nested or top-level
-    statements = data.get('statements', [])
-    # If top-level evidence list exists, process those as well
-    top_evidence = data.get('evidence', [])
-
+    # Helper to process a list of evidence items
     def process_evidence_list(ev_list: List[Dict[str, Any]]):
         for ev in ev_list:
             url = ev.get('url')
@@ -83,21 +80,36 @@ def process_file(input_path: str, output_path: str) -> None:
                 ev.setdefault('pubmed_id', None)
                 ev.setdefault('summary', None)
 
-    # Process nested evidence under each statement
-    for stmt in statements:
-        ev_list = stmt.get('evidence', [])
-        process_evidence_list(ev_list)
+    # Process nested evidence under statements
+    for stmt in data.get('statements', []):
+        process_evidence_list(stmt.get('evidence', []))
 
     # Process top-level evidence list if present
-    if top_evidence:
-        process_evidence_list(top_evidence)
+    if 'evidence' in data:
+        process_evidence_list(data['evidence'])
 
     # Update generated timestamp
     data['generated_at'] = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + 'Z'
 
+    # Write out updated JSON
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     print(f"Updated JSON written to {output_path}")
+    return data
+
+def link_to_summary(input_json: str = 'json_url.json', output_json: str = None) -> Dict[str, Any]:
+    """Convenience function to enrich a JSON file of evidence items.
+
+    Args:
+        input_json: Path to input JSON file (default 'json_url.json').
+        output_json: Path to output JSON file; if None, overwrites input.
+
+    Returns:
+        The enriched JSON data as a Python dict.
+    """
+    if output_json is None:
+        output_json = input_json
+    return process_file(input_json, output_json)
 
 
 def main():
@@ -105,10 +117,12 @@ def main():
         description='Enrich JSON with evidence items using PubMed and Gemma3 summaries.'
     )
     parser.add_argument('input_json', help='Path to input JSON file')
-    parser.add_argument('output_json', help='Path to output JSON file')
+    parser.add_argument('output_json', nargs='?', help='Path to output JSON file (defaults to input)')
     args = parser.parse_args()
-    process_file(args.input_json, args.output_json)
+    link_to_summary(args.input_json, args.output_json)
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
+
+link_to_summary("json_url.json", "json_url.json")
