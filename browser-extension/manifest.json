@@ -3,7 +3,7 @@
   "name": "DocNot",
   "version": "1.0",
   "permissions": ["activeTab", "scripting", "storage"],
-  "host_permissions": ["*://*.instagram.com/*", "http://localhost:8000/*"],
+  "host_permissions": ["*://*.instagram.com/*", "http://rcbe-srv-001:49064/*"],
   "background": {
     "service_worker": "background.js"
   },
@@ -24,5 +24,8 @@
         "chrome-extension://anjdlgodbhainbemheeabbigjkoflpao/icons/poor_to_good_progress_meter-small.png"
       ]
     }
-  ]
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src http://rcbe-srv-001:49064"
+  }
 }
