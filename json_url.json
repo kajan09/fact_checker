@@ -1,0 +1,23 @@
+{
+  "transcript": "original English transcript …",
+  "statements": [
+    {
+      "id": 1,
+      "text": "Example factual statement.",
+      "verdict": "true | false | uncertain",
+      "rationale": "LLM explanation …",
+      "confidence": 0.87,
+      "query": "Example query …",
+      "evidence": [
+        {
+          "pubmed_id": "40367245",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/40367245/",
+          "summary": "This study used machine learning to model antibody responses following vaccination with MenAfriVac, a vaccine eliminating serogroup A meningococcal disease in sub-Saharan Africa. Researchers aimed to better understand immunity duration and inform vaccination strategies.\n\nThe models—a short-term and a long-term predictor of antibody titers—integrated demographic/medical data (age, height, weight) with prior antibody levels and vaccination history. Results demonstrated moderately high predictive power – R-squared of 0.59 for out-of-training data in the short-term model and a strong R-squared of 0.83 in the long-term evaluation. \n\nThe models estimated a vaccine half-life of 13.9 years, consistent with prior estimates. Importantly, the machine learning approach doesn’t require repeated measurements from the same individuals and allows for rigorous validation. This allows for a better understanding of the relationship between variables and antibody levels at a population level, potentially enabling tailored vaccination schedules for at-risk groups.",
+          "relevance": "yes | no"
+        }
+      ]
+    }
+  ],
+  "overall_truthiness": 0.82,
+  "generated_at": "2025-05-16T18:40:22Z"
+}
