@@ -27,7 +27,7 @@ client = openai.OpenAI(
     api_key="ollama",
 )
 
-MODEL = "deepseek-r1:1.5b"  # gemma3:27b, dongheechoi/meerkat:latest
+MODEL = "gemma3:27b"  # gemma3:27b, deepseek-r1:1.5b, dongheechoi/meerkat:latest
 
 TRAILING_COMMAS_RE = re.compile(r",\s*(?=[\]}])")
 
@@ -51,7 +51,7 @@ Ignore:
 
 **Output format (strict)**  
 A valid JSON array of strings.  No other text.
-
+ 
 TRANSCRIPT
 ----------
 {transcript}
@@ -68,21 +68,22 @@ def load_json_relaxed(path: str) -> Any:
 
 
 def split_into_medical_statements(transcript: str) -> List[str]:
-    """LLM → JSON array of medically-relevant claims."""
     prompt = PROMPT_TMPL.format(transcript=transcript.strip())
+    resp = client.chat.completions.create(
+        model=MODEL,
+        temperature=0,
+        max_tokens=256,                       # give the model room
+        messages=[{"role": "user", "content": prompt}],
+    )
+    content = resp.choices[0].message.content.strip()
+    print("\n--- MODEL OUTPUT ---\n", content)
+
     try:
-        resp = client.chat.completions.create(
-            model=MODEL,
-            temperature=0,
-            max_tokens=512,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        content = resp.choices[0].message.content.strip()
         return json.loads(content)
-    except Exception:
-        # Fallback: naïve sentence split; real pipeline should re-prompt or log
-        rough = re.split(r"[.!?]\s+", transcript)
-        return [s.strip() for s in rough if s.strip()]
+    except json.JSONDecodeError as e:
+        print("IN ERROR")
+        raise RuntimeError("Model did not return valid JSON") from e
+
 
 
 def statement_skeleton(text: str, idx: int) -> Dict[str, Any]:
@@ -104,7 +105,7 @@ def update_statements(data: Dict[str, Any]) -> Dict[str, Any]:
     transcript: str = data.get("transcript", "")
     if not transcript.strip():
         print("Input JSON has no transcript text.", file=sys.stderr)
-        sys.exit(1)
+
 
     claims = split_into_medical_statements(transcript)
     data["statements"] = [
