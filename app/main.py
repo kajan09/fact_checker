@@ -11,7 +11,7 @@ app = FastAPI(title="One-shot reel-to-pipeline")
 async def process(payload: dict = Body(...)):
     mock = payload.get("mock", False)
     if mock:
-        wav_path = os.path.abspath("audio.wav")
+        wav_path = os.path.abspath("DFycUIjy1C4.wav")
         tmp_dir = os.path.dirname(wav_path)
     else:
         url = payload.get("url")

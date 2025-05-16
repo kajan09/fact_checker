@@ -1,5 +1,6 @@
 # pipeline.py
 import os, re
+import time
 from step_1_audio_to_transcript import update_transcript
 from step_2_transcript_to_statement import update_statements
 from step_3_statement_to_query import update_query
@@ -23,6 +24,7 @@ def run_pipeline(tmp_path: str) -> dict:
     3) Return a dict you’ll JSON-encode later
     """
     # 1️⃣ Whisper
+    start = time.time()
     transcript = update_transcript("json_example.json", tmp_path)
     statments = update_statements(transcript)
     query = update_query(statments)
@@ -30,4 +32,5 @@ def run_pipeline(tmp_path: str) -> dict:
     summary = link_to_summary(link)
     evidence = reduce_to_evidence(summary)
     truthness = statement_to_truthness(evidence)
-    print(f"Transcription: {truthness}")
+    elapsed = time.time() - start
+    print(f"Total pipeline time: {elapsed:.2f}s")
