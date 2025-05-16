@@ -2,17 +2,16 @@
 mkdir -p ~/models/medicine_llm13b && cd ~/models/medicine_llm13b
 
 # direct curl (link is the Raw button on HF)
-curl -L -o medicine-llm-13b.Q4_K_M.gguf \
-  https://huggingface.co/TheBloke/medicine-LLM-13B-GGUF/resolve/main/medicine-llm-13b.Q4_K_M.gguf
+curl -L -o <model_name>.gguf \
+  https://huggingface.co/TheBloke/medicine-LLM-13B-GGUF/resolve/main/<model_link>
 
-mkdir -p ~/ollama-medicine13b && cd ~/ollama-medicine13b
+mkdir -p ~/ollama-<model_name> && cd ~/ollama-<model_name>
 
 cat > Modelfile <<'EOF'
-FROM /data/home/zzz49063/models/medicine_llm13b/medicine-llm-13b.Q4_K_M.gguf
-
+FROM /data/home/zzz49063/models/<model_name>/<model_name>>.gguf
 # Most LLama-family chat checkpoints expect [INST] … [/INST]
 TEMPLATE "<s>[INST] {{ .Prompt }} [/INST]"
-
+# Soft prepromt for the model
 SYSTEM "You are a concise and truthful medical assistant."
 EOF
 
