@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 """
-TRANSCRIPT-→STATEMENTS
-
-Takes a FAXXCHEXX-style JSON file that *only* contains a
-`"transcript"` string (or an empty/placeholder `"statements"` list)
-and fills / replaces `"statements"` with one skeleton entry per
-stand-alone factual claim.  
-No PubMed handling, no evidence, no verdict calculation.
-
-Output keeps the original top-level shape intact and adds/updates
-`generated_at`.
+TRANSCRIPT → MEDICAL-STATEMENTS
+──────────────────────────────
+• Reads a FAXXCHEXX-style JSON file that contains a "transcript".
+• Asks a local LLM to extract ONLY medically-relevant factual claims.
+• Replaces/creates the "statements" list; each entry has the usual
+  skeleton (id, text, verdict=None, …).
+• No PubMed / evidence handling.
+• Writes the updated JSON to the output path and stamps generated_at.
 """
 
 import argparse
@@ -21,52 +19,60 @@ from typing import Any, Dict, List
 
 import openai
 
-# ----------------------------------------------------------------------
+# ────────────────────────────────────────────────────────────────────
 # Configuration
-# ----------------------------------------------------------------------
-
-# local OpenAI-compatible endpoint (Ollama, LM-Studio, etc.)
+# ────────────────────────────────────────────────────────────────────
 client = openai.OpenAI(
-    base_url="http://localhost:11434/v1",
+    base_url="http://localhost:11434/v1",  # Ollama / LM-Studio
     api_key="ollama",
 )
 
-SPLIT_MODEL = "deepseek-r1:1.5b"
+MODEL = "deepseek-r1:1.5b"  # gemma3:27b, dongheechoi/meerkat:latest
 
 TRAILING_COMMAS_RE = re.compile(r",\s*(?=[\]}])")
 
-SPLIT_PROMPT_TMPL = """
-You are a professional fact-checker.
+PROMPT_TMPL = """
+You are a medical‐domain statement extractor.
 
-**Task**: Extract concise, self-contained factual statements from the
-transcript below. Ignore greetings, rhetorical questions, opinions that
-contain no verifiable claim, and purely motivational phrases.
+**Task**  
+From the transcript below, list ONLY the distinct, self-contained
+factual claims *related to medicine or human health*.  A claim is
+medically relevant if it concerns:
+• diseases, diagnoses, risk factors
+• pharmaceuticals, supplements, or treatments
+• nutrition, exercise effects on health
+• physiology or pathophysiology
+• clinical study results
 
-**Output**: ONLY a valid JSON array of strings, nothing else.
+Ignore:
+• greetings, rhetorical questions, jokes
+• motivational or moral advice
+• claims not tied to health/medicine
 
-TRANSCRIPT:
-\"\"\"{transcript}\"\"\"
+**Output format (strict)**  
+A valid JSON array of strings.  No other text.
+
+TRANSCRIPT
+----------
+{transcript}
+----------
 """
 
 
-# ----------------------------------------------------------------------
-# Helpers
-# ----------------------------------------------------------------------
-
+# ────────────────────────────────────────────────────────────────────
+# Helper functions
+# ────────────────────────────────────────────────────────────────────
 def load_json_relaxed(path: str) -> Any:
     raw = open(path, "r", encoding="utf-8").read()
     return json.loads(TRAILING_COMMAS_RE.sub("", raw))
 
 
-def split_into_statements(transcript: str) -> List[str]:
-    """
-    Ask the LLM to return a JSON list of atomic factual claims.
-    Falls back to naïve sentence splitting if the model misbehaves.
-    """
-    prompt = SPLIT_PROMPT_TMPL.format(transcript=transcript.strip())
+def split_into_medical_statements(transcript: str) -> List[str]:
+    """LLM → JSON array of medically-relevant claims."""
+    prompt = PROMPT_TMPL.format(transcript=transcript.strip())
     try:
         resp = client.chat.completions.create(
-            model=SPLIT_MODEL,
+            model=MODEL,
             temperature=0,
             max_tokens=512,
             messages=[{"role": "user", "content": prompt}],
@@ -74,13 +80,12 @@ def split_into_statements(transcript: str) -> List[str]:
         content = resp.choices[0].message.content.strip()
         return json.loads(content)
     except Exception:
-        # fallback: split on sentence boundaries, keep non-empty strings
+        # Fallback: naïve sentence split; real pipeline should re-prompt or log
         rough = re.split(r"[.!?]\s+", transcript)
         return [s.strip() for s in rough if s.strip()]
 
 
-def make_statement_skeleton(text: str, idx: int) -> Dict[str, Any]:
-    """Return an empty skeleton with just id and text filled."""
+def statement_skeleton(text: str, idx: int) -> Dict[str, Any]:
     return {
         "id": idx,
         "text": text,
@@ -92,10 +97,9 @@ def make_statement_skeleton(text: str, idx: int) -> Dict[str, Any]:
     }
 
 
-# ----------------------------------------------------------------------
-# Main processor
-# ----------------------------------------------------------------------
-
+# ────────────────────────────────────────────────────────────────────
+# Core
+# ────────────────────────────────────────────────────────────────────
 def process_file(in_path: str, out_path: str) -> None:
     try:
         data: Dict[str, Any] = load_json_relaxed(in_path)
@@ -103,37 +107,43 @@ def process_file(in_path: str, out_path: str) -> None:
         print(f"JSON parse error: {e}", file=sys.stderr)
         sys.exit(1)
 
-    transcript: str = data.get("transcript") or ""
+    transcript: str = data.get("transcript", "")
     if not transcript.strip():
         print("Input JSON has no transcript text.", file=sys.stderr)
         sys.exit(1)
 
-    # derive new statements
-    claims = split_into_statements(transcript)
+    claims = split_into_medical_statements(transcript)
     data["statements"] = [
-        make_statement_skeleton(text, i) for i, text in enumerate(claims, 1)
+        statement_skeleton(text, i) for i, text in enumerate(claims, 1)
     ]
 
-    # timestamp
-    data["generated_at"] = dt.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+    data["generated_at"] = (
+        dt.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+    )
 
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-    print(f"Wrote {len(claims)} statements to {out_path}")
+    print(f"Extracted {len(claims)} medical statements → {out_path}")
 
 
-# ----------------------------------------------------------------------
+# ────────────────────────────────────────────────────────────────────
 # CLI
-# ----------------------------------------------------------------------
-
+# ────────────────────────────────────────────────────────────────────
 def main() -> None:
-    p = argparse.ArgumentParser(description="Extract statements from transcript (no PubMed)")
+    p = argparse.ArgumentParser(
+        description="Extract medically relevant statements from transcript"
+    )
     p.add_argument("input_json", help="Path to input JSON")
     p.add_argument("output_json", help="Path to output JSON")
     args = p.parse_args()
     process_file(args.input_json, args.output_json)
 
 
-if __name__ == "__main__":
-    main()
+# Uncomment if you prefer CLI usage; otherwise, call `process_file(...)`
+# from another module.
+# if __name__ == "__main__":
+#     main()
+
+# Direct call example (remove or adapt in production)
+process_file("json_example_2.json", "json_example_3.json")
