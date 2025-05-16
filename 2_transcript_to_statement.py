@@ -51,7 +51,7 @@ Ignore:
 
 **Output format (strict)**  
 A valid JSON array of strings.  No other text.
-
+ 
 TRANSCRIPT
 ----------
 {transcript}
@@ -78,6 +78,7 @@ def split_into_medical_statements(transcript: str) -> List[str]:
             messages=[{"role": "user", "content": prompt}],
         )
         content = resp.choices[0].message.content.strip()
+        print(content)
         return json.loads(content)
     except Exception:
         # Fallback: naïve sentence split; real pipeline should re-prompt or log
