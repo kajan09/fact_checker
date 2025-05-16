@@ -47,9 +47,8 @@ class LLMHandler:
     def __init__(self, model):
         self.model = model
 
-def handle(fulltext: str, llm_client: "LLMClient") -> str:
-    """Return a pretty‑printed JSON string for CLI usage."""
-    return json.dumps(LLMHandler(llm_client)(fulltext), indent=2, ensure_ascii=False)
+def run(self):
+    return None
 
 
 
