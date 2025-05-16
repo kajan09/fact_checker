@@ -3,3 +3,13 @@ uvicorn[standard]
 openai-whisper
 torch  # Required for Whisper
 ffmpeg-python  # Optional: only if you want to manipulate ffmpeg via Python
+
+
+instaloader==4.10.1
+moviepy==1.0.3
+assemblyai==0.11.0
+numpy==1.23.5
+requests==2.31.0
+tqdm==4.65.0
+decorator
+imageio==2.31.1
