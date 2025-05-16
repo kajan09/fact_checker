@@ -18,6 +18,12 @@ BASE_PROMPT_TMPL = (
     "You will receive a transcript of spoken English. "
 )
 
+STATEMENT_PROMPT = (
+    "You will receive a transcript of spoken English. "
+    "Extract concise, fact‑checkable statements. "
+    "Return ONLY valid JSON: {\n  \"statements\": [\n    {\"id\": <int>, \"text\": <string>}\n  ]\n}"
+)
+
 CHECK_PROMPT_TMPL = (
     "You are a professional fact‑checker. Classify the statement as true, false, or uncertain. "
     "Return ONLY valid JSON of the form: {\n  \"verdict\": \"true|false|uncertain\",\n  \"rationale\": <string>,\n  \"confidence\": <float between 0 and 1>\n} \n\nSTATEMENT:\n{statement}"
@@ -29,12 +35,6 @@ ANALYSE_PROMPT_TMPL = (
     "Return ONLY valid JSON list under key 'evidence': [\n  {\n    \"pubmed_id\": <string>,\n    \"title\": <string>,\n    \"verdict\": \"support|refute|irrelevant\",\n    \"snippet\": <string>\n  }\n]"
 )
 
-STATEMENT_PROMPT = (
-    "You will receive a transcript of spoken English. "
-    "Extract concise, fact‑checkable statements. "
-    "Return ONLY valid JSON: {\n  \"statements\": [\n    {\"id\": <int>, \"text\": <string>}\n  ]\n}"
-)
-
 SUMMARY_PROMPT = (
     "Compose a brief fact‑check summary for end users based on the JSON below. "
     "Return ONLY valid JSON with keys: headline, body (40‑80 words), and optional call_to_action."
@@ -44,11 +44,25 @@ SUMMARY_PROMPT = (
 class LLMHandler:
     """Central orchestrator that streams JSON payload through every agent."""
 
-    def __init__(self, model):
-        self.model = model
+    def __init__(self, high_model, low_model):
+        self.low_model = low_model
+        self.high_model = high_model
 
-def run(self):
+
+def run(self, transcript: str, oneshot, lowonly,highonly, pubmed, reasoning):
+    if oneshot:
+        # Run the high model once
+        result = self.low_model_exchange(transcript, )
+        if result is not None:
+            return result
     return None
+
+def low_model_exchange(self, transcript: str, agent):
+    return None
+
+def high_model_exchange(self, transcript: str, agent):
+    return None
+
 
 
 
@@ -88,3 +102,11 @@ def get_json_length(json_str: str) -> int:
     json_obj = json.loads(json_str)
     return len(json_obj)
 
+class agent:
+    def __init__(self, name: str, preprompt: str):
+        self.name = name
+        self.prompt = preprompt
+
+    def __repr__(self):
+        return f"Agent(name={self.name}, prompt={self.preprompt})"
+    
