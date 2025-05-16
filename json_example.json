@@ -1,0 +1,22 @@
+{
+  "transcript": "Smoking gives you cancer! Doing sport is super unhealthy. Sleeping well lets you die early.",
+  "statements": [
+    {
+      "id": 1,
+      "text": "Example factual statement.",
+      "verdict": "true | false | uncertain",
+      "rationale": "LLM explanation …",
+      "confidence": 0.87,
+      "query": "Example query …",
+      "evidence": [
+        {
+        "pubmed_id": "38471722",
+        "url": "https://example.com/paper",
+        "summary": "summary of the evidence",
+        "relevance": "yes | no"
+        }]
+    }
+  ],
+  "overall_truthiness": 0.82       
+}
+
