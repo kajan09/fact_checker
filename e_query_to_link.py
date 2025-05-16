@@ -10,7 +10,7 @@ def query_to_link(input_path: str, output_path: str) -> None:
     and append one evidence entry per URL into each statement.
     Finally, write the augmented JSON to `output_path`.
     """
-    def get_urls(query: str, retmax: int = 5) -> List[str]:
+    def get_urls(query: str, retmax: int = 3) -> List[str]:
         """Return up to `retmax` PubMed article URLs matching `query`."""
         search_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
         params = {
@@ -55,4 +55,4 @@ def query_to_link(input_path: str, output_path: str) -> None:
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
-query_to_link("json_example.json", "json_example.json")
+query_to_link("json_example_4.json", "json_example_4.json")
