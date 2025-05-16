@@ -1,0 +1,41 @@
+{
+  "transcript": "original English transcript …",
+  "statements": [
+    {
+      "id": 1,
+      "text": "Example factual statement.",
+      "verdict": "true | false | uncertain",
+      "rationale": "LLM explanation …",
+      "confidence": 0.87,
+      "evidence": [
+        {
+        "pubmed_id": "38471722",
+        "title": "Paper title …",
+        "verdict": "support | refute | irrelevant",
+        "snippet": "Sentence fragment showing why …",
+        "doi": "10.1234/example.doi",
+        "url": "https://example.com/paper",
+        "type": "journal article | news article | blog post | other",
+        "date": "2025-05-16",
+        "author": "author name",
+        }
+        ],
+      "metadata": [
+        {
+            "source": "source of the claim",
+            "date": "2025-05-16",
+            "author": "author name",
+            "url": "https://example.com/claim"
+        }
+        ]
+    }
+  ],
+  "summary": {
+    "headline": "Concise headline",
+    "body": "40-80-word reader-friendly explanation.",
+    "call_to_action": "optional next-step link or advice"
+  },
+  "overall_truthiness": 0.82,         
+  "generated_at": "2025-05-16T08:21:30Z"
+}
+
