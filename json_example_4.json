@@ -7,7 +7,7 @@
       "verdict": null,
       "rationale": null,
       "confidence": null,
-      "query": null,
+      "query": "smoking cancer etiology neoplasm",
       "evidence": []
     },
     {
@@ -16,7 +16,7 @@
       "verdict": null,
       "rationale": null,
       "confidence": null,
-      "query": null,
+      "query": "exercise health risks adverse",
       "evidence": []
     },
     {
@@ -25,10 +25,10 @@
       "verdict": null,
       "rationale": null,
       "confidence": null,
-      "query": null,
+      "query": "sleep mortality aging paradox",
       "evidence": []
     }
   ],
   "overall_truthiness": 0.82,
-  "generated_at": "2025-05-16T19:57:23Z"
+  "generated_at": "2025-05-16T20:17:57Z"
 }

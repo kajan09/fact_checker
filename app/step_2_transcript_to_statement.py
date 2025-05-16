@@ -55,7 +55,6 @@ TRANSCRIPT
 """
 
 
-
 # ────────────────────────────────────────────────────────────────────
 # Helper functions
 # ────────────────────────────────────────────────────────────────────
@@ -111,7 +110,7 @@ def update_statements(data: Dict[str, Any]) -> Dict[str, Any]:
     transcript: str = data.get("transcript", "")
     if not transcript.strip():
         print("Input JSON has no transcript text.", file=sys.stderr)
-        sys.exit(1)
+
 
     claims = split_into_medical_statements(transcript)
     data["statements"] = [

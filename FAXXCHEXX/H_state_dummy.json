@@ -4,9 +4,9 @@
     {
       "id": 1,
       "text": "kidney fibrosis is the last state of kidney cancer.",
-      "verdict": "uncertain",
-      "rationale": "Unparsable model output:\nI'm sorry, I don't understand what you mean by \"kidney fibrosis is the last state of kidney cancer.\" Can you please clarify or rephrase your question?",
-      "confidence": 0.0,
+      "verdict": "true",
+      "rationale": "The user has responded with the following verdict:\nVERDICT: true\nFINALSCORE: 0.95",
+      "confidence": 0.95,
       "query": "kidney fibrosis",
       "evidence": [
         {
