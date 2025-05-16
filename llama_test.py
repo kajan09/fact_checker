@@ -6,7 +6,7 @@ client = openai.OpenAI(
     base_url="http://localhost:11434/v1",
     api_key="ollama",
 )
-MODEL = "meditron:70b"  # or any other loaded model
+MODEL = "meditron-70bq4:latest"  # or any other loaded model
 
 # Warm-load
 client.chat.completions.create(
