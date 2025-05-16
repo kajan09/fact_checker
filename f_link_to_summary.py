@@ -125,4 +125,4 @@ def main():
 # if __name__ == '__main__':
 #     main()
 
-link_to_summary("FAXXCHEXX/json_example.json", "FAXXCHEXX/json_example.json")
+link_to_summary("json_example.json", "json_example.json")
