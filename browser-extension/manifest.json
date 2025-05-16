@@ -16,5 +16,13 @@
   ],
   "icons": {
     "128": "icons/healthcare.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "matches": ["<all_urls>"],
+      "resources": [
+        "chrome-extension://anjdlgodbhainbemheeabbigjkoflpao/icons/poor_to_good_progress_meter-small.png"
+      ]
+    }
+  ]
 }

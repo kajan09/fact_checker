@@ -1,63 +1,78 @@
-// Detect Instagram Reel videos
-console.log("content script loaded");
+let currentPopup = null;
+
+// Monitor URL changes
+let lastUrl = location.href;
 const observer = new MutationObserver(() => {
-  const reel = document.querySelector('div[role="main"] video');
-  console.log("Reel is there!");
-  if (reel && !reel.dataset.factcheckAdded) {
-    reel.dataset.factcheckAdded = true;
-    handleNewReel(reel);
+  if (location.href !== lastUrl) {
+    lastUrl = location.href;
+    checkForReel();
   }
 });
 
 observer.observe(document, { subtree: true, childList: true });
 
-async function handleNewReel(videoElement) {
-  // Get reel metadata
-  const reelId = getReelId();
-  const reelUrl = window.location.href;
+// Initial check
+checkForReel();
 
-  // Create overlay element
-  const overlay = createOverlay();
-  videoElement.parentElement.appendChild(overlay);
+function checkForReel() {
+  if (isReelUrl()) {
+    showPopup();
+  } else {
+    removePopup();
+  }
+}
 
-  // Send data to background script
-  chrome.runtime.sendMessage({
-    type: "NEW_REEL",
-    reelId,
-    reelUrl,
-    timestamp: Date.now(),
+function isReelUrl() {
+  return window.location.pathname.includes("/reel/");
+}
+
+function calculateMedicalAccuracy() {
+  // PLACEHOLDER: Replace this with actual medical fact-checking logic
+  // For now, returns random number between 0-100 for demonstration
+  return Math.floor(Math.random() * 100);
+}
+
+function getScoreColor(score) {
+  if (score <= 50) return "low-score";
+  if (score <= 75) return "medium-score";
+  return "high-score";
+}
+
+function showPopup() {
+  if (currentPopup) return;
+
+  const medicalScore = calculateMedicalAccuracy();
+  const scoreColor = getScoreColor(medicalScore);
+  const needleRotation = medicalScore * 1.8 - 90; // Convert score to degrees (-90 to 90)
+
+  const popup = document.createElement("div");
+  popup.className = "reel-alert";
+
+  popup.innerHTML = `
+        <div class="dial-container">
+            <div class="dial-background"><div class="dial-needle" style="transform: rotate(${needleRotation}deg);"></div></div>
+            <div class="score-percentage ${scoreColor}">${medicalScore}%</div>
+        </div>
+        <button id="close-alert">×</button>
+    `;
+  popup.querySelector("#close-alert").addEventListener("click", () => {
+    popup.remove();
+    currentPopup = null;
   });
+
+  document.body.appendChild(popup);
+  currentPopup = popup;
+
+  // Auto-remove after 8 seconds
+  // setTimeout(() => {
+  //   popup.remove();
+  //   currentPopup = null;
+  // }, 8000);
 }
 
-function getReelId() {
-  const url = new URL(window.location.href);
-  return url.pathname.split("/")[2];
+function removePopup() {
+  if (currentPopup) {
+    currentPopup.remove();
+    currentPopup = null;
+  }
 }
-
-function createOverlay() {
-  const overlay = document.createElement("div");
-  overlay.className = "factcheck-overlay";
-  overlay.innerHTML = `
-    <div class="loading-spinner"></div>
-    <div class="result-content"></div>
-  `;
-  return overlay;
-}
-
-// Listen for results from background script
-// chrome.runtime.onMessage.addListener((message) => {
-//   if (message.type === 'FACTCHECK_RESULT') {
-//     updateOverlay(message.data);
-//   }
-// });
-
-// function updateOverlay(data) {
-//   const overlay = document.querySelector('.factcheck-overlay');
-//   overlay.querySelector('.loading-spinner').style.display = 'none';
-//   overlay.querySelector('.result-content').innerHTML = `
-//     <div class="verdict ${data.verdict.toLowerCase()}">${data.verdict}</div>
-//     <div class="confidence">Confidence: ${data.confidence}%</div>
-//     <div class="explanation">${data.explanation}</div>
-//     ${data.sources ? `<div class="sources">Sources: ${data.sources.join(', ')}</div>` : ''}
-//   `;
-// }
