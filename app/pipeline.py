@@ -4,6 +4,8 @@ from step_1_audio_to_transcript import update_transcript
 from step_2_transcript_to_statement import update_statements
 from step_3_statement_to_query import update_query
 from step_4_query_to_link import query_to_link
+from step_5_link_to_summary import link_to_summary
+from step_6_reduce_to_evidence import reduce_to_evidence
 
 CHECK_PROMPT_TMPL = (
     "You are a medical fact-checker.\n"
@@ -24,4 +26,6 @@ def run_pipeline(tmp_path: str) -> dict:
     statments = update_statements(transcript)
     query = update_query(statments)
     link = query_to_link(query)
-    print(f"Transcription: {link}")
+    summary = link_to_summary(link)
+    evidence = reduce_to_evidence(summary)
+    print(f"Transcription: {evidence}")
