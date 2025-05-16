@@ -1,6 +1,7 @@
 # pipeline.py
 import os, re
 import time
+import json
 from step_1_audio_to_transcript import update_transcript
 from step_2_transcript_to_statement import update_statements
 from step_3_statement_to_query import update_query
@@ -37,3 +38,4 @@ def run_pipeline(tmp_path: str) -> dict:
     elapsed = time.time() - start
     print(scores)
     print(f"Total pipeline time: {elapsed:.2f}s")
+    return json.dumps(scores)
