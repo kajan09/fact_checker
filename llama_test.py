@@ -19,6 +19,10 @@ CHECK_PROMPT_TMPL = (
     "\n"
     "STATEMENT:\"\n{statement}\n\""
 )
+CHECK_PROMPT_TMPL2 = (
+    "You are a professional fact‑checker. Classify the statement as true, false, or uncertain. "
+    "Return ONLY valid JSON of the form: {\n  \"verdict\": \"true|false|uncertain\",\n  \"rationale\": <string>,\n  \"confidence\": <float between 0 and 1>\n} \n\nSTATEMENT:\n{statement}"
+)
 
 sample_statement = "Doing one hour of sport every day is super healthy, but will give you cancer in the long run."
 
@@ -31,6 +35,7 @@ response = client.chat.completions.create(
     messages=[{"role": "user", "content": CHECK_PROMPT_TMPL.format(statement=sample_statement)}],
 )
 t1 = time.time()
+
 
 ans = response.choices[0].message.content.strip()
 print(f"Model output: '{ans}'")
