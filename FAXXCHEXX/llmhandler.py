@@ -1,13 +1,10 @@
 """
-LLM Handler – orchestrates a multi‑agent fact‑checking flow for Instagram audio posts.
-
+LLMHandler
 Incoming  : raw transcript string (English).
 Outgoing  : JSON‑serialisable dict that conforms to the FactCheckResult schema (see README).
-
-Each agent lives in *agents/<special>_agent.py* and must implement BaseAgent.process.
-The handler wires them together and guarantees that all communication between
-agents is JSON only.
 """
+
+
 from __future__ import annotations
 
 import json
@@ -47,15 +44,48 @@ SUMMARY_PROMPT = (
 class LLMHandler:
     """Central orchestrator that streams JSON payload through every agent."""
 
-    def __init__(self, model) -> None:
-        self.llm_client = llm_client
-        self.agents = [agent_cls(llm_client) for agent_cls in AGENT_CHAIN]
-
-
-
-# Convenience wrapper ---------------------------------------------------------
+    def __init__(self, model):
+        self.model = model
 
 def handle(fulltext: str, llm_client: "LLMClient") -> str:
     """Return a pretty‑printed JSON string for CLI usage."""
     return json.dumps(LLMHandler(llm_client)(fulltext), indent=2, ensure_ascii=False)
+
+
+
+def update_json(json_str: str, key: str, value: Any) -> str:
+    """Update a JSON string with a new key-value pair."""
+    json_obj = json.loads(json_str)
+    json_obj[key] = value
+    return json.dumps(json_obj, indent=2, ensure_ascii=False)
+
+
+def get_json_value(json_str: str, key: str) -> Any:
+    """Get a value from a JSON string by key."""
+    json_obj = json.loads(json_str)
+    return json_obj.get(key, None)
+
+
+def get_json_keys(json_str: str) -> List[str]:
+    """Get all keys from a JSON string."""
+    json_obj = json.loads(json_str)
+    return list(json_obj.keys())
+
+
+def get_json_values(json_str: str) -> List[Any]:
+    """Get all values from a JSON string."""
+    json_obj = json.loads(json_str)
+    return list(json_obj.values())
+
+
+def get_json_items(json_str: str) -> List[tuple]:
+    """Get all items (key-value pairs) from a JSON string."""
+    json_obj = json.loads(json_str)
+    return list(json_obj.items())
+
+
+def get_json_length(json_str: str) -> int:
+    """Get the length of a JSON string."""
+    json_obj = json.loads(json_str)
+    return len(json_obj)
 
