@@ -27,35 +27,31 @@ client = openai.OpenAI(
     api_key="ollama",
 )
 
-MODEL = "gemma3:27b"  # gemma3:27b, deepseek-r1:1.5b, dongheechoi/meerkat:latest
+MODEL = "gemma3:27b"  # gemma3:27b, dongheechoi/meerkat:latest
 
 TRAILING_COMMAS_RE = re.compile(r",\s*(?=[\]}])")
 
 PROMPT_TMPL = """
-You are a medical‐domain statement extractor.
+You are a medical-domain statement extractor.
 
 **Task**  
-From the transcript below, list ONLY the distinct, self-contained
-factual claims *related to medicine or human health*.  A claim is
-medically relevant if it concerns:
-• diseases, diagnoses, risk factors
-• pharmaceuticals, supplements, or treatments
-• nutrition, exercise effects on health
-• physiology or pathophysiology
-• clinical study results
+Check the whole input for medical statements.
+Out of all medical statements take ONLY three medical statements.
 
-Ignore:
-• greetings, rhetorical questions, jokes
-• motivational or moral advice
-• claims not tied to health/medicine
+**Selection rules**  
+1. List **no more than three** statements. Choose the ones with the greatest clinical relevance or novelty.  
+2. If there are fewer than three valid medical statements, list them all.  
+3. Merge duplicates or near-duplicates into a single concise statement.  
+4. Ignore greetings, rhetorical questions, jokes, motivational or moral advice, and anything not tied to medicine or human health.
 
 **Output format (strict)**  
-A valid JSON array of strings.  No other text.
- 
-TRANSCRIPT
-----------
-{transcript}
-----------
+Return a valid JSON array containing 1–3 strings, each string being one of the extracted medical statements.  
+No introductory text, no explanations.
+
+TRANSCRIPT  
+----------  
+{transcript}  
+----------  
 """
 
 
@@ -67,23 +63,32 @@ def load_json_relaxed(path: str) -> Any:
     return json.loads(TRAILING_COMMAS_RE.sub("", raw))
 
 
+def clean_json_content(content: str) -> str:
+    # Remove Markdown-style code blocks if present
+    return re.sub(r"^```(?:json)?\s*|\s*```$", "", content.strip(), flags=re.IGNORECASE)
+
+
 def split_into_medical_statements(transcript: str) -> List[str]:
+    """LLM → JSON array of medically-relevant claims."""
     prompt = PROMPT_TMPL.format(transcript=transcript.strip())
-    resp = client.chat.completions.create(
-        model=MODEL,
-        temperature=0,
-        max_tokens=256,                       # give the model room
-        messages=[{"role": "user", "content": prompt}],
-    )
-    content = resp.choices[0].message.content.strip()
-    print("\n--- MODEL OUTPUT ---\n", content)
-
     try:
-        return json.loads(content)
-    except json.JSONDecodeError as e:
-        print("IN ERROR")
-        raise RuntimeError("Model did not return valid JSON") from e
-
+        resp = client.chat.completions.create(
+            model=MODEL,
+            temperature=0,
+            max_tokens=128,  # Increased from 4
+            messages=[{"role": "user", "content": prompt}],
+        )
+        content = resp.choices[0].message.content.strip()
+        cleaned = clean_json_content(content)
+        print("Statements:")
+        print(cleaned)
+        return json.loads(cleaned)
+    except Exception as e:
+        print(e)
+        print("FALLBACK")
+        # Fallback: naïve sentence split; real pipeline should re-prompt or log
+        rough = re.split(r"[.!?]\s+", transcript)
+        return [s.strip() for s in rough if s.strip()]
 
 
 def statement_skeleton(text: str, idx: int) -> Dict[str, Any]:
