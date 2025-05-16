@@ -29,7 +29,7 @@ TASK: Convert the claim below into a PubMed search string that captures
 the core biomedical concepts.
 
 HARD CONSTRAINTS
-• Return ONE line, 4-8 words, no line breaks.
+• Return ONE line, 4 words, no line breaks.
 • ONLY words separated by single spaces – no AND, OR, nor parentheses.
 • Do NOT wrap the query in quotes, code fences, markdown, or JSON.
 • First character must be a letter (A-Z or a-z).
