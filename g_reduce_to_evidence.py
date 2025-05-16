@@ -22,7 +22,7 @@ def is_related(statement_text: str, evidence_summary: str) -> bool:
     return response.startswith("yes")
 
 
-def filter_evidence(input_file: str, output_file: str):
+def reduce_to_evidence(input_file: str, output_file: str):
     # Load JSON data
     with open(input_file, 'r', encoding='utf-8') as f:
         data = json.load(f)
@@ -48,8 +48,4 @@ def filter_evidence(input_file: str, output_file: str):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python filter_evidence.py input.json output.json")
-        sys.exit(1)
-    filter_evidence(sys.argv[1], sys.argv[2])
+reduce_to_evidence("json_example_4.json", "json_example_4.json")
