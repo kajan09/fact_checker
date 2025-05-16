@@ -3,7 +3,7 @@
   "statements": [
     {
       "id": 1,
-      "text": "Oat meal causes death in last state kidney cancer.",
+      "text": "kidney fibrosis is the last state of kidney cancer.",
       "verdict": "true | false | uncertain",
       "rationale": "LLM explanation …",
       "confidence": null,

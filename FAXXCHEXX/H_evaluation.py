@@ -1,99 +1,114 @@
 from __future__ import annotations
-import json, time
+import json, re, time
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any
 import openai
 
-# ---------- configuration ----------
-base = Path(__file__).parent
-FILE_PATH = base / "H_state_dummy.json"
-MODEL_NAME = "gemma3:27b"  # well performing
-TEMPERATURE = 0.1
-# -----------------------------------
 
-client = openai.OpenAI(
-    base_url="http://localhost:11434/v1",
-    api_key="ollama",               # any placeholder works for local ollama
-)
+def H_evaluation(
+    filename: str | Path,
+    model_name: str = "meditron:70b",
+    temperature: float = 0.1,
+) -> None:
+    """
+    One-stop function that opens the given JSON file, sends every statement
+    (with all PubMed evidence summaries) to an LLM, extracts VERDICT and
+    FINALSCORE, fills them back into the JSON, and overwrites the file.
 
+    Parameters
+    ----------
+    json_path : str | Path
+        Path to the JSON file that follows the structure in the example.
+    model_name : str
+        Name/alias of the model to call on the local server.
+    temperature : float
+        Sampling temperature for the chat completion.
+    """
+    base = Path(__file__).parent
+    FILE_PATH = base / filename
+    json_path = Path(FILE_PATH)
 
-def build_prompt(stmt: Dict[str, Any]) -> str:
-    """Create the PREPROMT_TMPL for one statement."""
-    evidence_blocks: List[str] = []
-    for ev in stmt.get("evidence", []):
-        # keep only the relevant ones; comment out the next line to include all
-        if ev.get("relevance") == "no":
-            continue
-        evidence_blocks.append(
-            f"- PMID {ev['pubmed_id']}: {ev['summary']}"
+    # -------- initialise client once --------
+    client = openai.OpenAI(
+        base_url="http://localhost:11434/v1",
+        api_key="ollama",   # any placeholder works for Ollama
+    )
+
+    # -------- open JSON --------
+    if not json_path.exists():
+        raise FileNotFoundError(f"{json_path!s} does not exist")
+
+    with json_path.open("r", encoding="utf-8") as fh:
+        data: Dict[str, Any] = json.load(fh)
+
+    # -------- iterate over statements --------
+    for stmt in data.get("statements", []):
+        claim_text: str = stmt.get("text", "").strip()
+        evidences   = stmt.get("evidence", [])
+
+        # build evidence block (summaries only)
+        evidence_lines = []
+        for ev in evidences:
+            pmid = ev.get("pubmed_id") or "N/A"
+            summary = (ev.get("summary") or "").strip().replace("\n", " ")
+            evidence_lines.append(f"- PMID {pmid}: {summary}")
+        evidence_block = "\n".join(evidence_lines) or "No evidence provided."
+
+        # final prompt
+        prompt = (
+            "You are a professional biomedical fact-checker.\n"
+            "Decide whether the scientific abstracts collectively SUPPORT, "
+            "REFUTE or leave UNCERTAIN the claim.\n\n"
+            f"CLAIM:\n{claim_text}\n\n"
+            f"EVIDENCE:\n{evidence_block}\n\n"
+            "Respond with *exactly* two lines:\n"
+            "VERDICT: true|false|uncertain\n"
+            "FINALSCORE: <number between 0.00 and 1.00>\n"
+            "Only those two lines, nothing else."
         )
 
-    evidence_text = "\n".join(evidence_blocks) or "No PubMed evidence found."
-
-    return (
-        "You are a professional biomedical fact-checker.\n"
-        "Task: Decide whether the given scientific abstracts collectively support, "
-        "refute, or leave uncertain the claim.\n\n"
-        f"CLAIM:\n{stmt['text']}\n\n"
-        f"EVIDENCE:\n{evidence_text}\n\n"
-        "Respond ONLY with valid JSON of the form:\n"
-        "{\n"
-        '  "verdict": "true|false|uncertain",\n'
-        '  "confidence": <float between 0 and 1>\n'
-        "}"
-    )
-
-
-def call_model(prompt: str) -> Dict[str, Any]:
-    """Send the prompt and return parsed JSON."""
-    response = client.chat.completions.create(
-        model=MODEL_NAME,
-        messages=[{"role": "user", "content": prompt}],
-        temperature=TEMPERATURE,
-    )
-    # the model reply is in response.choices[0].message.content
-    content = response.choices[0].message.content
-    return json.loads(content)      # raises if the model returned invalid JSON
-
-
-def evaluate_all_statements(path: Path = FILE_PATH) -> None:
-    """Load JSON (create empty skeleton if absent), update every statement, save."""
-    if path.exists():
-        # ---------- LOAD ----------
-        with path.open("r", encoding="utf-8") as f:
-            state: Dict[str, Any] = json.load(f)
-    else:
-        # ---------- CREATE ----------
-        state: Dict[str, Any] = {
-            "transcript": None,
-            "statements": [],
-            "overall_truthiness": None,
-        }
-        # optional: gleich anlegen, damit ein Editor sie sieht
-        path.write_text(json.dumps(state, indent=2))
-
-    # ---------- PROCESS ----------
-    for stmt in state.get("statements", []):
-        print(f"Evaluating statement {stmt['id']}: {stmt['text']}")
-        prompt = build_prompt(stmt)
+        # call model
         try:
-            result = call_model(prompt)
-        except Exception as e:
-            stmt["verdict"]   = "uncertain"
+            start = time.time()
+            res = client.chat.completions.create(
+                model=model_name,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=temperature,
+            )
+            reply: str = res.choices[0].message.content.strip()
+        except Exception as exc:
+            # fall back to uncertain if model call fails
+            stmt["verdict"]    = "uncertain"
             stmt["confidence"] = 0.0
-            stmt["rationale"]  = f"Model call failed: {e}"
+            stmt["rationale"]  = f"Model call failed: {exc}"
             continue
 
-        stmt["verdict"]    = result.get("verdict")
-        stmt["confidence"] = result.get("confidence")
-        if "rationale" in result:
-            stmt["rationale"] = result["rationale"]
+        # -------- parse reply --------
+        verdict_match = re.search(r"VERDICT:\s*(true|false|uncertain)", reply, re.I)
+        print(f"Model output:\n{reply}")
+        score_match   = re.search(r"FINALSCORE:\s*([0-1](?:\.\d+)?)", reply, re.I)
+        print(f"Parsed verdict: {verdict_match.group(1) if verdict_match else 'N/A'}")
 
-    # ---------- SAVE ----------
-    with path.open("w", encoding="utf-8") as f:
-        json.dump(state, f, indent=2, ensure_ascii=False)
+        if verdict_match and score_match:
+            print(f"Parsed score: {score_match.group(1)}")
+            stmt["verdict"]    = verdict_match.group(1).lower()
+            stmt["confidence"] = float(score_match.group(1))
+            # keep the raw model reply for transparency
+            stmt["rationale"]  = reply
+        else:
+            # model did not follow instructions → mark as uncertain
+            print(f"Unparsable model output:\n{reply}")
+            stmt["verdict"]    = "uncertain"
+            stmt["confidence"] = 0.0
+            stmt["rationale"]  = f"Unparsable model output:\n{reply}"
+
+        elapsed = time.time() - start
+        print(f"Statement {stmt.get('id')} done in {elapsed:4.1f}s")
+
+    # -------- save JSON back --------
+    with json_path.open("w", encoding="utf-8") as fh:
+        json.dump(data, fh, indent=2, ensure_ascii=False)
 
 
-
-
-evaluate_all_statements()
+# ---- example call ----
+H_evaluation("H_state_dummy.json")
