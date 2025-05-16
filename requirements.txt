@@ -1,0 +1,5 @@
+fastapi
+uvicorn[standard]
+openai-whisper
+torch  # Required for Whisper
+ffmpeg-python  # Optional: only if you want to manipulate ffmpeg via Python
