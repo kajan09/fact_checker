@@ -4,3 +4,12 @@ openai-whisper
 torch==2.4.1  # Required for Whisper
 ffmpeg-python  # Optional: only if you want to manipulate ffmpeg via Python
 llama-cpp-python
+
+
+instaloader==4.10.1
+moviepy==1.0.3
+numpy==1.23.5
+requests==2.31.0
+tqdm==4.65.0
+decorator
+imageio==2.31.1
