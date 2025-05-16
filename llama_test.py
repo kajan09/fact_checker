@@ -1,55 +1,46 @@
-import openai
-import time
-import json
-import textwrap
+#!/usr/bin/env python3
+import openai, time, re
 
-
-# ./bin/ollama start    # run the model in interactive mode# 
-# 
-
+# ── 1.  Client ──────────────────────────────────────────────────────────────
 client = openai.OpenAI(
     base_url="http://localhost:11434/v1",
-    api_key="ollama"  # dummy key, not used by Ollama
+    api_key="ollama",
 )
+MODEL = "meditron:70b"  # or any other loaded model
 
-start_time = time.time()  # start timing
-MODEL_NAME = "meditron:7b"
-
+# Warm-load
 client.chat.completions.create(
-    model=MODEL_NAME,
-    temperature=0,
+    model=MODEL, temperature=0,
     messages=[{"role": "user", "content": "ping"}],
-    max_tokens=1
+    max_tokens=1,
 )
 
-SYSTEM_PROMPT = textwrap.dedent("""
-    You are Med-Check GPT.
-    Task: Evaluate the medical claim provided by the user.
-    • Think briefly using current medical consensus.
-    • Return a single-line JSON object with keys:
-      - "score"     : integer 0-100 (truthfulness)
-      - "verdict"   : "Correct", "Partially correct", or "Incorrect"
-      - "explanation": ≤ 30 words
-    End your answer with the token <END>
-""").strip()
-
-claim = "Smoking is very healthy for your health."
-
-response = client.chat.completions.create(
-    model=MODEL_NAME,
-    temperature=0,        # deterministic
-    top_p=0.9,            # optional, keeps rare tokens
-    max_tokens=128,
-    stop=["<END>"],
-    messages=[
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user",   "content": claim}
-    ]
+# ── 2.  Fact-check prompt ───────────────────────────────────────────────────
+CHECK_PROMPT_TMPL = (
+    "You are a medical fact-checker.\n"
+    "Given the statement below, reply ONLY with an integer score from 0 (false) to 100 (true).\n"
+    "NO verdict, NO explanation, ONLY the number.\n\n"
+    "STATEMENT:\n{statement}\n"
 )
 
-end_time = time.time()  # end timing
-duration = end_time - start_time
+sample_statement = "Smoking crack gives you cancer."
 
-# Print response and timing
-print(response.choices[0].message.content)
-print(f"\nProcessing time: {duration:.2f} seconds")
+score_re = re.compile(r"\b([0-9]{1,3})\b")
+
+print(f"Checking: {sample_statement}")
+t0 = time.time()
+ans = client.chat.completions.create(
+    model=MODEL,
+    temperature=0,
+    max_tokens=5,
+    messages=[{"role": "user", "content": CHECK_PROMPT_TMPL.format(statement=sample_statement)}],
+).choices[0].message.content.strip()
+t1 = time.time()
+
+m = score_re.search(ans)
+if m and 0 <= int(m.group(1)) <= 100:
+    print(f"Score: {int(m.group(1))}")
+else:
+    print(f"Could not parse score: '{ans}'")
+
+print(f"⏱ {t1-t0:.2f} s")
