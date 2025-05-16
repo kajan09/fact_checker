@@ -4,9 +4,9 @@
     {
       "id": null,
       "text": null,
-      "verdict": null,
+      "verdict": "true",
       "rationale": null,
-      "confidence": null,
+      "confidence": 0.95,
       "query": null,
       "evidence": [
         {
