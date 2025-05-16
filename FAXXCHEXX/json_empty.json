@@ -1,0 +1,34 @@
+{
+  "transcript": null,
+  "statements": [
+    {
+      "id": null,
+      "text": null,
+      "verdict": null,
+      "rationale": null,
+      "confidence": null,
+      "evidence": [
+        {
+          "pubmed_id": null,
+          "url": null,
+          "summary": null
+        }
+      ],
+      "metadata": [
+        {
+          "source": null,
+          "date": null,
+          "author": null,
+          "url": null
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "headline": null,
+    "body": null,
+    "call_to_action": null
+  },
+  "overall_truthiness": null,
+  "generated_at": null
+}
