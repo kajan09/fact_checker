@@ -1,51 +1,127 @@
 {
-  "transcript": "Smoking gives you cancer! Doing sport is super unhealthy. Sleeping well lets you die early.",
+  "transcript": "Smoking gives you cancer. Doing sport is super unhealthy. Sleeping well lets you die early.",
   "statements": [
     {
       "id": 1,
-      "text": "kidney fibrosis is the last state of kidney cancer.",
-      "verdict": "true",
-      "rationale": "The user has responded with the following verdict:\nVERDICT: true\nFINALSCORE: 0.95",
-      "confidence": 0.95,
-      "query": "kidney fibrosis",
+      "text": "Smoking gives you cancer",
+      "verdict": null,
+      "rationale": null,
+      "confidence": null,
+      "query": "smoking cancer etiology neoplasm",
       "evidence": [
         {
-          "pubmed_id": null,
-          "summary": null
-        },
-        {
-          "pubmed_id": "40377641",
-          "url": "https://pubmed.ncbi.nlm.nih.gov/40377641/",
-          "summary": "This case report details the successful treatment of acute kidney injury (AKI) in a 65-year-old patient caused by retroperitoneal fibrosis (RPF). The patient presented with right-sided hydronephrosis and postrenal AKI, diagnosed via contrast-enhanced computed tomography which revealed RPF alongside abdominal aortic aneurysms and vascular atherosclerosis. \n\nThe diagnosis was determined to be IgG4-related RPF. Following hemodialysis and placement of a ureteral stent in the right ureter, the patient’s AKI resolved. \n\nThe report highlights that RPF is a rare but potential cause of AKI and emphasizes the need for a multidisciplinary approach to both diagnose and effectively treat this condition. The successful stent placement demonstrates a viable treatment option for AKI stemming from RPF.",
+          "pubmed_id": "40377722",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/40377722/",
+          "summary": "This case-control study, utilizing data from the NIH All of Us database, investigated the association between congenital ichthyosis (CI) and cutaneous malignancies. Analyzing 198 CI patients and 2,376 matched controls, the researchers found a statistically significant association between CI and several skin cancers.\n\nSpecifically, individuals with CI had a significantly increased risk of developing **actinic keratosis (AK)** (OR=3.65, p<0.001), **melanoma** (OR=2.39, p=0.04), and **basal cell carcinoma (BCC)** (OR=1.90, p=0.03). No significant association was found with squamous cell carcinoma (p=0.50). \n\nThese results suggest that individuals with congenital ichthyosis may be at higher risk for certain skin cancers. The authors recommend routine skin cancer surveillance for CI patients, pending further research to confirm these findings and refine risk assessment.",
           "relevance": ""
         },
         {
-          "pubmed_id": "40377546",
-          "url": "https://pubmed.ncbi.nlm.nih.gov/40377546/",
-          "summary": "This study investigated the expression of profibrotic markers (TGF-β1, MMP-9, and FGFR) in kidney tissue of 17 patients with urolithiasis (kidney stones) and varying degrees of chronic kidney disease (CKD), assessed via glomerular filtration rate (GFR). Researchers analyzed kidney biopsies obtained during stone removal surgery (percutaneous nephrolithotripsy). \n\n**The key finding was a significant correlation between the expression of TGF-β1 and the progression of chronic pyelonephritis (CPN)**, evidenced by atrophic changes in the proximal renal tubule epithelium. While MMP-9 and FGFR expression were also examined, no significant correlations were found. \n\nThe study concludes that increased TGF-β1 expression likely contributes to the development of tubulointerstitial fibrosis – a key component of CKD progression – in patients with urolithiasis. This suggests TGF-β1 may be a valuable marker for understanding and potentially monitoring CKD in this patient population.",
+          "pubmed_id": "40377617",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/40377617/",
+          "summary": "This retrospective study of 1189 patients undergoing esophagectomy identified several independent risk factors for major pulmonary complications (Clavien-Dindo grade 3 or higher). The analysis revealed that **increasing age (OR 1.03, P<0.01), reduced Forced Expiratory Volume in one second (FEV1 <70% - OR 1.71, P=0.04), three-field lymphadenectomy (OR 2.12, P<0.01), and the use of non-epidural analgesia (OR 1.51, P=0.02)** significantly increased the likelihood of these complications.\n\nThe study concludes that identifying these risk factors can aid in patient stratification, pre-operative optimization, and earlier detection of post-operative pulmonary issues following esophagectomy.",
           "relevance": ""
         },
         {
-          "pubmed_id": "40376197",
-          "url": "https://pubmed.ncbi.nlm.nih.gov/40376197/",
-          "summary": "This review article establishes a strong link between inflammation and the progression of Chronic Kidney Disease (CKD), pinpointing **Klotho deficiency as a key driver in this process**. Research indicates that inflammation leads to a decrease in Klotho – a protective kidney protein with anti-inflammatory, anti-fibrotic, and antioxidant properties – thereby exacerbating kidney damage and accelerating CKD. \n\nThe reduction in Klotho appears to be driven by both **epigenetic factors** (DNA methylation, histone modification, miRNA/lncRNA regulation) *and* **non-epigenetic factors** (ER stress/ERAD) impacting Klotho protein metabolism. Importantly, Klotho itself possesses anti-inflammatory properties, creating a reciprocal relationship where inflammation reduces Klotho, and reduced Klotho worsens inflammation.\n\nThe review concludes that targeting the inflammation-Klotho axis—specifically, correcting epigenetic and non-epigenetic abnormalities—presents **novel potential therapeutic strategies for treating and slowing the progression of CKD**.",
+          "pubmed_id": "40375086",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/40375086/",
+          "summary": "This study investigated the cost-effectiveness of low-dose CT (LDCT) screening for lung cancer in non-smokers with a first-degree relative (FDR) history of the disease. Using a Markov model, researchers analyzed 16 different screening strategies, varying starting age (50-65 years) and screening intervals (one-off, annual, biennial, triennial).\n\n**Key results indicated that all screening strategies, *except* a one-off screen at age 50, were cost-effective** compared to no screening, for both males and females. **Biennial LDCT screening starting at age 55 was the most cost-effective strategy overall**, with an incremental cost-effectiveness ratio (ICER) of CNY 68,932/QALY for males and CNY 80,056/QALY for females – achieving a roughly 90% probability of being cost-effective. \n\nSensitivity analyses revealed annual screening at age 55 as optimal under certain conditions (no discounting), while other strategies became preferable based on FDR-related risk and adherence levels. The study concludes that LDCT screening for this high-risk non-smoker population is cost-effective and supports incorporating family history into lung cancer screening guidelines.",
           "relevance": ""
         },
         {
-          "pubmed_id": "40375539",
-          "url": "https://pubmed.ncbi.nlm.nih.gov/40375539/",
-          "summary": "This study investigated the protective effects of ginsenoside Rg1, a component of ginseng, against d-galactose (d-gal) induced renal aging and injury in mice. Researchers identified caspase-1 as a key target via network pharmacology.\n\nResults demonstrated that Rg1 treatment (20mg/kg/day for 42 days) significantly *reduced* markers of aging (β-Gal, p53, p21), kidney damage (blood urea nitrogen, serum creatinine, renal fibrosis), and oxidative stress (malondialdehyde, reactive oxygen species) in d-gal treated mice.  It also *lowered* levels of inflammatory cytokines (TNF-α, IL-1β, IL-18) and caspase-1 itself. \n\nImportantly, mice with a caspase-1 knockout (caspase-1-/-) showed *improved* outcomes compared to wild-type mice with d-gal induced aging.  Furthermore, the combination of caspase-1 knockout *and* Rg1 treatment yielded the *greatest* protective effects, reinforcing caspase-1’s role in the observed benefits. \n\nThe study concludes that ginsenoside Rg1 shows promise as a potential therapeutic agent for kidney aging, acting through inhibition of caspase-1 and subsequent reduction of oxidative stress and inflammation.",
+          "pubmed_id": "40372792",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/40372792/",
+          "summary": "This study analyzed data from two national surveys (NHIS & BRFSS) to examine breast cancer screening and risk factors among women identifying as lesbian, gay, bisexual, or queer (LGBQ) compared to straight women.\n\n**Key results showed that LGBQ women were less likely to report being up-to-date with mammography screening (pooled relative risk 0.95)**. This disparity was particularly pronounced among bisexual/queer women and those aged 40-59. \n\nFurthermore, **LGBQ women experienced greater barriers to healthcare access**, including higher rates of being uninsured and reporting financial barriers to care. **They also exhibited more prevalent lifestyle-related risk factors for breast cancer, notably higher rates of current smoking.**\n\nThe authors conclude that these combined factors – increased risk exposure, coupled with lower screening rates and access barriers – highlight a critical need for targeted interventions to improve breast cancer prevention and early detection within the LGBQ female population, especially for bisexual/queer women and those entering screening eligibility ages.",
           "relevance": ""
         },
         {
-          "pubmed_id": "40375467",
-          "url": "https://pubmed.ncbi.nlm.nih.gov/40375467/",
-          "summary": "This study investigated how Mongolian gerbils (a desert rodent) and mice respond to high-salt diets (HSD). Results showed **mice experienced negative effects from HSD, including weight loss, reduced water clearance, increased solute excretion, elevated blood pressure, and increased energy expenditure.** Transcriptomic analysis revealed significant changes in gene expression related to water/sodium balance and oxidative stress in mice, with downregulation of genes like *Slc14a2* and upregulation of *Sgk1*.\n\n**In contrast, gerbils maintained stable body mass and blood pressure despite the HSD.** They adjusted urine concentration and food intake to maintain water and sodium balance, with **minimal changes in gene expression overall.** Key differences included **increased expression of *Gjb6* and decreased expression of *Aqp4* in gerbils**, suggesting a unique adaptive mechanism for water regulation in arid environments. Notably, gerbils also showed increased expression of *Grem2*, a gene that suppresses fibrosis.\n\nThe study demonstrates that desert rodents, specifically gerbils, possess distinct renal adaptations allowing them to cope with high-salt intake and water scarcity, unlike mice which exhibit physiological stress.",
+          "pubmed_id": "40367394",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/40367394/",
+          "summary": "## Global Rise in Early-Onset Pancreatic Cancer: Key Results\n\nA population-based study analyzing data from 204 countries revealed a significant global increase in early-onset pancreatic cancer (EOPC – diagnosed before age 50) between 1990 and 2021. **Incident cases rose 1.63-fold (from 19,366 to 31,531) and mortality increased by 57% (to 26,996 deaths in 2021).** While age-standardized rates showed slight declines, overall numbers are increasing due to population growth.\n\n**The most substantial increases in both cases and deaths were observed in regions with a Middle Sociodemographic Index (SDI).** In 2021, smoking was responsible for 8.1% of EOPC deaths, while high fasting plasma glucose and high BMI accounted for 6.3% and 5.7% respectively. \n\n**Projections to 2040 indicate a further 10.6% increase in global EOPC cases and deaths**, with the largest absolute increases expected in low-middle SDI regions. The study highlights the urgent need for preventative measures, improved diagnostics, and equitable healthcare access, particularly focusing on modifiable risk factors like smoking and metabolic syndrome.",
+          "relevance": ""
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "text": "Doing sport is super unhealthy",
+      "verdict": null,
+      "rationale": null,
+      "confidence": null,
+      "query": "exercise health risks adverse",
+      "evidence": [
+        {
+          "pubmed_id": "40374231",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/40374231/",
+          "summary": "This study protocol details a randomized controlled trial (RCT) at Nordsjaellands Hospital in Denmark investigating the effectiveness of a telemedicine-supported “hospital-at-home” (HaH) program versus standard in-hospital care. Researchers will enroll 110 clinically stable patients admitted to internal medicine wards, randomly assigning them to either continue conventional hospital admission or transition to a virtual HaH model receiving treatment at home.\n\nThe primary outcomes being measured are **physical activity levels** (assessed via daily step count during the first 24 hours) and **patient satisfaction**. Secondary outcomes include rates of **adverse events, escalation of care, 30 & 90-day readmission, mortality (7, 30, & 90 days post-discharge)**, teleconsultation frequency, and a health economic evaluation. \n\nThe study aims to determine if HaH improves patient activity and satisfaction while maintaining safety, potentially offering a solution to hospital capacity challenges and staff shortages. Results will be disseminated through peer-reviewed publications and presentations. The study has received ethical approval and is currently underway.",
+          "relevance": ""
+        },
+        {
+          "pubmed_id": "40372548",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/40372548/",
+          "summary": "This systematic review investigated the effects of high-intensity training (HIT) on patients with hypertrophic cardiomyopathy (HCM). Analyzing four studies with a total of 2008 participants, the research revealed significant improvements in cardiac function among HCM patients who engaged in vigorous exercise compared to those who did not. \n\nSpecifically, athletes with HCM demonstrated significantly higher left ventricular end-diastolic volume and stroke volume (p<0.005, effect sizes 0.593-0.682). Importantly, vigorous exercise was associated with *lower* left ventricular outflow tract gradients both at rest and during provocation (p<0.001, effect sizes -0.192 to -0.258). \n\nThe review found no significant differences in vital signs or functional aerobic capacity between groups. Critically, there were also no significant differences in adverse events such as arrhythmias, cardiac arrest, or mortality, suggesting HIT doesn’t increase risk. \n\nThe findings indicate that HIT can improve cardiac function in HCM patients without increasing adverse events, supporting a potential re-evaluation of current physical activity guidelines for this population.",
+          "relevance": ""
+        },
+        {
+          "pubmed_id": "40371796",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/40371796/",
+          "summary": "This prospective study evaluated cardiorespiratory fitness in children following hematopoietic stem cell transplantation (HSCT). Researchers followed 44 children (median age 13) from the RESPPEDHEM cohort, assessing their exercise capacity via cardiopulmonary exercise testing (CPET) at 1 and 3 years post-transplant.\n\n**Results showed no significant improvement in peak VO2 z-score between 1 year (-2.7) and 3 years (-2.2) post-HSCT (p=0.09).** Low peak oxygen pulse z-scores indicated reduced muscular fitness, and this also showed a non-significant improvement over the two years (p=0.14). **Female sex was associated with a higher risk of low muscular fitness.** Importantly, parent-reported activity levels (via the Play-Performance Scale) **did not correlate with actual fitness levels measured by CPET**, suggesting underestimation of functional limitations by caregivers.\n\nIn conclusion, exercise capacity remains impaired two years after HSCT in adolescents and doesn’t spontaneously recover, and standard parental assessments are unreliable for identifying these deficits.",
+          "relevance": ""
+        },
+        {
+          "pubmed_id": "40367188",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/40367188/",
+          "summary": "This cross-sectional study of 263 mid-life Zimbabwean women (53% living with HIV – WLH, 96% on ART) investigated the impact of HIV and menopause on body composition and physical function. Results showed WLH had significantly lower weight, BMI, appendicular lean mass (ALM), fat mass, and handgrip strength (HGS) compared to women living without HIV (WLWOH). \n\nCritically, WLH experienced *declines* in weight, ALM, muscle area, and gynoid mass with menopause, whereas WLWOH did not. Both groups experienced a loss of HGS. ALM was positively associated with HGS in all women. \n\nNotably, in WLH, higher percentage body fat – particularly gynoid fat – was significantly associated with an increased risk of falls (OR 1.69-1.72, p<0.05). The study concludes that WLH are more vulnerable to adverse body composition changes during menopause, and increased fat mass may contribute to fall risk.",
+          "relevance": ""
+        },
+        {
+          "pubmed_id": "40362724",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/40362724/",
+          "summary": "This study investigated the relationship between diet – specifically adherence to a Mediterranean Diet (MedDiet) and intake of Ultra-Processed Foods (UPF) – and the prevalence of Metabolic Dysfunction-Associated Steatotic Liver Disease (MASLD) in older adults.\n\nThe key results indicate a **significant association between dietary patterns and MASLD risk**. Higher adherence to a MedDiet was linked to a **decreased risk** of MASLD, while a **high intake of UPF was associated with an increased risk**. Importantly, the study found that even amongst individuals with high UPF consumption, **increased adherence to a MedDiet lessened the risk of MASLD**.\n\nThese findings highlight the potential of dietary interventions, particularly promoting MedDiet principles, as a public health strategy to address MASLD in the aging population, considering its links to metabolic health and frailty. The research suggests prioritizing strategies to overcome social and economic barriers to MedDiet adoption in older adults.",
+          "relevance": ""
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "text": "Sleeping well lets you die early.",
+      "verdict": null,
+      "rationale": null,
+      "confidence": null,
+      "query": "sleep mortality aging paradox",
+      "evidence": [
+        {
+          "pubmed_id": "35032351",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/35032351/",
+          "summary": "This study examined the long-term outcomes of lung transplantation (LTX) in patients aged 70 and over, comparing them to younger recipients (18-59 & 60-69). Analyzing data from over 27,000 LTX recipients, researchers found lung transplantation in septuagenarians can be successfully performed. \n\nKey results showed no difference in *in-hospital* mortality across age groups. Notably, older recipients experienced *decreased* rates of acute rejection and graft failure within the first year post-transplant. While younger patients commonly died from graft failure, older patients (>=70) more often succumbed to malignancy and cardiovascular/cerebrovascular diseases. \n\nThe study also revealed shifts in underlying lung disease with age – less cystic fibrosis and more restrictive disease in the oldest group. Septuagenarians tended to receive single lung transplants and were often transplanted at higher volume centers.\n\nThe authors conclude that age alone shouldn't disqualify candidates from LTX, but careful patient selection (screening for cancer & heart disease) and vigilant post-transplant monitoring are crucial for this population.",
+          "relevance": ""
+        },
+        {
+          "pubmed_id": "34702376",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/34702376/",
+          "summary": "This retrospective study of 1062 ICU patients investigated the relationship between obesity, glucose variability (GV), and mortality, focusing on the moderating effect of age. Results indicated that **underweight patients had a significantly higher risk of death** compared to overweight patients. There was **no significant difference in mortality risk between normal weight and obese patients** when compared to the overweight group.\n\n**Age significantly influenced the association between obesity and mortality**, with being overweight proving *more* advantageous than normal weight in older adults. Additionally, **higher GV was associated with increased mortality**. \n\nImportantly, **the relationship between GV and mortality weakened with increasing age**. This suggests that as patients age, glucose control becomes less critical for predicting ICU mortality. The study concludes that both BMI and GV’s impact on mortality are age-dependent, warranting further research into the underlying mechanisms.",
+          "relevance": ""
+        },
+        {
+          "pubmed_id": "25927919",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/25927919/",
+          "summary": "This study investigated the impact of paradoxical sleep deprivation (PSD) and subsequent sleep recovery on susceptibility to malaria infection in mice. Researchers found that mice subjected to PSD experienced significantly *worse* outcomes compared to control groups and those allowed sleep recovery. \n\nSpecifically, the PSD group exhibited a **higher mortality rate**, a **greater number of infected cells (p < 0.01)**, and **decreased body weight (p < 0.04)**. A 24-hour sleep rebound (RB) offered some recovery, but differences remained significant in survival, infected cells, and body weight (p < 0.05 & p < 0.04). Critically, **48 hours of sleep rebound fully restored the mice’s resistance to infection** to levels comparable with normal, undisturbed sleep. \n\nThese results demonstrate that PSD weakens the immune system, increasing malaria infection severity, and highlight the importance of adequate sleep for effective immune function and parasite control.",
+          "relevance": ""
+        },
+        {
+          "pubmed_id": "19183809",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/19183809/",
+          "summary": "This study investigated the nature of heart rate variability (HRV) – whether its spectral peaks indicate chaotic or random processes – using a novel “noise titration assay” to measure chaos levels.\n\n**Key results showed:**\n\n* **Healthy individuals** exhibited circadian-dependent (sleep/wake cycle) heartbeat chaos, specifically linked to the high-frequency (HF) component of HRV (respiratory sinus arrhythmia). Chaos levels remained consistent between young and elderly healthy subjects despite age-related decreases in HRV power.\n* **Congestive Heart Failure (CHF) patients** displayed predominantly nonchaotic heartbeats, punctuated by brief chaotic events stemming from abnormal beats.\n* **Approximate entropy**, a measure of signal irregularity, remained relatively stable across all groups, indicating it’s not a reliable indicator of the *type* of variability (chaotic vs. random).\n\nThe findings suggest distinct mechanisms underlying HRV in health, aging, and CHF, highlighting a link between HF component and underlying heartbeat chaos in healthy individuals and a significantly reduced level of chaos in CHF patients. This research supports the idea that characterizing chaos, rather than simply irregularity, provides valuable insight into cardiac function.",
+          "relevance": ""
+        },
+        {
+          "pubmed_id": "1861048",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/1861048/",
+          "summary": "This study investigated the relationship between gender, time use, and health, aiming to explain why women report higher morbidity despite longer lifespans than men. Researchers hypothesized that unequal distribution of labor – women spending more time on household work, childcare, and helping others, and less on paid work, leisure, and sleep – contributed to this paradox.\n\n**The key result was that when differences in time spent on various social roles were statistically controlled for, being male was *associated with poorer health* than being female.** This suggests that the observed health disadvantage for men isn't inherent to their sex, but rather linked to the demanding and potentially stressful roles typically held by men. \n\nThe study concludes that if gender roles were more equitable, women's health would likely be *better* than men's, aligning with their greater longevity. Essentially, the study posits that women’s reported ill health is not a natural consequence of being female, but a result of the disproportionate burden of unpaid labor and the consequences of unequal social roles.",
           "relevance": ""
         }
       ]
     }
   ],
   "overall_truthiness": null,
-  "generated_at": "2025-05-16T19:10:46Z"
+  "generated_at": "2025-05-16T20:27:25Z"
 }
