@@ -84,6 +84,7 @@ def H_evaluation(
             reply: str = res.choices[0].message.content.strip()
         except Exception as exc:
             # fall back to uncertain if model call fails
+            print(f"DANGER DANGER DANGER DANGER: Model call failed: {exc} ")
             stmt["verdict"]    = "uncertain"
             stmt["confidence"] = 0.0
             stmt["rationale"]  = f"Model call failed: {exc}"
