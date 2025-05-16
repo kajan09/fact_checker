@@ -6,8 +6,8 @@ import openai
 
 # ---------- configuration ----------
 base = Path(__file__).parent
-FILE_PATH = base / "state.json"
-MODEL_NAME = "meditron:70b"
+FILE_PATH = base / "H_state_dummy.json"
+MODEL_NAME = "gemma3:27b"  # well performing
 TEMPERATURE = 0.1
 # -----------------------------------
 
@@ -57,34 +57,42 @@ def call_model(prompt: str) -> Dict[str, Any]:
 
 
 def evaluate_all_statements(path: Path = FILE_PATH) -> None:
-    """Main entry––loads JSON, updates every statement, saves back."""
-    if not path.exists():
-        raise FileNotFoundError(f"{path} not found")
+    """Load JSON (create empty skeleton if absent), update every statement, save."""
+    if path.exists():
+        # ---------- LOAD ----------
+        with path.open("r", encoding="utf-8") as f:
+            state: Dict[str, Any] = json.load(f)
+    else:
+        # ---------- CREATE ----------
+        state: Dict[str, Any] = {
+            "transcript": None,
+            "statements": [],
+            "overall_truthiness": None,
+        }
+        # optional: gleich anlegen, damit ein Editor sie sieht
+        path.write_text(json.dumps(state, indent=2))
 
-    with open(path, "r", encoding="utf-8") as f:
-        state: Dict[str, Any] = json.load(f)
-
+    # ---------- PROCESS ----------
     for stmt in state.get("statements", []):
+        print(f"Evaluating statement {stmt['id']}: {stmt['text']}")
         prompt = build_prompt(stmt)
         try:
             result = call_model(prompt)
         except Exception as e:
-            # if something goes wrong leave placeholders so you can retry later
-            stmt["verdict"] = "uncertain"
+            stmt["verdict"]   = "uncertain"
             stmt["confidence"] = 0.0
-            stmt["rationale"] = f"Model call failed: {e}"
+            stmt["rationale"]  = f"Model call failed: {e}"
             continue
 
-        # update the JSON
-        stmt["verdict"] = result.get("verdict")
+        stmt["verdict"]    = result.get("verdict")
         stmt["confidence"] = result.get("confidence")
-        # optional: keep the rationale returned by the model if you ask for it
         if "rationale" in result:
             stmt["rationale"] = result["rationale"]
 
-    # write everything back
-    with open(path, "w", encoding="utf-8") as f:
+    # ---------- SAVE ----------
+    with path.open("w", encoding="utf-8") as f:
         json.dump(state, f, indent=2, ensure_ascii=False)
+
 
 
 

@@ -6,7 +6,7 @@
       "text": "Oat meal causes death in last state kidney cancer.",
       "verdict": "true | false | uncertain",
       "rationale": "LLM explanation …",
-      "confidence": null,
+      "confidence": 0.87,
       "query": "kidney fibrosis",
       "evidence": [
         {
