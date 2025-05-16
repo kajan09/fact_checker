@@ -13,7 +13,7 @@ model_name = "gemma3:27b"
 temperature = 0
 max_completion_tokens = 512
 
-def statement_to_truthness( data: Dict[str, Any]) -> Dict[str, Any]:
+def statement_to_truthness(data: Dict[str, Any]) -> Dict[str, Any]:
     # -------- iterate over statements --------
     for stmt in data.get("statements", []):
         claim_text: str = stmt.get("text", "").strip()
