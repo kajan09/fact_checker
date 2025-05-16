@@ -32,6 +32,11 @@ response = client.chat.completions.create(
 )
 t1 = time.time()
 
+print(f"⏱ {t1-t0:.2f} s")
+#print(f"Response: '{ans}'")
+
+
+
 ans = response.choices[0].message.content.strip()
 print(f"Model output: '{ans}'")
 print(f"⏱ {t1-t0:.2f} s")
