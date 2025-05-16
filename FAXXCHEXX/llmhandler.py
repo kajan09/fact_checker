@@ -14,10 +14,12 @@ from typing import Dict, Any, List, Type
 
 import json, pathlib, datetime as dt
 
-path = pathlib.Path("state.json")
+
+base = Path(__file__).parent
+path = base / "state.json"
 
 # Load from file or string
-with open("state.json", "r", encoding="utf-8") as f:
+with open(path, "r", encoding="utf-8") as f:
     state = json.load(f)         # state is now a dict
 
 transcript = state["transcript"]
@@ -39,7 +41,7 @@ first_evidence = evidence_list[0]       # the first evidence dict
 print(f"First evidence: {first_evidence}")
 
 # Save back
-with open("state.json", "w", encoding="utf-8") as f:
+with open(path, "w", encoding="utf-8") as f:
     json.dump(state, f, indent=2, ensure_ascii=False)
 
 
