@@ -15,7 +15,6 @@ app = FastAPI(
 
 # Load model once at startup
 model = whisper.load_model("tiny.en")  # Or "base", "small", etc.
-handler = LLMHandler(llm_client=client)
 
 @app.post("/transcribe")
 async def transcribe_audio(file: UploadFile = File(...)):

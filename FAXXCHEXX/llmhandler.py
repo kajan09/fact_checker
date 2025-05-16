@@ -33,24 +33,10 @@ AGENT_CHAIN: List[Type] = [
 class LLMHandler:
     """Central orchestrator that streams JSON payload through every agent."""
 
-    def __init__(self, llm_client: "LLMClient") -> None:
+    def __init__(self, model) -> None:
         self.llm_client = llm_client
         self.agents = [agent_cls(llm_client) for agent_cls in AGENT_CHAIN]
 
-    # ---------------------------------------------------------------------
-    # Public API
-    # ---------------------------------------------------------------------
-    def __call__(self, fulltext: str) -> Dict[str, Any]:
-        """Run the entire pipeline and return a JSON‑serialisable dict."""
-        payload: Dict[str, Any] = {"transcript": fulltext}
-
-        for agent in self.agents:
-            payload = agent.process(payload)
-            # Always round‑trip through json to guarantee serialisability
-            payload = json.loads(json.dumps(payload, ensure_ascii=False))
-
-        payload["generated_at"] = datetime.now(timezone.utc).isoformat()
-        return payload
 
 
 # Convenience wrapper ---------------------------------------------------------
@@ -59,11 +45,3 @@ def handle(fulltext: str, llm_client: "LLMClient") -> str:
     """Return a pretty‑printed JSON string for CLI usage."""
     return json.dumps(LLMHandler(llm_client)(fulltext), indent=2, ensure_ascii=False)
 
-
-if __name__ == "__main__":
-    import sys
-    from utils.llm_client import LocalLLMClient
-
-    transcript_text = sys.stdin.read().strip()
-    client = LocalLLMClient()
-    print(handle(transcript_text, client))
