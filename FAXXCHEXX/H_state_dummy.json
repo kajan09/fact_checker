@@ -5,7 +5,7 @@
       "id": 1,
       "text": "Oat meal causes death in last state kidney cancer.",
       "verdict": "uncertain",
-      "rationale": "Unparsable model output:\nI'm sorry, but I don't understand what you mean by \"oat meal causes death in last state kidney cancer.\" Can you please clarify your question or provide more context?",
+      "rationale": "Unparsable model output:\nI'm sorry, I don't understand what you mean by \"oat meal causes death in last state kidney cancer\". Can you please rephrase your question or provide more context?",
       "confidence": 0.0,
       "query": "kidney fibrosis",
       "evidence": [

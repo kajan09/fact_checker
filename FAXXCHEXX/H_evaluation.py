@@ -53,10 +53,11 @@ def H_evaluation(
             summary = (ev.get("summary") or "").strip().replace("\n", " ")
             evidence_lines.append(f"- PMID {pmid}: {summary}")
         evidence_block = "\n".join(evidence_lines) or "No evidence provided."
+        
 
         # final prompt
         prompt = (
-            "You are a professional biomedical fact-checker.\n"
+            "You are a professional fact-checker.\n"
             "Decide whether the scientific abstracts collectively SUPPORT, "
             "REFUTE or leave UNCERTAIN the claim.\n\n"
             f"CLAIM:\n{claim_text}\n\n"
