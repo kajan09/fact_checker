@@ -6,7 +6,7 @@ def download_reel(video_url):
     try:
         loader = instaloader.Instaloader()
         loader.download_post(instaloader.Post.from_shortcode(loader.context, video_url.split('/')[-2]), target='temp')
-        video_file = [f for f in os.listdir('reel') if f.endswith('.mp4')][0]
+        video_file = [f for f in os.listdir('temp') if f.endswith('.mp4')][0]
         return os.path.join('temp', video_file)
     except Exception as e:
         print(f"Error downloading reel: {e}")
