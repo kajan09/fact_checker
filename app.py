@@ -14,7 +14,7 @@ app = FastAPI(
 )
 
 # Load model once at startup
-model = whisper.load_model("tiny.en")  # Or "base", "small", etc.
+model = whisper.load_model("small")  # base or small
 
 @app.post("/transcribe")
 async def transcribe_audio(file: UploadFile = File(...)):
@@ -24,7 +24,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
         tmp_path = tmp.name
 
     try:
-        result = model.transcribe(tmp_path, fp16=True)
+        result = model.transcribe(tmp_path, task="translate", fp16=True)
         return JSONResponse(content={"text": result["text"]})
     finally:
         os.remove(tmp_path)  # Clean up temp file

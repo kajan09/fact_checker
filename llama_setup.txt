@@ -1,0 +1,22 @@
+# choose a workspace
+mkdir -p ~/models/medicine_llm13b && cd ~/models/medicine_llm13b
+
+# direct curl (link is the Raw button on HF)
+curl -L -o medicine-llm-13b.Q4_K_M.gguf \
+  https://huggingface.co/TheBloke/medicine-LLM-13B-GGUF/resolve/main/medicine-llm-13b.Q4_K_M.gguf
+
+mkdir -p ~/ollama-medicine13b && cd ~/ollama-medicine13b
+
+cat > Modelfile <<'EOF'
+FROM /data/home/zzz49063/models/medicine_llm13b/medicine-llm-13b.Q4_K_M.gguf
+
+# Most LLama-family chat checkpoints expect [INST] … [/INST]
+TEMPLATE "<s>[INST] {{ .Prompt }} [/INST]"
+
+SYSTEM "You are a concise and truthful medical assistant."
+EOF
+
+
+# use the real binary! adjust path if different
+~/bin/bin/ollama create medicine13b-chat -f Modelfile
+~/bin/bin/ollama list        # should now show medicine13b-chat 13B ready
