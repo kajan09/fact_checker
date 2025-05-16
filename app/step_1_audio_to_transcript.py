@@ -26,23 +26,8 @@ def transcribe_audio(audio_path: Union[str, Path]) -> str:
     return text
 
 # ───────── core ─────────
-def update_transcript(json_in: str, audio_in: str, json_out: str) -> None:
+def update_transcript(json_in: str, audio_in: str) ->  Dict[str, Any]:
     data             = load_json_relaxed(json_in)
     data["transcript"] = transcribe_audio(audio_in)
     data["generated_at"] = dt.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
-    write_json(json_out, data)
-    print(f"✓ transcript written → {json_out}")
-
-# ───────── CLI ─────────
-def main() -> None:
-    ap = argparse.ArgumentParser(description="Whisper → transcript → JSON")
-    ap.add_argument("input_json")
-    ap.add_argument("audio_file")
-    ap.add_argument("output_json")
-    args = ap.parse_args()
-    update_transcript(args.input_json, args.audio_file, args.output_json)
-
-# if __name__ == "__main__":
-#     main()
-
-update_transcript("json_example.json", "test.mp3", "json_example_2.json")
+    return data
