@@ -1,1 +1,5 @@
-Niemand stinkt
+# Important commands
+ollama start
+
+uvicorn main:app --host 0.0.0.0 --port 8000
+
