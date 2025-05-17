@@ -1,5 +1,5 @@
 {
-  "transcript": "original English transcript …",
+  "transcript": "Smoking gives you cancer! Doing sport is super unhealthy. Sleeping well lets you die early.",
   "statements": [
     {
       "id": 1,
@@ -7,16 +7,17 @@
       "verdict": "true | false | uncertain",
       "rationale": "LLM explanation …",
       "confidence": 0.87,
-      "query": "Example query …",
+      "query": "Kidney fibrosis",
       "evidence": [
         {
-        "pubmed_id": "38471722",
-        "url": "https://example.com/paper",
-        "summary": "summary of the evidence",
-        "relevance": "yes | no"
-        }]
+          "pubmed_id": "38471722",
+          "url": "https://example.com/paper",
+          "summary": "summary of the evidence",
+          "relevance": "yes | no"
+        }
+      ]
     }
   ],
-  "overall_truthiness": 0.82       
+  "overall_truthiness": 0.82,
+  "generated_at": "2025-05-16T20:15:34Z"
 }
-

@@ -1,0 +1,53 @@
+{
+  "transcript": "Smoking gives you cancer. Doing sport is super unhealthy. Sleeping well lets you die early.",
+  "statements": [
+    {
+      "id": 1,
+      "text": "Smoking gives you cancer",
+      "verdict": "true",
+      "rationale": "VERDICT: true\nFINALSCORE: 0.95",
+      "confidence": 0.95,
+      "query": "smoking cancer etiology neoplasm",
+      "evidence": [
+        {
+          "pubmed_id": "40375086",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/40375086/",
+          "summary": "This study investigated the cost-effectiveness of low-dose CT (LDCT) screening for lung cancer in non-smokers with a first-degree relative (FDR) history of the disease. Using a Markov model, researchers analyzed 16 different screening strategies, varying starting age (50-65 years) and screening intervals (one-off, annual, biennial, triennial).\n\n**Key results indicated that all screening strategies, *except* a one-off screen at age 50, were cost-effective** compared to no screening, for both males and females. **Biennial LDCT screening starting at age 55 was the most cost-effective strategy overall**, with an incremental cost-effectiveness ratio (ICER) of CNY 68,932/QALY for males and CNY 80,056/QALY for females – achieving a roughly 90% probability of being cost-effective. \n\nSensitivity analyses revealed annual screening at age 55 as optimal under certain conditions (no discounting), while other strategies became preferable based on FDR-related risk and adherence levels. The study concludes that LDCT screening for this high-risk non-smoker population is cost-effective and supports incorporating family history into lung cancer screening guidelines.",
+          "relevance": ""
+        },
+        {
+          "pubmed_id": "40372792",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/40372792/",
+          "summary": "This study analyzed data from two national surveys (NHIS & BRFSS) to examine breast cancer screening and risk factors among women identifying as lesbian, gay, bisexual, or queer (LGBQ) compared to straight women.\n\n**Key results showed that LGBQ women were less likely to report being up-to-date with mammography screening (pooled relative risk 0.95)**. This disparity was particularly pronounced among bisexual/queer women and those aged 40-59. \n\nFurthermore, **LGBQ women experienced greater barriers to healthcare access**, including higher rates of being uninsured and reporting financial barriers to care. **They also exhibited more prevalent lifestyle-related risk factors for breast cancer, notably higher rates of current smoking.**\n\nThe authors conclude that these combined factors – increased risk exposure, coupled with lower screening rates and access barriers – highlight a critical need for targeted interventions to improve breast cancer prevention and early detection within the LGBQ female population, especially for bisexual/queer women and those entering screening eligibility ages.",
+          "relevance": ""
+        },
+        {
+          "pubmed_id": "40367394",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/40367394/",
+          "summary": "## Global Rise in Early-Onset Pancreatic Cancer: Key Results\n\nA population-based study analyzing data from 204 countries revealed a significant global increase in early-onset pancreatic cancer (EOPC – diagnosed before age 50) between 1990 and 2021. **Incident cases rose 1.63-fold (from 19,366 to 31,531) and mortality increased by 57% (to 26,996 deaths in 2021).** While age-standardized rates showed slight declines, overall numbers are increasing due to population growth.\n\n**The most substantial increases in both cases and deaths were observed in regions with a Middle Sociodemographic Index (SDI).** In 2021, smoking was responsible for 8.1% of EOPC deaths, while high fasting plasma glucose and high BMI accounted for 6.3% and 5.7% respectively. \n\n**Projections to 2040 indicate a further 10.6% increase in global EOPC cases and deaths**, with the largest absolute increases expected in low-middle SDI regions. The study highlights the urgent need for preventative measures, improved diagnostics, and equitable healthcare access, particularly focusing on modifiable risk factors like smoking and metabolic syndrome.",
+          "relevance": ""
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "text": "Doing sport is super unhealthy",
+      "verdict": "uncertain",
+      "rationale": "VERDICT: uncertain\nFINALSCORE: 0.05",
+      "confidence": 0.05,
+      "query": "exercise health risks adverse",
+      "evidence": []
+    },
+    {
+      "id": 3,
+      "text": "Sleeping well lets you die early.",
+      "verdict": "uncertain",
+      "rationale": "VERDICT: uncertain\nFINALSCORE: 0.05",
+      "confidence": 0.05,
+      "query": "sleep mortality aging paradox",
+      "evidence": []
+    }
+  ],
+  "overall_truthiness": null,
+  "generated_at": "2025-05-16T20:27:25Z"
+}

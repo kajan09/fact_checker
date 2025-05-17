@@ -1,7 +1,15 @@
 # pipeline.py
 import os, re
+import time
+import json
 from step_1_audio_to_transcript import update_transcript
 from step_2_transcript_to_statement import update_statements
+from step_3_statement_to_query import update_query
+from step_4_query_to_link import query_to_link
+from step_5_link_to_summary import link_to_summary
+from step_6_reduce_to_evidence import reduce_to_evidence
+from step_7_statement_to_truthness import statement_to_truthness
+from step_8_statment_to_score import statement_to_score
 
 CHECK_PROMPT_TMPL = (
     "You are a medical fact-checker.\n"
@@ -18,6 +26,16 @@ def run_pipeline(tmp_path: str) -> dict:
     3) Return a dict you’ll JSON-encode later
     """
     # 1️⃣ Whisper
+    start = time.time()
     transcript = update_transcript("json_example.json", tmp_path)
     statments = update_statements(transcript)
-    print(f"Transcription: {statments}")
+    query = update_query(statments)
+    link = query_to_link(query)
+    summary = link_to_summary(link)
+    evidence = reduce_to_evidence(summary)
+    truthness = statement_to_truthness(evidence)
+    scores = statement_to_score(truthness)
+    elapsed = time.time() - start
+    print(scores)
+    print(f"Total pipeline time: {elapsed:.2f}s")
+    return json.dumps(scores)

@@ -3,7 +3,7 @@ from fastapi import FastAPI, Body, HTTPException
 import shutil, os
 from pipeline import run_pipeline  # ← your existing heavy pipeline
 from reel_utils import convert_video_to_wav  # ← helper from earlier answer
-
+import random
 app = FastAPI(title="One-shot reel-to-pipeline")
 
 
@@ -11,7 +11,7 @@ app = FastAPI(title="One-shot reel-to-pipeline")
 async def process(payload: dict = Body(...)):
     mock = payload.get("mock", False)
     if mock:
-        wav_path = os.path.abspath("audio.wav")
+        wav_path = os.path.abspath("DFycUIjy1C4.wav")
         tmp_dir = os.path.dirname(wav_path)
     else:
         url = payload.get("url")
@@ -30,3 +30,7 @@ async def process(payload: dict = Body(...)):
     finally:
         if not mock:
             shutil.rmtree(tmp_dir, ignore_errors=True)
+
+@app.get("/number")
+async def get_number():
+    return {"number": random.randint(1, 100)}
