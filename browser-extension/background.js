@@ -47,7 +47,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        url: "https://www.instagram.com/reels/DJDzRAgNHyv/",
+        url: "https://www.instagram.com/reels/DIRM85ZifdM/",
         mock: "true",
       }),
     })
@@ -66,17 +66,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-async function fetchMedicalScore() {
-  try {
-    const response = await fetch("http://rcbe-srv-001:49064/number", {
-      mode: "no-cors",
-    });
-    if (!response.ok) throw new Error("API request failed");
-    const data = await response.json();
-    console.log(data.number);
-    return data.number;
-  } catch (error) {
-    console.error("Background error:", error);
-    throw error;
-  }
-}
+// async function fetchMedicalScore() {
+//   try {
+//     const response = await fetch("http://rcbe-srv-001:49064/number", {
+//       mode: "no-cors",
+//     });
+//     if (!response.ok) throw new Error("API request failed");
+//     const data = await response.json();
+//     console.log(data.number);
+//     return data.number;
+//   } catch (error) {
+//     console.error("Background error:", error);
+//     throw error;
+//   }
+// }
