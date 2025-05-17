@@ -45,6 +45,22 @@
   /* transform: translateY(50%); */
 }
 
+@keyframes needleswing {
+  from {
+    transform: rotate(-90deg);
+  }
+  to {
+    transform: rotate(90deg);
+  }
+}
+
+.loading-needle {
+  animation: needleswing 0.75s ease;
+  animation-direction: alternate;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
 .dial-needle {
   position: absolute;
   width: 4px;

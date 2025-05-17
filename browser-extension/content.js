@@ -58,15 +58,14 @@ async function showPopup() {
   popup.innerHTML = `
     <div class="dial-container">
       <div class="dial-background">
-        <div style="display:none;" class="dial-needle" style="transform: rotate(${needleRotation}deg);"></div>
+        <div class="loading-needle dial-needle" style="transform: rotate(${needleRotation}deg);"></div>
       </div>
-      <span style="display: none;" id="percent-number" class="score-percentage"></span>
+      <span style="display: none;" id="percent-number" class="score-percentage"><span style="font-size: 14px;">Loading...</span></span>
     </div>
     
     <div class="dropdown-container">
       <div class="dropdown-content">
         <ul id="dropdown-list">
-          Loading...
         </ul>
       </div>
       </div>
@@ -131,6 +130,7 @@ async function showPopup() {
 
     // Update the needle rotation
     popup.querySelector(".dial-needle").style.display = "block";
+    popup.querySelector(".dial-needle").classList.remove("loading-needle");
     popup.querySelector(
       ".dial-needle"
     ).style.transform = `rotate(${needleRotation}deg)`;
