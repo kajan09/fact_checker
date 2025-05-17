@@ -4,6 +4,7 @@ import shutil, os
 from pipeline import run_pipeline  # ← your existing heavy pipeline
 from reel_utils import convert_video_to_wav  # ← helper from earlier 
 from typing import Any, Dict, List
+from urllib.parse import urlparse
 import random
 import json
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,29 +18,48 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
+def extract_reel_id(instagram_url: str) -> str:
+    """
+    Return the segment that follows /reels/ in an Instagram Reel URL.
+
+    Examples
+    --------
+    >>> extract_reel_id("https://www.instagram.com/reels/DJDzRAgNHyv/")
+    'DJDzRAgNHyv'
+    """
+    path = urlparse(instagram_url).path.rstrip("/")        # '/reels/DJDzRAgNHyv'
+    parts = path.split("/")                                # ['', 'reels', 'DJDzRAgNHyv']
+    try:
+        return parts[parts.index("reels") + 1]
+    except (ValueError, IndexError):
+        raise HTTPException(400, "Could not extract reel ID from URL")
 
 @app.post("/process")
 async def process(payload: dict = Body(...)):
-    mock = payload.get("mock", False)
+    url  = payload.get("url")
+    print(url)
+    if not url:
+        raise HTTPException(400, "JSON body must contain a 'url' field")
+
+    reel_id = extract_reel_id(url)
+    mock    = payload.get("mock", False)
+
     if mock:
-        wav_path = os.path.abspath("DFycUIjy1C4.wav")
-        tmp_dir = os.path.dirname(wav_path)
+        # Mock mode: just look for a pre-made WAV named <reel_id>.wav
+        wav_path = os.path.abspath(f"{reel_id}.wav")
+        tmp_dir  = os.path.dirname(wav_path)
     else:
-        url = payload.get("url")
-        if not url:
-            raise HTTPException(400, "JSON body must contain a 'url' field")
         try:
             print(f"Downloading reel from {url}...")
-            wav_path = convert_video_to_wav(url)
-            tmp_dir = os.path.dirname(wav_path)
+            wav_path = convert_video_to_wav(url)           # your existing helper
+            tmp_dir  = os.path.dirname(wav_path)
         except RuntimeError as e:
             raise HTTPException(400, str(e))
 
     try:
-        result = run_pipeline(wav_path)
-        return result
+        return run_pipeline(wav_path)                      # your existing inference step
     finally:
-        if not mock:
+        if not mock:                                       # don’t delete local mocks
             shutil.rmtree(tmp_dir, ignore_errors=True)
 
 @app.get("/number")

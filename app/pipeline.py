@@ -38,4 +38,4 @@ def run_pipeline(tmp_path: str) -> dict:
     elapsed = time.time() - start
     print(scores)
     print(f"Total pipeline time: {elapsed:.2f}s")
-    return json.dumps(scores)
+    return scores

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import whisper   # pip install -U openai-whisper
 
-WHISPER_MODEL_NAME = "base"     #tiny, base, small, medium, large
+WHISPER_MODEL_NAME = "small"     #tiny, base, small, medium, large
 TRAILING_COMMAS_RE = re.compile(r",\s*(?=[\]}])")  # tolerate trailing commas
 
 # ───────── helpers ─────────
