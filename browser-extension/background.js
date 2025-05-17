@@ -31,27 +31,34 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log("got a mesage!");
   if (request.type === "getMedicalScore") {
-    fetch("http://rcbe-srv-001:49064/number", {
-      mode: "no-cors",
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        console.log("We have a JSON object: " + res + " " + res.number);
-        sendResponse({ number: res.number });
-      });
-
-    // fetch("http://rcbe-srv-001:49064/process", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({
-    //     url: "https://www.instagram.com/reel/DJE5V6_RHvu/?igsh=MTFncTBqaGs5b2p0Ng==",
-    //     mock: "true",
-    //   }),
+    // fetch("http://rcbe-srv-001:49064/number", {
+    //   mode: "no-cors",
     // })
-    //   .then((response) => response.json())
-    //   .then((data) => console.log(data));
+    //   .then((res) => res.json())
+    //   .then((res) => {
+    //     console.log("We have a JSON object: " + res + " " + res.number);
+    //     sendResponse({ number: res.number });
+    //   });
+
+    fetch("http://rcbe-srv-001:49064/process", {
+      method: "POST",
+      // mode: "no-cors",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        url: "https://www.instagram.com/reels/DJDzRAgNHyv/",
+        mock: "true",
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        sendResponse(data);
+      })
+      .catch((error) =>
+        console.error("Error at API call in background: " + error)
+      );
     // fetchMedicalScore()
     //   .then((score) => sendResponse({ score }))
     //   .catch((error) => sendResponse({ error: error.message }));

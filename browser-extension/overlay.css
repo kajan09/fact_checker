@@ -90,7 +90,7 @@
   color: #ffc107;
 }
 .low-score {
-  color: #E82D48;
+  color: #e82d48;
 }
 
 #close-alert {
@@ -116,6 +116,7 @@
 .dropdown-content li {
   display: flex;
   align-items: center;
+  margin-bottom: 5px;
 }
 
 svg {
@@ -142,7 +143,7 @@ svg {
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease-out;
-  font-size: 14px;
+  font-size: 10px;
   line-height: 1.4;
   color: black;
 }
@@ -153,7 +154,7 @@ svg {
 
 .expanded .dropdown-content {
   max-height: 300px;
-  max-width: 300px;
+  max-width: 140px;
 }
 .expanded {
   width: 150px;
