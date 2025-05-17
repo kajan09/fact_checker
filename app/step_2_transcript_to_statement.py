@@ -27,7 +27,7 @@ client = openai.OpenAI(
     api_key="ollama",
 )
 
-MODEL = "gemma3:27b"  # gemma3:27b, dongheechoi/meerkat:latest
+MODEL = "gemma3:12b"  # gemma3:27b, dongheechoi/meerkat:latest
 
 TRAILING_COMMAS_RE = re.compile(r",\s*(?=[\]}])")
 

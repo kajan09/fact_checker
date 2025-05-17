@@ -41,7 +41,7 @@ def summarize_with_gemma(text: str) -> str:
         "Please provide a concise summary of the following text that does not exceed 300 words and focuses on the results:\n\n" + text
     )
     proc = subprocess.run(
-        ["ollama", "run", "gemma3:27b"],
+        ["ollama", "run", "gemma3:12b"],
         input=prompt,
         capture_output=True,
         text=True
