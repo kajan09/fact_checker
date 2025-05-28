@@ -24,10 +24,10 @@ import openai
 # ────────────────────────────────────────────────────────────────────
 client = openai.OpenAI(
     base_url="http://localhost:11434/v1",  # Ollama / LM-Studio
-    api_key="ollama",
+    api_key="ollama"
 )
 
-MODEL = "gemma3:12b"  # gemma3:27b, dongheechoi/meerkat:latest
+MODEL = "gemma3:27b"  # gemma3:27b, dongheechoi/meerkat:latest
 
 TRAILING_COMMAS_RE = re.compile(r",\s*(?=[\]}])")
 

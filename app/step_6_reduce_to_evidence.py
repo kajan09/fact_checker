@@ -10,7 +10,7 @@ def is_related(statement_text: str, evidence_summary: str) -> bool:
         "Answer 'yes' or 'no'."
     )
     proc = subprocess.run(
-        ["ollama", "run", "gemma3:12b"],
+        ["ollama", "run", "gemma3:27b"],
         input=prompt,
         capture_output=True,
         text=True

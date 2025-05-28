@@ -19,7 +19,7 @@ import openai
 
 # ───────── config ─────────
 OPENAI_BASE_URL   = "http://localhost:11434/v1"
-MODEL             = "gemma3:12b"                 # deepseek-r1:1.5b
+MODEL             = "gemma3:27b"                 # deepseek-r1:1.5b
 TRAILING_COMMAS_RE = re.compile(r",\s*(?=[\]}])")
 
 QUERY_PROMPT_TMPL = """

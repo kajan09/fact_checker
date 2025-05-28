@@ -9,7 +9,7 @@ client = openai.OpenAI(
     api_key="ollama",  # any placeholder works for Ollama
 )
 
-model_name = "gemma3:12b"
+model_name = "gemma3:27b"
 temperature = 0
 max_completion_tokens = 512
 
