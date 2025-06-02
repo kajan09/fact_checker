@@ -40,7 +40,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     //     sendResponse({ number: res.number });
     //   });
 
-    fetch("http://rcbe-srv-001:49064/process", {
+    //fetch("http://rcbe-srv-001:49064/process", {
+    fetch("http://im-redstone02.hs-regensburg.de:32311/process", {
       method: "POST",
       // mode: "no-cors",
       headers: {
