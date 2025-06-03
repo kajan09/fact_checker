@@ -114,12 +114,16 @@ async function showPopup() {
   });
 
   try {
-    console.log("Trying to make a  through the backend");
+    console.log("Trying to make a call through the backend");
+
+    // NEW: grab the active page URL (it will be the reel page)
+    const currentReelUrl = window.location.href;
+
     // Send message to background script
-    var data = await chrome.runtime.sendMessage({
+    const data = await chrome.runtime.sendMessage({
       type: "getMedicalScore",
+      url: currentReelUrl,   // ⬅️ pass the URL along
     });
-    // if (error) throw new Error(error);
 
     var statements = data.statements;
     console.log("I got back " + statements[0].text);

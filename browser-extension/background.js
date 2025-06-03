@@ -1,54 +1,29 @@
-// chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-//   if (request.type === "NEW_REEL") {
-//     handleNewReel(request);
-//   }
-// });
-
-// async function handleNewReel(reelData) {
-//   try {
-//     // Get additional metadata
-//     const response = await fetch(`http://localhost:8000/api/factcheck`, {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify({
-//         reel_url: reelData.reelUrl,
-//         reel_id: reelData.reelId,
-//         timestamp: reelData.timestamp,
-//       }),
-//     });
-
-//     const result = await response.json();
-
-//     // Send result back to content script
-//     chrome.tabs.sendMessage(sender.tab.id, {
-//       type: "FACTCHECK_RESULT",
-//       data: result,
-//     });
-//   } catch (error) {
-//     console.error("Factcheck failed:", error);
-//   }
-// }
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log("got a mesage!");
-  if (request.type === "getMedicalScore") {
-    // fetch("http://rcbe-srv-001:49064/number", {
-    //   mode: "no-cors",
-    // })
-    //   .then((res) => res.json())
-    //   .then((res) => {
-    //     console.log("We have a JSON object: " + res + " " + res.number);
-    //     sendResponse({ number: res.number });
-    //   });
+  console.log("got a message!");
 
-    //fetch("http://rcbe-srv-001:49064/process", {
+  if (request.type === "getMedicalScore") {
+    /* -----------------------------------------
+       1.  Work out which reel URL to use.
+           – Prefer an explicit URL sent from the
+             content script (request.url).
+           – Otherwise fall back to the page that
+             sent the message (sender.url or
+             sender.tab.url).              */
+    const reelUrl =
+      request.url ||
+      sender?.url ||
+      sender?.tab?.url ||
+      ""; // empty string if nothing found
+
+    console.log("Using reel URL:", reelUrl);
+
+    /* -----------------------------------------
+       2.  Forward that URL to your backend.      */
     fetch("http://im-redstone02.hs-regensburg.de:32311/process", {
       method: "POST",
-      // mode: "no-cors",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        url: "https://www.instagram.com/reels/DIRM85ZifdM/",
+        url: reelUrl, // ⬅️  now dynamic
         mock: "true",
       }),
     })
@@ -58,26 +33,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse(data);
       })
       .catch((error) =>
-        console.error("Error at API call in background: " + error)
+        console.error("Error at API call in background:", error)
       );
-    // fetchMedicalScore()
-    //   .then((score) => sendResponse({ score }))
-    //   .catch((error) => sendResponse({ error: error.message }));
+
     return true; // Keep message channel open for async response
   }
 });
-
-// async function fetchMedicalScore() {
-//   try {
-//     const response = await fetch("http://rcbe-srv-001:49064/number", {
-//       mode: "no-cors",
-//     });
-//     if (!response.ok) throw new Error("API request failed");
-//     const data = await response.json();
-//     console.log(data.number);
-//     return data.number;
-//   } catch (error) {
-//     console.error("Background error:", error);
-//     throw error;
-//   }
-// }
