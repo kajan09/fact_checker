@@ -100,9 +100,7 @@ def make_query(claim: str, client: openai.OpenAI) -> str:
         
         print("ERROR ERROR ERROR --> FALLBACK \n")
         print(e)
-        # network / model failure → crude keywords
-        kws = sanitise_words(re.findall(r"[A-Za-z']+", claim))
-        return " ".join(kws[:8])
+        return " "
 
 # ───────── core ─────────
 def update_query(data: Dict[str, Any]) -> Dict[str, Any]:

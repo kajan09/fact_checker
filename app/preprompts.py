@@ -4,7 +4,6 @@
 PROMPT_TMPL_S2 = """
 You are part of a medical fact-checking pipeline.  
 If you propagate a false statement, the app may mislead people.
-Think step-by-step (silently) to spot and merge duplicates, then comply with the output rules.
 
 INPUT TRANSCRIPT
 ---------------
