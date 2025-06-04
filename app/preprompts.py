@@ -15,7 +15,7 @@ TASK
 Extract **medical claims** suitable for fact-checking.
 
 SELECTION RULES  
-1. Return **no more than three** distinct claims.  
+1. Return **exactly three** distinct claims.  
 2. Prefer clinically relevant, novel, or potentially harmful claims.  
 3. Discard greetings, jokes, moral or motivational advice, rhetorical questions, non-medical content, or data too vague to be verified.  
 4. Merge duplicate / near-duplicate claims into one concise statement.

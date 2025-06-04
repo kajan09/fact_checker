@@ -3,6 +3,7 @@ import openai
 OPENAI_BASE_URL   = "http://localhost:11434/v1"
 BASE_MODEL        = "gemma3:27b"     
 BASE_API_KEY    = "ollama" 
+BASE_TEMP        = 0.7
 # ────────────────────────────────────────────────────────────────────
 # Configuration STEP2
 # ────────────────────────────────────────────────────────────────────
@@ -12,7 +13,7 @@ CLIENT_2 = openai.OpenAI(
 )
 
 MODEL_2 = BASE_MODEL  
-TEMP_2 = 0
+TEMP_2 = BASE_TEMP
 MAX_TOKENS_2 = 128
 
 # ────────────────────────────────────────────────────────────────────
@@ -24,7 +25,7 @@ CLIENT_3 = openai.OpenAI(
 )
 
 MODEL_3 = BASE_MODEL  
-TEMP_3 = 0
+TEMP_3 = BASE_TEMP
 MAX_TOKENS_3 = 1024
 
 
@@ -39,7 +40,7 @@ CLIENT_5 = openai.OpenAI(
 )
 
 MODEL_5 = BASE_MODEL
-TEMP_5 = 0
+TEMP_5 = BASE_TEMP
 MAX_TOKENS_5 = 512
 
 
@@ -53,7 +54,7 @@ CLIENT_6 = openai.OpenAI(
 )
 
 MODEL_6 = BASE_MODEL
-TEMP_6 = 0
+TEMP_6 = BASE_TEMP
 MAX_TOKENS_6 = 512
 
 # ────────────────────────────────────────────────────────────────────
@@ -66,5 +67,5 @@ CLIENT_7 = openai.OpenAI(
 )
 
 MODEL_7 = BASE_MODEL
-TEMP_7 = 0
+TEMP_7 = BASE_TEMP
 MAX_TOKENS_7 = 512
