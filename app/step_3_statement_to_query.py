@@ -25,7 +25,7 @@ TRAILING_COMMAS_RE = re.compile(r",\s*(?=[\]}])")
 # PICO = Patient/Population, Intervention, Comparison und Outcome
 
 # first visible line that starts with a letter
-QUERY_LINE_RE = re.compile(r"[A-Za-z][^\n\r]*")
+QUERY_LINE_RE = re.compile(r"^(?!\s*$).+", re.MULTILINE)
 
 # ───────── helpers ─────────
 def load_json(path: str) -> Dict[str, Any]:
@@ -51,26 +51,35 @@ def sanitise_words(words: List[str]) -> List[str]:
     return out
 
 
+
 def clean_query(raw: str, fallback_source: str) -> str:
     """
-    • Take the first non-empty line from the model output,
-      strip quotes / back-ticks.
-    • Drop AND/OR if present.
-    • Ensure 4-8 words; otherwise build a crude keyword fallback.
+    • Take the first non‐empty line from the model output
+      and strip surrounding backticks / quotes.
+    • Do NOT drop AND/OR or truncate to a fixed word count.
+    • If no valid line is found, fall back to a crude keyword list
+      (deduplicated, up to 8 terms) drawn from fallback_source.
     """
     m = QUERY_LINE_RE.search(raw)
     if m:
-        q = m.group(0).strip("`'\" ")
-        words = sanitise_words(q.split())
-        if 4 <= len(words) <= 8:
-            return " ".join(words)
+        # strip backticks and quotes, then collapse internal whitespace
+        q = m.group(0).strip("`'\" ").replace("\n", " ").strip()
+        return q
 
-    # ── fallback: deduplicate ≤8 keywords from the claim itself ──
-    kws = sanitise_words(re.findall(r"[A-Za-z']+", fallback_source))
-    return " ".join(kws[:8])
+    # ── fallback: dedupe ≤8 keywords from fallback_source ──
+    kws = re.findall(r"[A-Za-z']+", fallback_source)
+    # lower‐case, remove duplicates while preserving order
+    seen = set()
+    deduped = []
+    for w in kws:
+        w_lower = w.lower()
+        if w_lower not in seen:
+            seen.add(w_lower)
+            deduped.append(w_lower)
+    return " ".join(deduped[:8])
 
 
-def make_query(claim: str) -> str:
+def make_query(claim: str, client: openai.OpenAI) -> str:
     prompt = PROMPT_TMPL_S3.format(claim=claim)
     try:
         resp = CLIENT_3.chat.completions.create(
@@ -104,7 +113,7 @@ def update_query(data: Dict[str, Any]) -> Dict[str, Any]:
     for stmt in data.get("statements", []):
         if stmt.get("query"):            # already filled
             continue
-        query = make_query(stmt.get("text", ""))
+        query = make_query(stmt.get("text", ""), CLIENT_3)
         stmt["query"] = query
         new_queries.append(query)
 

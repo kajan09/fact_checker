@@ -58,9 +58,7 @@ def statement_to_truthness(data: Dict[str, Any]) -> Dict[str, Any]:
         print(f"Model output:\n{reply}  ")
         
         score_match   = re.search(r"FINALSCORE:\s*([0-1](?:\.\d+)?)", reply, re.I)
-        print(" \n\n\n\n\n\n --------------------------------------------------------------- \n")
-        print(" --- Step7-Statement to Truthness --> Parsed verdict ---")
-        print(" \n --------------------------------------------------------------- \n ")
+        print(" --- Extracted Information from prompt: ---")
         print(f"Parsed verdict: {verdict_match.group(1) if verdict_match else 'N/A'} ")
         
         if verdict_match and score_match:

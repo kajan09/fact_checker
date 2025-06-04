@@ -27,20 +27,57 @@ No commentary, no extra keys, no markdown.
 
 
 # ────────────────────────────────────────────────────────────────────
-# Step3: PubMed query generation
+# Step3: PubMed query generation (REVISED)
 # ────────────────────────────────────────────────────────────────────
 PROMPT_TMPL_S3 = """
-You are a biomedical librarian inside a fact-checking app.  
-If the claim is too vague, non-medical, or otherwise unlikely to be indexed in PubMed, output the single word: NONE
+You are a biomedical librarian inside a fact‐checking app.  
+If the claim is too vague, non‐medical, or otherwise unlikely to be indexed in PubMed, output the single word: NONE
 
-Otherwise, **think quickly (silently)** about the core PICO concepts and produce ONE PubMed keyword string:
+Otherwise, **think quickly (silently)** about the core PICO concepts in the claim, identify appropriate MeSH headings (in quotes with [MeSH]) and text‐word synonyms (with [tiab]), and produce ONE PubMed Boolean query string that:
+Example:
+(
+  "Smoking"[MeSH] 
+  OR smoking[tiab] 
+  OR smokers[tiab] 
+  OR "tobacco use"[tiab]
+)
+AND
+(
+  "Lung Function Tests"[MeSH] 
+  OR "pulmonary function"[tiab] 
+  OR "lung function"[tiab] 
+  OR FEV1[tiab] 
+  OR FVC[tiab]
+)
+AND
+(
+  "Inflammation"[MeSH] 
+  OR inflammation[tiab] 
+  OR "mucus hypersecretion"[tiab] 
+  OR mucus[tiab]
+)
+AND
+(
+  "Proanthocyanidins"[MeSH] 
+  OR proanthocyanidin*[tiab] 
+  OR OPC[tiab] 
+  OR "Traumotein"[tiab] 
+  OR "pine bark extract"[tiab] 
+  OR Pycnogenol[tiab]
+)
 
-HARD CONSTRAINTS WHEN A QUERY *IS* PRODUCED  
-• Exactly one line, exactly four words, single spaces only.  
-• No Boolean operators, no parentheses, no quotes.  
-• First character must be A–Z or a–z.
 
-CLAIM:  
+• Is exactly one line (no line breaks).  
+• Uses uppercase AND/OR to combine concepts.  
+• Wraps MeSH terms in quotes followed by [MeSH] (e.g., "Smoking"[MeSH]).  
+• Marks synonym or free‐text terms with [tiab] (e.g., smoking[tiab]).  
+• Groups synonyms with parentheses; groups PICO domains by combining with AND.  
+• Does not include field tags other than [MeSH] and [tiab].  
+• Does not include quotation marks around free‐text terms (other than MeSH).  
+• Begins with a letter (A–Z or a–z) and contains no leading/trailing spaces.  
+• Contains no line breaks or extra whitespace.
+
+CLAIM:
 {claim}
 """
 
@@ -102,8 +139,4 @@ give the final response in the following format:
 STRICT OUTPUT – exactly two lines, nothing else:
 VERDICT: true|false|uncertain
 FINALSCORE: <probability 0.00–1.00>
-"""
-
-PROMPT_TMPL_S8 = """
-Test
 """
