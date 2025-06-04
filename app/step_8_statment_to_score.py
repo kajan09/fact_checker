@@ -1,5 +1,8 @@
 from typing import Dict, Any
 
+from .preprompts import *
+from .llmconfigs import *
+
 threshold = 0.35
 
 def statement_to_score(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -16,5 +19,30 @@ def statement_to_score(data: Dict[str, Any]) -> Dict[str, Any]:
     total_weight = sum(weights)
 
     overall = round(weighted_sum / total_weight, 2) if total_weight else 0.0
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     data["overall_truthiness"] = overall
     return data

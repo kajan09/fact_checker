@@ -37,6 +37,7 @@ def extract_reel_id(instagram_url: str) -> str:
 
 @app.post("/process")
 async def process(payload: dict = Body(...)):
+    print("Received payload:", payload)
     url  = payload.get("url")
     print(url)
     if not url:

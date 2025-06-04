@@ -16,28 +16,13 @@ import sys
 from typing import Any, Dict, List
 
 import openai
-
+from .preprompts import *
+from .llmconfigs import *
 # ───────── config ─────────
-OPENAI_BASE_URL   = "http://localhost:11434/v1"
-MODEL             = "gemma3:27b"                 # deepseek-r1:1.5b
+
 TRAILING_COMMAS_RE = re.compile(r",\s*(?=[\]}])")
 
-QUERY_PROMPT_TMPL = """
-You are an expert biomedical librarian.
-
-TASK: Convert the claim below into a PubMed search string that captures
-the core biomedical concepts.
-
-HARD CONSTRAINTS
-• Return ONE line, 4 words, no line breaks.
-• ONLY words separated by single spaces – no AND, OR, nor parentheses.
-• Do NOT wrap the query in quotes, code fences, markdown, or JSON.
-• First character must be a letter (A-Z or a-z).
-• After you have written the query, STOP.
-
-CLAIM:
-{claim}
-"""
+# PICO = Patient/Population, Intervention, Comparison und Outcome
 
 # first visible line that starts with a letter
 QUERY_LINE_RE = re.compile(r"[A-Za-z][^\n\r]*")
@@ -85,37 +70,41 @@ def clean_query(raw: str, fallback_source: str) -> str:
     return " ".join(kws[:8])
 
 
-def make_query(claim: str, client: openai.OpenAI) -> str:
-    prompt = QUERY_PROMPT_TMPL.format(claim=claim)
+def make_query(claim: str) -> str:
+    prompt = PROMPT_TMPL_S3.format(claim=claim)
     try:
-        resp = client.chat.completions.create(
-            model=MODEL,
-            temperature=0,
-            max_tokens=32,
+        resp = CLIENT_3.chat.completions.create(
+            model=MODEL_3,
+            temperature=TEMP_3,
+            max_tokens=MAX_TOKENS_3,
             stop=["\n"],                         # cut at first newline
             messages=[{"role": "user", "content": prompt}],
         )
         raw = resp.choices[0].message.content
-        print("Query:")
+        print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
+        print(" --- Step3 Statement to Query ---> LLM Output: ---")
+        print(" \n --------------------------------------------------------------- \n")
         print(raw)
+        
         return clean_query(raw, claim)
     except Exception as e:
+        
+        print("ERROR ERROR ERROR --> FALLBACK \n")
         print(e)
-        print("FALLBACK")
         # network / model failure → crude keywords
         kws = sanitise_words(re.findall(r"[A-Za-z']+", claim))
         return " ".join(kws[:8])
 
 # ───────── core ─────────
 def update_query(data: Dict[str, Any]) -> Dict[str, Any]:
-    client = openai.OpenAI(base_url=OPENAI_BASE_URL, api_key="ollama")
+  
 
     new_queries: List[str] = []
 
     for stmt in data.get("statements", []):
         if stmt.get("query"):            # already filled
             continue
-        query = make_query(stmt.get("text", ""), client)
+        query = make_query(stmt.get("text", ""))
         stmt["query"] = query
         new_queries.append(query)
 

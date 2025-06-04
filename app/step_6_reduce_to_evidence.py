@@ -1,26 +1,38 @@
 import subprocess
 from typing import Dict, Any
 
+from .preprompts import *
+from .llmconfigs import *
+
 def is_related(statement_text: str, evidence_summary: str) -> bool:
     """Use Ollama+Gemma3 to judge whether evidence summary is relevant to the statement text."""
-    prompt = (
-        f"Statement text: {statement_text}\n"
-        f"Evidence summary: {evidence_summary}\n"
-        "Question: Does the evidence summary support or relate to the statement text? "
-        "Answer 'yes' or 'no'."
-    )
-    proc = subprocess.run(
-        ["ollama", "run", "gemma3:27b", "--temperature", "0.0"],
-        input=prompt,
-        capture_output=True,
-        text=True
-    )
-    if proc.returncode != 0:
-        raise RuntimeError(f"Ollama call failed: {proc.stderr.strip()}")
-    response = proc.stdout.strip().lower()
-    print(f"Response from Gemma3: {response}")
-    return response.startswith("yes")
 
+    try:
+        prompt = PROMPT_TMPL_S6.format(statement=statement_text, evidence_summary=evidence_summary)
+        res = CLIENT_6.chat.completions.create(
+            model=MODEL_6,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=TEMP_6,
+            max_tokens=MAX_TOKENS_6,
+        )
+        reply: str = res.choices[0].message.content.strip()
+        print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
+        print(" --- Step6 Reduce To Eveidence ---> Response ---")
+        print(" \n --------------------------------------------------------------- \n")
+        print(f" Response: {reply} ")
+        return reply.startswith("yes")
+    except Exception as exc:
+        print(f"Error during Ollama call Step6: {exc}")
+        return False
+
+
+    return False
+
+
+
+    
+    
+    #return True
 
 def reduce_to_evidence(data: Dict[str, Any]) -> Dict[str, Any]:
     # Iterate through statements

@@ -2,6 +2,8 @@
 import requests
 import re
 from typing import Any, Dict, List
+from .preprompts import *
+from .llmconfigs import *
 
 def query_to_link(data: Dict[str, Any],) -> Dict[str, Any]:
     """
@@ -38,6 +40,10 @@ def query_to_link(data: Dict[str, Any],) -> Dict[str, Any]:
 
         ev_list = stmt.setdefault("evidence", [])
         for url in urls:
+            print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
+            print(" --- Step4 Query to Link ---> PubmedLink --- ")
+            print(" \n --------------------------------------------------------------- \n")
+            print(f"PubmedLink: {url}")
             pmid_match = re.search(r"/(\d+)/?$", url)
             pmid = pmid_match.group(1) if pmid_match else None
             ev_list.append({

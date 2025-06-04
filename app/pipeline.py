@@ -28,33 +28,60 @@ def run_pipeline(tmp_path: str) -> dict:
     # 1️⃣ Whisper
     start = time.time()
 
+    print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
+    print(" --- Step1 --- ")
+    print(" \n --------------------------------------------------------------- \n")
     t0 = time.time()
     transcript = update_transcript("app/json_example.json", tmp_path)
     t1 = time.time()
 
+    print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
+    print(" --- Step2 --- ")
+    print(" \n --------------------------------------------------------------- \n")
     statments = update_statements(transcript)
     t2 = time.time()
 
+    print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
+    print(" --- Step3 --- ")
+    print(" \n --------------------------------------------------------------- \n")
     query = update_query(statments)
     t3 = time.time()
 
+    print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
+    print(" --- Step4 --- ")
+    print(" \n --------------------------------------------------------------- \n")
     link = query_to_link(query)
     t4 = time.time()
 
+    print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
+    print(" --- Step5 --- ")
+    print(" \n --------------------------------------------------------------- \n")
     summary = link_to_summary(link)
     t5 = time.time()
 
+    print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
+    print(" --- Step6 --- ")
+    print(" \n --------------------------------------------------------------- \n")
     evidence = reduce_to_evidence(summary)
     t6 = time.time()
 
+    print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
+    print(" --- Step7 --- ")
+    print(" \n --------------------------------------------------------------- \n")
     truthness = statement_to_truthness(evidence)
     t7 = time.time()
 
+    print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
+    print(" --- Step8 --- ")
+    print(" \n --------------------------------------------------------------- \n")
     scores = statement_to_score(truthness)
     t8 = time.time()
 
     elapsed = t8 - start
 
+    print(" \n\n\n\n\n\n --------------------------------------------------------------- \n")
+    print(" --- Runtime Analysis ---")
+    print(" \n --------------------------------------------------------------- \n")
     print(f"update_transcript: {t1 - t0:.6f} seconds")
     print(f"update_statements: {t2 - t1:.6f} seconds")
     print(f"update_query: {t3 - t2:.6f} seconds")
@@ -66,6 +93,9 @@ def run_pipeline(tmp_path: str) -> dict:
     print(f"Total elapsed time: {elapsed:.6f} seconds")
 
 
+    print(" \n\n\n\n\n\n --------------------------------------------------------------- \n")
+    print(" --- Final Output (JSON) ---")
+    print(" \n --------------------------------------------------------------- \n")
     print(scores)
 
     return scores

@@ -7,6 +7,9 @@ import re
 from typing import Optional, List, Dict, Any
 import datetime
 
+from .preprompts import *
+from .llmconfigs import *
+
 # Base URL for NCBI E-utilities
 NCBI_EUTILS = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 # Regex to find PMID in PubMed URL
@@ -36,21 +39,29 @@ def pubmed_fetch_abstract(pmid: str) -> Optional[str]:
 
 
 def summarize_with_gemma(text: str) -> str:
-    """Use Ollama+Gemma3 to generate a concise summary."""
-    prompt = (
-        "Please provide a concise summary of the following text that does not exceed 300 words and focuses on the results:\n\n" + text
-    )
-    proc = subprocess.run(
-        ["ollama", "run", "gemma3:27b", "--temperature", "0.0"],
-        input=prompt,
-        capture_output=True,
-        text=True
-    )
-    if proc.returncode != 0:
-        raise RuntimeError(f"Ollama call failed: {proc.stderr.strip()}")
-    strip = proc.stdout.strip()
-    print(f"Gemma3 summary: {strip}")
-    return strip
+    "Use Ollama+Gemma3 to generate a summary."
+    print(text)
+    try:
+        prompt = PROMPT_TMPL_S5.format(abstract=text)
+        res = CLIENT_5.chat.completions.create(
+            model=MODEL_5,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=TEMP_5,
+            max_tokens=MAX_TOKENS_5,
+        )
+        reply: str = res.choices[0].message.content.strip()
+        print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
+        print(" --- Step5 Link to Summary ---> LLM output --- ")
+        print(" \n --------------------------------------------------------------- \n")
+        print(f"LLM output: {reply} ")
+        return reply
+
+    except Exception as exc:
+        print(f"Error during Ollama call Step5: {exc}")
+        return "None"
+
+
+
 
 
 def load_json_relaxed(path: str) -> Any:

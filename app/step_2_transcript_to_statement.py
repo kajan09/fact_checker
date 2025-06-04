@@ -19,41 +19,11 @@ from typing import Any, Dict, List
 
 import openai
 
-# ────────────────────────────────────────────────────────────────────
-# Configuration
-# ────────────────────────────────────────────────────────────────────
-client = openai.OpenAI(
-    base_url="http://localhost:11434/v1",  # Ollama / LM-Studio
-    api_key="ollama"
-)
+from .preprompts import *
+from .llmconfigs import *
 
-MODEL = "gemma3:27b"  # gemma3:27b, gemma3:27b-it-qat, dongheechoi/meerkat:latest
 
 TRAILING_COMMAS_RE = re.compile(r",\s*(?=[\]}])")
-
-PROMPT_TMPL = """
-You are a medical-domain statement extractor.
-
-**Task**  
-Check the whole input for medical statements.
-Out of all medical statements take ONLY three medical statements.
-
-**Selection rules**  
-1. List **no more than three** statements. Choose the ones with the greatest clinical relevance or novelty.  
-2. If there are fewer than three valid medical statements, list them all.  
-3. Merge duplicates or near-duplicates into a single concise statement.  
-4. Ignore greetings, rhetorical questions, jokes, motivational or moral advice, and anything not tied to medicine or human health.
-
-**Output format (strict)**  
-Return a valid JSON array containing 1–3 strings, each string being one of the extracted medical statements.  
-No introductory text, no explanations.
-
-TRANSCRIPT  
-----------  
-{transcript}  
-----------  
-"""
-
 
 # ────────────────────────────────────────────────────────────────────
 # Helper functions
@@ -70,17 +40,19 @@ def clean_json_content(content: str) -> str:
 
 def split_into_medical_statements(transcript: str) -> List[str]:
     """LLM → JSON array of medically-relevant claims."""
-    prompt = PROMPT_TMPL.format(transcript=transcript.strip())
+    prompt = PROMPT_TMPL_S2.format(transcript=transcript.strip())
     try:
-        resp = client.chat.completions.create(
-            model=MODEL,
-            temperature=0,
-            max_tokens=128,  # Increased from 4
+        resp = CLIENT_2.chat.completions.create(
+            model=MODEL_2,
+            temperature=TEMP_2,
+            max_tokens=MAX_TOKENS_2, 
             messages=[{"role": "user", "content": prompt}],
         )
         content = resp.choices[0].message.content.strip()
         cleaned = clean_json_content(content)
-        print("Statements:")
+        print(" \n\n\n\n\n\n --------------------------------------------------------------- \n")
+        print(" --- Step2 Transcript to Statements ---> LLM Output: ---")
+        print(" \n --------------------------------------------------------------- \n")
         print(cleaned)
         return json.loads(cleaned)
     except Exception as e:
