@@ -36,6 +36,9 @@ def is_related(statement_text: str, evidence_summary: str) -> bool:
 
 def reduce_to_evidence(data: Dict[str, Any]) -> Dict[str, Any]:
     print("Starting Step6: Reduce to Evidence")
+    print("...")
+    print("...")
+    
     # Iterate through statements
     for stmt in data.get("statements", []):
         filtered = []

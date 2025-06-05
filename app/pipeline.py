@@ -104,25 +104,25 @@ def run_pipeline(tmp_path: str) -> dict:
     print(" \n --------------------------------------------------------------- \n")
 
     # STEP2
-    print(" STEP2:")
+    print("Preprompt STEP2:")
     print(PROMPT_TMPL_S2)
     print("\n\n")
     # STEP3
-    print(" STEP3:")
+    print("Prepromt STEP3:")
     print(PROMPT_TMPL_S3)
     print("\n\n")
     # STEP5
-    print(" STEP5:")
+    print("Preprompt STEP5:")
     print(PROMPT_TMPL_S5)
     print("\n\n")
     # STEP6
     
-    print(" STEP6:")
+    print("Preprompt STEP6:")
     print(PROMPT_TMPL_S6)
     print("\n\n")
 
     # STEP7
-    print(" STEP7:")
+    print("Prepromt STEP7:")
     print(PROMPT_TMPL_S7)
     print("\n\n")
 

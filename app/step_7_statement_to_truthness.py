@@ -11,6 +11,9 @@ from .llmconfigs import *
 
 def statement_to_truthness(data: Dict[str, Any]) -> Dict[str, Any]:
     print("Starting Step7: Statement to Truthness")
+    print("...")
+    print("...")
+    
     transcript = data["transcript"]
     # -------- iterate over statements --------
     for stmt in data.get("statements", []):

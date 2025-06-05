@@ -41,6 +41,9 @@ def clean_json_content(content: str) -> str:
 def split_into_medical_statements(transcript: str) -> List[str]:
     """LLM → JSON array of medically-relevant claims."""
     print("Starting Step2: Transcript to Medical Statements")
+    print("...")
+    print("...")
+    
     prompt = PROMPT_TMPL_S2.format(transcript=transcript.strip())
     try:
         resp = CLIENT_2.chat.completions.create(

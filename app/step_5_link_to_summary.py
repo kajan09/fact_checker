@@ -40,6 +40,7 @@ def pubmed_fetch_abstract(pmid: str) -> Optional[str]:
 
 def summarize_with_gemma(text: str) -> str:
     "Use Ollama+Gemma3 to generate a summary."
+    print("Print abstract to summarize:")
     print(text)
     try:
         prompt = PROMPT_TMPL_S5.format(abstract=text)
@@ -51,7 +52,7 @@ def summarize_with_gemma(text: str) -> str:
         )
         reply: str = res.choices[0].message.content.strip()
         print(" --- Step5 Link to Summary ---> LLM output --- ")
-        print(f"LLM output: {reply} ")
+        print(f"LLM output (Summary of Abstract): {reply} ")
         return reply
 
     except Exception as exc:
@@ -71,6 +72,9 @@ def load_json_relaxed(path: str) -> Any:
 
 def link_to_summary(data: Dict[str, Any]) -> Dict[str, Any]:
     print("Starting Step5: Link to Summary")
+    print("...")
+    print("...")
+
     # Helper to process a list of evidence items
     def process_evidence_list(ev_list: List[Dict[str, Any]]):
         for ev in ev_list:

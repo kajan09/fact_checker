@@ -13,6 +13,9 @@ def statement_to_score(data: Dict[str, Any]) -> Dict[str, Any]:
     rounded to two decimal places (zwei Nachkommastellen).
     """
     print("Starting Step8: Statement to Score")
+    print("...")
+    print("...")
+    
     confidences = [stmt["confidence"] for stmt in data["statements"]]
     weights = [3 if conf < threshold else 1 for conf in confidences]
 

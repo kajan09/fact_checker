@@ -13,7 +13,10 @@ def query_to_link(data: Dict[str, Any],) -> Dict[str, Any]:
     Finally, write the augmented JSON to `output_path`.
     """
     print("Starting Step4: Query to PubMed Links")
+    print("...")
+    print("...")
     
+
     def get_urls(query: str, retmax: int = 4) -> List[str]:
         """Return up to `retmax` PubMed article URLs matching `query`."""
         search_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
@@ -42,9 +45,7 @@ def query_to_link(data: Dict[str, Any],) -> Dict[str, Any]:
 
         ev_list = stmt.setdefault("evidence", [])
         for url in urls:
-            print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
             print(" --- Step4 Query to Link ---> PubmedLink --- ")
-            print(" \n --------------------------------------------------------------- \n")
             print(f"PubmedLink: {url}")
             pmid_match = re.search(r"/(\d+)/?$", url)
             pmid = pmid_match.group(1) if pmid_match else None

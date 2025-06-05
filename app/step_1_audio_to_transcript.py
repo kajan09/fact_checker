@@ -27,7 +27,10 @@ def transcribe_audio(audio_path: Union[str, Path]) -> str:
 
 # ───────── core ─────────
 def update_transcript(json_in: str, audio_in: str) ->  Dict[str, Any]:
-    print("Starting transcribing: estimated time: 10 - 20 seconds)")
+    print("Starting transcribing: estimated time: 10 - 20 seconds")
+    print("...")
+    print("...")
+
     data             = load_json_relaxed(json_in)
     data["transcript"] = transcribe_audio(audio_in)
     data["generated_at"] = dt.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"

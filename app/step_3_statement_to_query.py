@@ -103,7 +103,9 @@ def make_query(claim: str, client: openai.OpenAI) -> str:
 # ───────── core ─────────
 def update_query(data: Dict[str, Any]) -> Dict[str, Any]:
     print("Starting Step3: Statement to PubMed Query")
-
+    print("...")
+    print("...")
+    
     new_queries: List[str] = []
 
     for stmt in data.get("statements", []):
