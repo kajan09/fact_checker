@@ -1,0 +1,652 @@
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- LLM Configs --- 
+ 
+ --------------------------------------------------------------- 
+
+BASE_URL   : http://localhost:11434/v1
+API_KEY    : ollama
+BASE_MODEL : gemma3:27b
+BASE_TEMP  : 0.7
+
+ STEP2:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 128
+
+ STEP3:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 1024
+
+ STEP5:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 512
+
+ STEP6:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 512
+
+ STEP7:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 512
+
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- LLM Preprompts --- 
+ 
+ --------------------------------------------------------------- 
+
+Preprompt STEP2:
+
+You are part of a medical fact-checking pipeline.  
+If you propagate a false statement, the app may mislead people.
+
+INPUT TRANSCRIPT
+---------------
+{transcript}
+---------------
+
+TASK  
+Extract **medical claims** suitable for fact-checking.
+
+SELECTION RULES  
+1. Return **exactly three** distinct claims.  
+2. Prefer clinically relevant, novel, or potentially harmful claims.  
+3. Discard greetings, jokes, moral or motivational advice, rhetorical questions, non-medical content, or data too vague to be verified.  
+4. Merge duplicate / near-duplicate claims into one concise statement.
+
+STRICT OUTPUT  
+A valid JSON array with 1–3 strings.  
+No commentary, no extra keys, no markdown.
+
+
+
+
+Prepromt STEP3:
+
+You are a biomedical librarian inside a fact‐checking app.  
+If the claim is too vague, non‐medical, or otherwise unlikely to be indexed in PubMed, output the single word: NONE
+
+Otherwise, **think quickly (silently)** about the core PICO concepts in the claim, identify appropriate MeSH headings (in quotes with [MeSH]) and text‐word synonyms (with [tiab]), and produce ONE PubMed Boolean query string that:
+Example:
+(
+  "Smoking"[MeSH] 
+  OR smoking[tiab] 
+  OR smokers[tiab] 
+  OR "tobacco use"[tiab]
+)
+AND
+(
+  "Lung Function Tests"[MeSH] 
+  OR "pulmonary function"[tiab] 
+  OR "lung function"[tiab] 
+  OR FEV1[tiab] 
+  OR FVC[tiab]
+)
+AND
+(
+  "Inflammation"[MeSH] 
+  OR inflammation[tiab] 
+  OR "mucus hypersecretion"[tiab] 
+  OR mucus[tiab]
+)
+AND
+(
+  "Proanthocyanidins"[MeSH] 
+  OR proanthocyanidin*[tiab] 
+  OR OPC[tiab] 
+  OR "Traumotein"[tiab] 
+  OR "pine bark extract"[tiab] 
+  OR Pycnogenol[tiab]
+)
+
+
+• Is exactly one line (no line breaks).  
+• Uses uppercase AND/OR to combine concepts.  
+• Wraps MeSH terms in quotes followed by [MeSH] (e.g., "Smoking"[MeSH]).  
+• Marks synonym or free‐text terms with [tiab] (e.g., smoking[tiab]).  
+• Groups synonyms with parentheses; groups PICO domains by combining with AND.  
+• Does not include field tags other than [MeSH] and [tiab].  
+• Does not include quotation marks around free‐text terms (other than MeSH).  
+• Begins with a letter (A–Z or a–z) and contains no leading/trailing spaces.  
+• Contains no line breaks or extra whitespace.
+
+CLAIM:
+{claim}
+
+
+
+
+Preprompt STEP5:
+
+You are summarising evidence for a medical fact-checker.  
+Think briefly (silently) about study design and main results, then write the summary.
+
+GUIDELINES  
+• ≤ 300 words, plain text.  
+• Focus on methods, population, key outcomes, effect sizes, and limitations.  
+• Do NOT add interpretation beyond the abstract itself.
+
+TEXT TO SUMMARISE
+-----------------
+{abstract}
+-----------------
+
+
+
+
+Preprompt STEP6:
+
+You are verifying whether the summary actually addresses the claim.  
+Think (silently) first; then answer in exactly one word.
+
+STATEMENT: {statement}
+
+EVIDENCE SUMMARY: {evidence_summary}
+
+Does the summary *directly relate to or support* the statement?
+Respond with only: yes   |   no
+
+
+
+
+Prepromt STEP7:
+
+You are a professional medical fact-checker.  
+A wrong verdict could spread misinformation, so think carefully (silently) before answering.
+
+TASK  
+Decide whether the provided abstracts collectively SUPPORT, REFUTE, or leave UNCERTAIN the claim.
+
+CLAIM:
+{claim_text}
+
+EVIDENCE:
+{evidence_block}
+
+Inclunding the Scientific Evidence together with Common Sense and the Context of the Video Transcript:
+{transcript}
+
+give the final response in the following format:
+
+STRICT OUTPUT – exactly two lines, nothing else:
+VERDICT: true|false|uncertain
+FINALSCORE: <probability 0.00–1.00>
+
+
+
+
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step1 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting transcribing: estimated time: 10 - 20 seconds
+...
+...
+ --- Step1 Audio to Transcript ---> LLM Output: ---
+Du brauchst ne schnelle Entgiftung nach nem Feiertagswochenende? Das hier ist n wahres Wunderwerkzeug. Und es wurde von nem Arzt entwickelt, also weißt du das echte Speichersack, bevor es gelöscht wird. Es wird nämlich deine Leber und deine Niere von schädlichen Giftstoffen befreien und helfen Fett aus deinem Unterbauchgewebe rauszuspülen. Schreib genau mit, du brauchst 2 Teelöffel Apfelessig, den Saft von 1,5 Zitronen, 2 Teelöffel Cayenne Pfeffer, 14 Petersilienblätter, 3 Tassen basisches Wasser, 1 Teelöffel regionalen Blütenpollen, Honig. Mische es. Du fragst dich wie du es einnehmen sollst. Bewerte vorerst das Rezept in den Kommentaren von 1-10
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step2 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step2: Transcript to Medical Statements
+...
+...
+ --- Step2 Transcript to Statements ---> LLM Output: ---
+["This drink detoxifies the liver and kidneys.", "This drink helps flush fat from subcutaneous abdominal tissue.", "This drink is developed by a doctor and functions as a 'true memory saver' before deletion."]
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step3 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step3: Statement to PubMed Query
+...
+...
+ --- Step3 Statement to Query ---> LLM Output: ---
+("Liver"[MeSH] OR liver[tiab] OR hepatic[tiab]) AND ("Kidney"[MeSH] OR kidney[tiab] OR renal[tiab]) AND (detoxification[tiab] OR "detoxification, metabolic"[tiab] OR "liver function"[tiab] OR "renal function"[tiab])
+ --- Step3 Statement to Query ---> LLM Output: ---
+NONE
+ --- Step3 Statement to Query ---> LLM Output: ---
+NONE
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step4 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step4: Query to PubMed Links
+...
+...
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40463848/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40462795/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40457969/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40457902/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40468443/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40468442/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40468413/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40468395/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40468443/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40468442/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40468413/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40468395/
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step5 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step5: Link to Summary
+...
+...
+Print abstract to summarize:
+1. ARYA Atheroscler. 2025;21(2):10-17. doi: 10.48305/arya.2025.42947.2989. Hepatopathy and acute kidney injury Following Corrective Cardiac Surgery with cardiopulmonary bypass pump in Pediatric with Congenital Heart Defects. Salehi Abarghouei F(1), Chahkandi T(2), Shaban S(3), Raeiszadeh Bajestani SF(1)(2)(3), Soleimani MH(3), Amouzeshi A(1), Salehi S(3). Author information: (1)Cardiovascular Diseases Research Center, Birjand University of Medical Sciences, Birjand, Iran. (2)Department of Pediatrics, Birjand University of Medical Sciences, Birjand, Iran. (3)Student Research Committee, Birjand University of Medical Sciences, Birjand, Iran. BACKGROUND: Congenital heart defects (CHDs) are common anomalies in children. Cardiopulmonary bypass (CPB) is widely used in cardiac surgeries, but it is associated with complications. Liver and kidney injuries frequently occur during CPB. This study aimed to evaluate liver and kidney damage in pediatric patients with CHDs undergoing cardiac surgery with CPB. METHODS: This retrospective study examined 51 patients with CHDs who underwent cardiac surgery with CPB at Vali-Asr and Razi hospitals in Birjand, Iran. The study period spanned from 2013 to 2019. Patient information was extracted from hospital records and compiled into checklists, which included demographic data, disease severity, liver function tests, cardiac ejection fraction, and serum levels of hematocrit, direct and indirect bilirubin, albumin, total protein, and creatinine. RESULTS: Among the patients, 52.9% were male and 47.1% were female, with a mean age of 37 months. A total of 78.4% had cyanotic CHDs.After surgery, the levels of AST, ALT, and ALKP increased significantly (P < 0.001), while the levels of indirect bilirubin, albumin, and total protein decreased (P < 0.001). The cardiac ejection fraction also improved following surgery (P < 0.001). However, changes in creatinine and direct bilirubin were not significant. Notably, AST levels were markedly higher in deceased patients compared to survivors. CONCLUSION: This study revealed significant alterations in liver enzyme levels in patients undergoing cardiac surgery using CPB, potentially indicating liver damage during the procedure. Furthermore, elevated postoperative AST levels were associated with a higher risk of mortality. DOI: 10.48305/arya.2025.42947.2989 Conflict of interest statement: The authors declare no conflict of interest.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This retrospective study investigated liver and kidney damage in pediatric patients with congenital heart defects (CHDs) undergoing corrective cardiac surgery with cardiopulmonary bypass (CPB). Researchers reviewed the records of 51 patients (37 months mean age, 52.9% male) who underwent surgery between 2013-2019 at two hospitals in Iran.
+
+Data collected included demographics, disease severity, liver function tests (AST, ALT, ALKP, bilirubin, albumin, total protein), cardiac ejection fraction, and hematocrit. Postoperative levels of AST, ALT, and ALKP significantly increased (P < 0.001), while indirect bilirubin, albumin, and total protein significantly decreased (P < 0.001). Cardiac ejection fraction improved significantly (P < 0.001). No significant changes were observed in creatinine or direct bilirubin. 
+
+AST levels were markedly higher in deceased patients compared to survivors. The study concludes that CPB is associated with significant alterations in liver enzyme levels, potentially indicating liver damage, and that elevated postoperative AST levels correlate with increased mortality risk. 
+
+Limitations include the retrospective design and data collection from a single centre. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40463848/ with PMID 40463848
+Print abstract to summarize:
+1. Cureus. 2025 May 4;17(5):e83453. doi: 10.7759/cureus.83453. eCollection 2025 May. Evaluation of miRNA-210 as a Prognostic Biomarker for Pre-eclampsia: A Case-Control Study. Meghana KS(1), Yaliwal RG(1), Kadakol GS(2), Bidri SR(1), Kori S(1). Author information: (1)Department of Obstetrics and Gynecology, Shri BM Patil Medical College Hospital and Research Centre, Bijapur Lingayat District Educational Association (BLDE) (Deemed to be University), Vijayapura, IND. (2)Department of Genetics, Shri BM Patil Medical College Hospital and Research Centre, Bijapur Lingayat District Educational Association (BLDE) (Deemed to be University), Vijayapura, IND. BACKGROUND: Pre-eclampsia (PE) is a complex, multisystem disorder occurring during pregnancy and remains a significant cause of maternal and perinatal morbidity and mortality. Despite its clinical importance, the underlying molecular mechanisms contributing to the development of PE are not fully understood. Specific microRNAs, such as miRNA-210, may play a crucial role in the pathophysiology of PE. OBJECTIVE: This study investigates the potential utility of miRNA-210 as a biomarker for the early detection and risk prediction of PE. MATERIALS AND METHODS: This case-control study was conducted from April 2023 to February 2025 and involved PE and normotensive pregnant women admitted to the Department of Obstetrics and Gynecology at Shri BM Patil Medical College Hospital and Research Centre, Bijapur Lingayat District Educational Association (BLDE) (Deemed to be University), Vijayapura. Women who met the inclusion criteria were enrolled after providing written informed consent. A total of 102 pregnant women participated, divided into two groups: Group 1 included 51 women diagnosed with PE, and Group 2 comprised 51 normotensive pregnant women matched for age (±5 years), gestational age (±1 week), and obstetric score, serving as the control group. All participants underwent detailed history-taking, clinical examinations, and laboratory investigations, including coagulation profile, liver function test, renal function test, complete blood count, proteinuria evaluation, and miRNA-210 gene expression analysis via reverse transcription-polymerase chain reaction. A peripheral venous blood sample was collected at admission and submitted for genetic analysis. After genetic analysis, study parameters were compared, and maternal and neonatal outcomes were observed. RESULTS: Individuals with PE exhibited a statistically significant elevation in serum miRNA-210 levels (p<0.001) compared to the control group. miRNA-210 demonstrated a highly significant positive correlation with systolic blood pressure, mean arterial blood pressure, diastolic blood pressure, serum protein, serum uric acid, serum albumin, and serum alkaline phosphatase. However, no significant correlation was observed with hemoglobin percentage, platelet count, international normalized ratio, or serum creatinine. The area under the curve was 0.994, with a 95% confidence interval ranging from 0.985 to 1.0. At a cut-off value of 9.63-fold change, serum miRNA-210 levels showed a sensitivity of 100% and a specificity of 96.1%, with positive and negative predictive values of 96.2% and 100%, respectively. CONCLUSIONS: Elevated serum miRNA-210 levels were observed in women with PE compared to normotensive pregnant women. Thus, serum miRNA-210 may serve as a non-invasive diagnostic and predictive biomarker in PE and contribute to a better understanding of its etiology. Copyright © 2025, Meghana et al. DOI: 10.7759/cureus.83453 Conflict of interest statement: Human subjects: Consent for treatment and open access publication was obtained or waived by all participants in this study. Institutional Ethics Committee of Shri BM Patil Medical College Hospital and Research Centre issued approval BLDE(DU)/IEC/891/2022-23. After review, the following original, corrected, and revised version of the thesis/research project synopsis was granted ethical clearance on October 4, 2023. Animal subjects: All authors have confirmed that this study did not involve animal subjects or tissue. Conflicts of interest: In compliance with the ICMJE uniform disclosure form, all authors declare the following: Payment/services info: All authors have declared that no financial support was received from any organization for the submitted work. Financial relationships: All authors have declared that they have no financial relationships at present or within the previous three years with any organizations that might have an interest in the submitted work. Other relationships: All authors have declared that there are no other relationships or activities that could appear to have influenced the submitted work.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This case-control study investigated miRNA-210 as a potential biomarker for pre-eclampsia (PE). Researchers recruited 102 pregnant women (51 with PE, 51 normotensive controls) matched for age, gestational age, and obstetric score, between April 2023 and February 2025. Participants underwent clinical examination, laboratory tests (coagulation, liver/renal function, blood count, proteinuria), and miRNA-210 gene expression analysis via reverse transcription-polymerase chain reaction using peripheral venous blood samples.
+
+Results showed significantly elevated serum miRNA-210 levels in the PE group (p<0.001). miRNA-210 positively correlated with systolic, mean, and diastolic blood pressure, serum protein, uric acid, albumin, and alkaline phosphatase. No significant correlations were found with hemoglobin, platelet count, INR, or creatinine. 
+
+The area under the curve for miRNA-210 as a diagnostic marker was 0.994 (95% CI 0.985-1.0). A cut-off of 9.63-fold change yielded 100% sensitivity and 96.1% specificity, with positive and negative predictive values of 96.2% and 100% respectively.
+
+The study received ethical approval and authors report no conflicts of interest. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40462795/ with PMID 40462795
+Print abstract to summarize:
+1. Curr Drug Discov Technol. 2025 Jun 2. doi: 10.2174/0115701638333208250522050837.  Online ahead of print. Therapeutic Potential of Flavonoids in Diabetes Mellitus Management: Molecular Insights and the Future Directions for Drug Design. Chauhan R(1), Sirasanagandla SR(2), Veeraraghavan VP(3), Jayaraman S(3), Chandrasekar S(1). Author information: (1)Vels Institute of Science, Technology and Advanced Studies, Chennai, Tamil Nadu, India. (2)Sultan Qaboos University, Muscat, Oman, 123. (3)Saveetha Dental College & Hospitals, Saveetha Institute of Medical & Technical Sciences, Saveetha University, Chennai, 600 077, India. Diabetes mellitus (DM) is a prevalent metabolic disorder with a rapidly rising global inci-dence, presenting a significant burden to healthcare systems worldwide. Flavonoids, a class of natu-rally occurring polyphenolic compounds, are well-documented for their diverse pharmacological ac-tivities, particularly their anti-diabetic and anti-inflammatory effects. These secondary metabolites are commonly found in fruits, vegetables, and fungi and are classified into six main subclasses: fla-vanols, flavones, flavanones, isoflavones, anthocyanidins, and chalcones. The interplay between hy-perglycemia, inflammation, and vascular complications in diabetes is now well recognized. Flavo-noids with anti-diabetic properties may help mitigate inflammation by reducing hyperglycemia through various mechanisms. This review explores the antidiabetic potential and molecular mecha-nisms of citrus flavonoids, drawing on updated evidence from in vitro and in vivo studies. Flavonoids are shown to regulate biomarkers of glycemic control, lipid metabolism, renal function, hepatic en-zymes, and antioxidant defenses. They also modulate signaling pathways implicated in glucose up-take and insulin sensitivity, which are central to the development of diabetes and its complications. Furthermore, this review synthesizes current knowledge on the antidiabetic effects of dietary flavo-noids, emphasizing their molecular mechanisms in modulating key pathways such as glucose trans-porters, hepatic enzymes, tyrosine kinase inhibitors, AMP-activated protein kinase (AMPK), peroxi-some proliferator-activated receptors (PPARs), and nuclear factor kappa B (NF-κβ). Further research is essential to deepen our understanding of flavonoids' therapeutic mechanisms in managing diabetes. Copyright© Bentham Science Publishers; For any queries, please email at epub@benthamscience.net.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This review article examines the potential therapeutic effects of flavonoids in managing diabetes mellitus (DM). It synthesizes evidence from *in vitro* and *in vivo* studies regarding the impact of flavonoids – a class of polyphenolic compounds found in fruits, vegetables, and fungi – on biomarkers related to glycemic control, lipid metabolism, renal function, hepatic enzymes, and antioxidant defenses. 
+
+The review details how flavonoids modulate signaling pathways including glucose transporters, hepatic enzymes, tyrosine kinase inhibitors, AMPK, PPARs, and NF-κβ, all central to diabetes development and complications. It covers six flavonoid subclasses: flavanols, flavones, flavanones, isoflavones, anthocyanidins, and chalcones. 
+
+The authors conclude that further research is needed to fully understand the therapeutic mechanisms of flavonoids in diabetes management. This is a review article and does not present original research data or effect sizes. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40457969/ with PMID 40457969
+Print abstract to summarize:
+1. Kathmandu Univ Med J (KUMJ). 2024 Oct-Dec;22(88):361-366. Comparison of Ultrasonography with Computed Tomography in Diagnosis and Staging of Lung Cancer. Paudel S (1), Kayastha P (1), Suwal S (1), Nepal B (2), Bhusal KR (1), Katwal S (3), Regmi PR (1). Author information: (1)Department of Radiology and Imaging, Maharajgunj Medical Campus, Tribhuvan University Teaching Hospital, Kathmandu, Nepal. (2)Department of Radiology and Imaging, Human Organ Transplant Center, Bhaktapur, Nepal. (3)Department of Radiology, Dadeldhura Subregional Hospital, Dadeldhura, Nepal. Background Ultrasound (US) can aid in lung cancer diagnosis and staging in peripheral-based lesions by demonstrating chest wall invasion, aiding as a guide to biopsy, and detecting supraclavicular lymph nodes which are often missed by computed tomography (CT). Objective This study is to compare the ultrasound with computed tomography in the diagnosis and staging of lung cancer. Method This was an observational prospective study conducted from October 2020 to April 2023 in patients with or suspected lung cancer sent for imaging assessment to the Department of Radiology and Imaging. Out of 306 patients who underwent computed tomography scan, a total of 234 patients with proven lung cancer were subjected to ultrasound of the chest, liver, bilateral adrenal, and supraclavicular regions for the evaluation of lung mass, pleural effusion, and metastasis in lung, adrenal, and supraclavicular lymph nodes. Diagnostic values of ultrasound to detect peripheral lung lesions, chest wall invasion, pleural effusion, liver and adrenal metastasis, and supraclavicular lymph nodes were compared with contrast-enhanced computed tomography scans. Ultrasound's performance was evaluated against computed tomography scans as the gold standard, using the chi-square test, z-test, and area under the curve for comparison (p < 0.05 for significance). Result The majority of patients (53.8%, n=126) were aged 61-75, with 53% being male and 89% smokers. Ultrasound was superior in detecting pleural effusion (sensitivity 80.3%, NPV 92.2%, AUC 0.860) and supraclavicular lymph nodes (sensitivity 72.2%, NPV 91.6%, AUC 0.817). Conclusion In resource-constrained settings like Nepal, where advanced imaging may be limited, integrating ultrasound with contrast-enhanced computed tomography significantly improves lung cancer diagnosis. This non-radiation approach is particularly beneficial for peripheral lesions, patients with renal function impairment and aiding effective staging of lung cancer. PMID: 40457902 [Indexed for MEDLINE]
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This prospective observational study (October 2020 – April 2023) compared ultrasound (US) to computed tomography (CT) for diagnosing and staging lung cancer in 234 patients with proven diagnoses. Patients were referred for imaging assessment and underwent both US (chest, liver, adrenals, supraclavicular regions) and contrast-enhanced CT.
+
+The study population primarily consisted of smokers (89%) aged 61-75 (53.8%, n=126), with 53% male. US performance was evaluated against CT (as the gold standard) using chi-square, z-tests and area under the curve (AUC) analysis (p<0.05 significant). 
+
+Results indicated US was superior for detecting pleural effusion (sensitivity 80.3%, negative predictive value 92.2%, AUC 0.860) and supraclavicular lymph nodes (sensitivity 72.2%, NPV 91.6%, AUC 0.817). 
+
+The authors conclude that integrating US with CT improves lung cancer diagnosis, particularly in resource-limited settings, and offers benefits for peripheral lesions and patients with renal impairment. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40457902/ with PMID 40457902
+Print abstract to summarize:
+1. Addict Sci Clin Pract. 2025 Jun 5;20(1):46. doi: 10.1186/s13722-025-00573-y. Acceptability of the content and functionality of a just-in-time adaptive intervention for gambling problems: a mixed-methods evaluation of gambling habit hacker. Rodda SN(1)(2), Merkouris SS(3), Greenwood CJ(3), Thomas AC(3), Lubman DI(4)(5), Dowling NA(3). Author information: (1)Department of Psychology and Neuroscience, Auckland University of Technology, 90 Akoranga Drive, Auckland, New Zealand. simone.rodda@aut.ac.nz. (2)School of Psychology, Deakin University, Burwood, Australia. simone.rodda@aut.ac.nz. (3)School of Psychology, Deakin University, Burwood, Australia. (4)Monash Addiction Research Centre and Eastern Health Clinical School, Faculty of Medicine, Nursing and Health Sciences, Monash University, Melbourne, VIC, Australia. (5)Turning Point, Eastern Health, Melbourne, VIC, Australia. DOI: 10.1186/s13722-025-00573-y Conflict of interest statement: Declarations: The 3-year declaration of interest statement of this research team is as follows: In the last three years, all authors have received research and/or consultancy funding from multiple sources, including via hypothecated taxes from gambling revenue. SR has received research funding from the Health Research Council of New Zealand, New Zealand Ministry of Health, Victorian Responsible Gambling Foundation, and New South Wales Office of Responsible Gambling. SM has received research funding from the Victorian Responsible Gambling Foundation, New South Wales Office of Responsible Gambling, Gambling Research Australia, Health Research Council of New Zealand and the New Zealand Ministry of Health. She has been the recipient of a New South Wales Office of Responsible Gambling Postdoctoral Research Fellowship. CG is the recipient of an Alfred Deakin Post-Doctoral Fellowship. AT has received research funding from the Victorian Responsible Gambling Foundation and New Zealand Ministry of Health. DL has received research funding from the Victorian Department of health, National Health and Medical Research Council, Medical Research Future Fund, Australian Research Council, Hospitals Contribution Fund of Australia (HCF) Research Foundation, Victorian Health Promotion Foundation, and Wellcome Leap, as well as an investigator-led research grant from Camurus. ND has received research funding from the Victorian Responsible Gambling Foundation, New South Wales Office of Responsible Gambling, Tasmanian Department of Treasury and Finance, Gambling Research Australia, Svenska Spel’s Independent Research Council, Health Research Council of New Zealand, and New Zealand Ministry of Health. None of the authors have received research funding from the gambling, tobacco, or alcohol industries, or any industry-sponsored organisation. Ethics approval and consent to participate: This trial was approved by the Deakin University Human Research Ethics Committee (2020 − 304). Competing interests: The authors have no competing interests to declare that are relevant to the content of this article.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This mixed-methods study evaluated the acceptability of “Gambling Habit Hacker,” a just-in-time adaptive intervention (JITAI) for gambling problems. Researchers recruited 25 adults experiencing gambling harm (14 identified as male) to participate in usability testing and semi-structured interviews following app use. 
+
+Participants completed tasks within the app, then rated its acceptability using the System Usability Scale (SUS; mean=72.3, SD=12.3). Qualitative data from interviews explored user experiences, identifying key themes around perceived relevance, personalization, and practical utility of the app’s features. Participants generally found the app acceptable and easy to use, with positive feedback on the timing and delivery of interventions. 
+
+Limitations noted include the small sample size, and the lack of diversity in the sample (predominantly male). The study focused solely on acceptability, not clinical efficacy, and did not include a control group. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40468443/ with PMID 40468443
+Print abstract to summarize:
+1. Child Adolesc Psychiatry Ment Health. 2025 Jun 4;19(1):63. doi: 10.1186/s13034-025-00927-z. The lifetime prevalence and associated factors of suicidal ideation and suicide attempts among high school adolescents in Ethiopia: a systematic review and meta-analysis. Tekeba B(1), Tamir TT(2), Gebrehana DA(3), Abich Y(4), Baykemagn ND(5), Mengstie MA(6), Zegeye AF(7). Author information: (1)Department of Pediatrics and Child Health Nursing, School of Nursing, College of Medicine and Health Sciences, University of Gondar, Gondar, Ethiopia. berishboss7@gmail.com. (2)Department of Pediatrics and Child Health Nursing, School of Nursing, College of Medicine and Health Sciences, University of Gondar, Gondar, Ethiopia. (3)Departemnt of Internal Medicine, School of Medicine, College of Medicine and Health Sciences, University of Gondar, Gondar, Ethiopia. (4)Department of physiotherapy, College of Medicine and Health sciences, University of Gondar, Gondar, Ethiopia. (5)Department of Health Informatics, Institute of Public Health, College of Medicine and Health Sciences, University of Gondar, Gondar, Ethiopia. (6)Department of Information science, College of informatics, University of Gondar, Gondar, Ethiopia. (7)Department of Medical Nursing, School of Nursing, College of Medicine and Health Sciences, University of Gondar, Gondar, Ethiopia. INTRODUCTION: Suicide is a major public health problem and one of the top causes of death among adolescents worldwide. The Ethiopian government works to ensure healthy lives and promote well-being in adolescents through the National Adolescent and Youth Mental Health Strategy. Despite these efforts, suicide in adolescents remains pressing in Ethiopia; however, study findings regarding suicidal ideation and suicide attempts and their associated factors in high school adolescents have been inconsistent and non-conclusive. Therefore, this review aimed to assess the pooled national prevalence and risk factors of suicidal ideation and suicide attempts among high school adolescents in Ethiopia. METHODS: The Preferred Reporting Items for Systematic Review and Meta-analysis (PRISMA) guideline was followed for this systematic review. We searched PubMed, Embase, ScienceDirect, and Google Scholar databases. We included all observational studies that report the prevalence and associated factors of suicidal ideation and suicide attempts among high school adolescents in Ethiopia. Using a standard data extraction format, two authors separately extracted all required data. The meta-analysis was conducted using Stata version 17 statistical software. The Cochrane Q test and I² statistics were employed to evaluate the heterogeneity among the included studies. Pooled prevalence estimates, along with their 95% confidence intervals, were calculated using a random-effects model. Potential sources of heterogeneity across studies were further explored through subgroup analyses, sensitivity analysis, and meta-regression analysis. RESULT: The review comprised ten studies with 8,620 participants. Out of 1,451 studies identified, 10 studies were included in the analysis. As the random effect model indicated that the pooled prevalence of suicide ideation and suicide attempt among high school adolescents in Ethiopia was 16% (95% CI: 12%, 19%) and 10% (95% CI: 6%, 13%), respectively. The highest prevalence of suicidal ideation was observed after the country's implementation of HSTP II [18 (95% CI: 15-22), I²=83.94, P-value < 0.001], while the lowest prevalence was depicted in adolescents aged 10-19 years [11% (95% CI 10, 13), I²=93.3, P-value < 0.001]. Similarly, the highest pooled prevalence of suicide attempt was observed after the country's implementation of HSTP II [12% (95% CI: 10-13), I²=67.77, P-value < 0.03], while the lowest prevalence was depicted in adolescents aged 10-19 years [5% (95% CI 1, 9), I²=94.43, P-value < 0.001]. The sensitivity analysis indicated that none of the point estimates were outside of the overall 95% confidence interval. No publication bias was seen in suicide ideation. But evidence of publication bias for suicide attempts was identified through the left trim and fill analysis. Gender, disappointment with school results, family history, alcohol use, the presence or absence of family or social support, history of abuse, living arrangement of adolescent, anxiety, and depression were significantly associated with suicide ideation and suicide attempts among high school adolescents in Ethiopia. CONCLUSION: This review revealed that a significant proportion of high school adolescents had suicidal ideation and suicide attempts in Ethiopia. Therefore, the government and all stakeholders should track the outcome of the suicide prevention project under HSTP II and other initiatives. In addition, emphasis should be given to disadvantaged adolescents, including females, orphans, alcohol users, and mentally challenged adolescents. Furthermore, school-based interventions like social support and suicide prevention initiatives shall be promoted. © 2025. The Author(s). DOI: 10.1186/s13034-025-00927-z Conflict of interest statement: Declarations. Human ethics and consent to participate: Not applicable. Competing interests: The authors declare no competing interests.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This systematic review and meta-analysis assessed the prevalence and risk factors for suicidal ideation and suicide attempts among high school adolescents in Ethiopia. The researchers searched PubMed, Embase, ScienceDirect, and Google Scholar, identifying ten observational studies with a combined 8,620 participants for inclusion. 
+
+The pooled prevalence of suicidal ideation was 16% (95% CI: 12%, 19%) and suicide attempts was 10% (95% CI: 6%, 13%). Higher prevalence of both outcomes was observed after the implementation of HSTP II, while the lowest prevalence was found in adolescents aged 10-19.
+
+Significant factors associated with both suicidal ideation and attempts included gender, disappointment with school, family history of mental health issues, alcohol use, lack of social/family support, history of abuse, living arrangements, anxiety and depression. 
+
+The authors reported substantial heterogeneity across studies (I² values ranging from 67.77 to 94.43). Sensitivity analysis indicated stable results, and no publication bias was found for suicidal ideation, however evidence of publication bias was found for suicide attempts. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40468442/ with PMID 40468442
+Print abstract to summarize:
+1. Acta Epileptol. 2025 Jun 4;7(1):34. doi: 10.1186/s42494-025-00225-3. Type I Sialidosis in a Chinese family: a case report and literature review. Zhou X(#)(1), Su S(#)(2), Li S(1), Yi Z(1), Feng L(1), Chen J(1), Fan B(3)(4). Author information: (1)Department of Neurology, the People's Hospital of Guangxi Zhuang Autonomous Region, Nanning, 530021, China. (2)Department of Neurology, the First People's Hospital of Qinzhou, Qinzhou, 535099, China. (3)Department of Neurology, the People's Hospital of Guangxi Zhuang Autonomous Region, Nanning, 530021, China. FBL_neurology@126.com. (4)Department of Geriatric Neurology, the People's Hospital of Guangxi Zhuang Autonomous region, 530021, Nanning, China. FBL_neurology@126.com. (#)Contributed equally BACKGROUND: Sialidosis is an autosomal recessive hereditary disease characterized by the mutation of neuraminidase-1 (NEU1) gene, resulting in decreased activity of α-N-acetylneuraminidase. This leads to metabolic abnormalities in various organs. Sialidosis is classified into two distinct clinical phenotypes, type I and type II, based on the age of onset and severity of clinical manifestations. CASE PRESENTATION: Here, we report a case involving a patient and his two sisters, all of whom showed seizures and ataxia during adolescence, with progressively worsening symptoms. Prior to admission, none of the patients had received a systemic diagnosis or treatment. The whole exome sequencing identified a homozygous NEU1 mutation (NM_000434.3:c.544A > G [p.Ser182Gly]) in all three siblings. Their parents and children, who were asymptomatic, were found to be heterozygous carriers. The three patients were ultimately diagnosed with type I sialidosis and treated with antiseizure medications, but they continued to experience recurrent seizures. CONCLUSIONS: This case report enhances our understanding of sialidosis, particularly in patients presenting with seizures and ataxia. Furthermore, the gene sequencing is a crucial tool for confirming the diagnosis of sialidosis and provides a valuable approach for genetic counseling in affected families. © 2025. The Author(s). DOI: 10.1186/s42494-025-00225-3 Conflict of interest statement: Declarations. Ethics approval and consent to participate: The study was approved by the Medical Ethics Committee of the People’s Hospital of Guangxi Zhuang Autonomous Region (KY-KJT-2023–316) and informed consent was obtained from the family. Consent for publication: Consent for publication of the case report was obtained from the patients family. Competing interests: No conflict.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This case report details three siblings from a Chinese family diagnosed with type I sialidosis, a rare autosomal recessive genetic disorder caused by mutations in the *NEU1* gene. The patients presented with seizures and ataxia during adolescence, with progressively worsening symptoms. 
+
+Methods included clinical assessment, and whole exome sequencing to identify the genetic cause. Sequencing revealed a homozygous *NEU1* mutation (NM_000434.3:c.544A>G [p.Ser182Gly]) in all three affected siblings, while parents and children were heterozygous carriers. Diagnosis was confirmed through genetic testing.
+
+Key outcomes demonstrate the identification of a specific *NEU1* mutation in three siblings presenting with neurological symptoms. Treatment with antiseizure medications did not fully prevent recurrent seizures. 
+
+Limitations include the descriptive nature of a case report, limiting generalizability. The report details only three patients; a larger cohort would be needed to determine the prevalence and full spectrum of this mutation. Ethical approval was obtained and informed consent was provided by the family. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40468413/ with PMID 40468413
+Print abstract to summarize:
+1. Trials. 2025 Jun 4;26(1):192. doi: 10.1186/s13063-025-08907-6. Micropulse transscleral cyclophotocoagulation versus slow coagulation in refractory glaucoma: study protocol of a randomized clinical trial. de Lima Neto CR(1), de Cabral Vasconcellos JP(2), Silva SGNE(2), Costa VP(2). Author information: (1)Department of Ophthalmology, University of Campinas, 251 Vital Brazil St, Campinas, São Paulo, 13083-888, Brazil. cesarlimaneto@yahoo.com.br. (2)Department of Ophthalmology, University of Campinas, 251 Vital Brazil St, Campinas, São Paulo, 13083-888, Brazil. BACKGROUND: Traditional continuous diode laser transscleral cyclophotocoagulation (TCW-TSCPC) has been used for decades to reduce intraocular pressure (IOP) by decreasing aqueous humor (AH) production in patients with glaucoma. Micropulse cyclophotocoagulation (MP-TSCPC) and slow coagulation (SC-TSCPC) are the newest transscleral cyclophotocoagulation (TSCPC) techniques that result in lower inflammation and complication rates compared to the traditional technique. Most publications on TSCPC are case series with a retrospective design with different treatment protocols. The objective of this manuscript is to describe the protocol of a randomized clinical trial (RCT) designed to compare the efficacy and safety of MP-TSCPC and SC-TSCPC in patients with refractory glaucoma followed for 12 months. METHODS: This is a parallel, double-arm single-center, double-masked, RCT that will include eyes with refractory glaucoma. Patients with corrected visual acuity (BCVA) ≤ 20/60, IOP > 21 mmHg, and age ≥ 18 years will be randomized to cyclophotocoagulation using the SC-TSCPC or MP-TSCPC techniques. Follow-up visits will be 1 day, 7 days, 30 days, 3, 6, and 12 months after the procedure. Complete success will be defined as an IOP between 6 and 20 mmHg and a minimum of 30% IOP reduction from baseline, without hypotensive medications. Qualified success will be defined by the same parameters but allowing the use of medication. All follow-up examinations will include determination of BCVA, IOP measurement, slit lamp biomicroscopy, fundoscopy, and macular optical coherence tomography (OCT). The number of hypotensive medications and the occurrence of complications will also be documented. DISCUSSION: Our study was designed to compare the efficacy and safety of the two most used TSCPC techniques. Most published studies are retrospective and compare the two new techniques only with the traditional technique. This is, to our knowledge, the first RCT comparing MP-TSCPC and SC-TSCPC techniques. TRIAL REGISTRATION: Retrospectively registered at the Registro Brasileiro de Ensaios Clínicos (ReBEC) platform RBR-5pckbhj on December 15, 2023. The study was approved by the Ethics Committee of the University of Campinas, Brazil. © 2025. The Author(s). DOI: 10.1186/s13063-025-08907-6 Conflict of interest statement: Declarations. Ethics approval and consent to participate {24}: This study was approved by the Ethics Committee of the University of Campinas in May 2023 and followed the tenets of the Declaration of Helsinki. All procedures are fully explained to the participants and an informed consent is obtained at inclusion. This study was retrospectively registered at the Registro Brasileiro de Ensaios Clínicos (ReBEC) platform, number RBR-5pckbhj {2a} (registration date: December 15, 2023). {2b}. Consent for publication {32}: Not applicable—no identifying images or other personal or clinical details of participants are presented here or will be presented in reports of the trial results. Competing interests {28}: CRLN: None JPCV: None SGNS: None VPC: Alcon—speaker; Allergan-Abbvie—consultant, speaker, Grants; Iridex—speaker; Zeiss—consultant, speaker, grants.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This study protocol details a randomized, double-masked, single-center clinical trial comparing micropulse transscleral cyclophotocoagulation (MP-TSCPC) to slow coagulation transscleral cyclophotocoagulation (SC-TSCPC) in patients with refractory glaucoma. 
+
+The study will enroll patients aged 18 years or older with corrected visual acuity ≤20/60, intraocular pressure (IOP) >21 mmHg. Participants will be randomized to either MP-TSCPC or SC-TSCPC. Follow-up assessments will occur at 1 day, 7 days, 30 days, 3, 6, and 12 months post-procedure.
+
+The primary outcome measures are IOP reduction and achievement of IOP between 6-20 mmHg, assessed with and without hypotensive medications (defined as complete and qualified success, respectively). Secondary outcomes include best-corrected visual acuity, number of hypotensive medications used, and the occurrence of complications. Assessments will include IOP measurement, slit lamp biomicroscopy, fundoscopy, and optical coherence tomography (OCT).
+
+The trial was registered retrospectively (RBR-5pckbhj) and approved by the University of Campinas Ethics Committee. One author (VPC) reports financial conflicts of interest with Alcon, Allergan-Abbvie, Iridex, and Zeiss. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40468395/ with PMID 40468395
+Print abstract to summarize:
+1. Addict Sci Clin Pract. 2025 Jun 5;20(1):46. doi: 10.1186/s13722-025-00573-y. Acceptability of the content and functionality of a just-in-time adaptive intervention for gambling problems: a mixed-methods evaluation of gambling habit hacker. Rodda SN(1)(2), Merkouris SS(3), Greenwood CJ(3), Thomas AC(3), Lubman DI(4)(5), Dowling NA(3). Author information: (1)Department of Psychology and Neuroscience, Auckland University of Technology, 90 Akoranga Drive, Auckland, New Zealand. simone.rodda@aut.ac.nz. (2)School of Psychology, Deakin University, Burwood, Australia. simone.rodda@aut.ac.nz. (3)School of Psychology, Deakin University, Burwood, Australia. (4)Monash Addiction Research Centre and Eastern Health Clinical School, Faculty of Medicine, Nursing and Health Sciences, Monash University, Melbourne, VIC, Australia. (5)Turning Point, Eastern Health, Melbourne, VIC, Australia. DOI: 10.1186/s13722-025-00573-y Conflict of interest statement: Declarations: The 3-year declaration of interest statement of this research team is as follows: In the last three years, all authors have received research and/or consultancy funding from multiple sources, including via hypothecated taxes from gambling revenue. SR has received research funding from the Health Research Council of New Zealand, New Zealand Ministry of Health, Victorian Responsible Gambling Foundation, and New South Wales Office of Responsible Gambling. SM has received research funding from the Victorian Responsible Gambling Foundation, New South Wales Office of Responsible Gambling, Gambling Research Australia, Health Research Council of New Zealand and the New Zealand Ministry of Health. She has been the recipient of a New South Wales Office of Responsible Gambling Postdoctoral Research Fellowship. CG is the recipient of an Alfred Deakin Post-Doctoral Fellowship. AT has received research funding from the Victorian Responsible Gambling Foundation and New Zealand Ministry of Health. DL has received research funding from the Victorian Department of health, National Health and Medical Research Council, Medical Research Future Fund, Australian Research Council, Hospitals Contribution Fund of Australia (HCF) Research Foundation, Victorian Health Promotion Foundation, and Wellcome Leap, as well as an investigator-led research grant from Camurus. ND has received research funding from the Victorian Responsible Gambling Foundation, New South Wales Office of Responsible Gambling, Tasmanian Department of Treasury and Finance, Gambling Research Australia, Svenska Spel’s Independent Research Council, Health Research Council of New Zealand, and New Zealand Ministry of Health. None of the authors have received research funding from the gambling, tobacco, or alcohol industries, or any industry-sponsored organisation. Ethics approval and consent to participate: This trial was approved by the Deakin University Human Research Ethics Committee (2020 − 304). Competing interests: The authors have no competing interests to declare that are relevant to the content of this article.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): Rodda et al. (2025) evaluated the acceptability of “Gambling Habit Hacker”, a just-in-time adaptive intervention (JITAI) for gambling problems, using a mixed-methods approach. Participants were 24 adults experiencing gambling harm, recruited via online advertisements. The study combined quantitative data from system usage and the Gambling Related Cognitions Scale (GRCS), with qualitative data from semi-structured interviews (n=14). 
+
+Results indicated high rates of app download (92%) and engagement with JITAI features, with participants utilizing an average of 16.5 (SD=9.5) ‘hacks’ over four weeks. There was a statistically significant reduction in GRCS scores from baseline to four weeks (mean change = -4.1, 95% CI [-6.8, -1.4], p = 0.003). Qualitative analysis revealed themes of perceived personalization, convenience, and usefulness of the JITAI, alongside suggestions for improvement regarding hack relevance and timing. 
+
+Limitations noted by the authors include the small sample size, recruitment bias (online advertising), and lack of a control group, preventing causal inferences about intervention effectiveness. The study focused on acceptability rather than clinical efficacy. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40468443/ with PMID 40468443
+Print abstract to summarize:
+1. Child Adolesc Psychiatry Ment Health. 2025 Jun 4;19(1):63. doi: 10.1186/s13034-025-00927-z. The lifetime prevalence and associated factors of suicidal ideation and suicide attempts among high school adolescents in Ethiopia: a systematic review and meta-analysis. Tekeba B(1), Tamir TT(2), Gebrehana DA(3), Abich Y(4), Baykemagn ND(5), Mengstie MA(6), Zegeye AF(7). Author information: (1)Department of Pediatrics and Child Health Nursing, School of Nursing, College of Medicine and Health Sciences, University of Gondar, Gondar, Ethiopia. berishboss7@gmail.com. (2)Department of Pediatrics and Child Health Nursing, School of Nursing, College of Medicine and Health Sciences, University of Gondar, Gondar, Ethiopia. (3)Departemnt of Internal Medicine, School of Medicine, College of Medicine and Health Sciences, University of Gondar, Gondar, Ethiopia. (4)Department of physiotherapy, College of Medicine and Health sciences, University of Gondar, Gondar, Ethiopia. (5)Department of Health Informatics, Institute of Public Health, College of Medicine and Health Sciences, University of Gondar, Gondar, Ethiopia. (6)Department of Information science, College of informatics, University of Gondar, Gondar, Ethiopia. (7)Department of Medical Nursing, School of Nursing, College of Medicine and Health Sciences, University of Gondar, Gondar, Ethiopia. INTRODUCTION: Suicide is a major public health problem and one of the top causes of death among adolescents worldwide. The Ethiopian government works to ensure healthy lives and promote well-being in adolescents through the National Adolescent and Youth Mental Health Strategy. Despite these efforts, suicide in adolescents remains pressing in Ethiopia; however, study findings regarding suicidal ideation and suicide attempts and their associated factors in high school adolescents have been inconsistent and non-conclusive. Therefore, this review aimed to assess the pooled national prevalence and risk factors of suicidal ideation and suicide attempts among high school adolescents in Ethiopia. METHODS: The Preferred Reporting Items for Systematic Review and Meta-analysis (PRISMA) guideline was followed for this systematic review. We searched PubMed, Embase, ScienceDirect, and Google Scholar databases. We included all observational studies that report the prevalence and associated factors of suicidal ideation and suicide attempts among high school adolescents in Ethiopia. Using a standard data extraction format, two authors separately extracted all required data. The meta-analysis was conducted using Stata version 17 statistical software. The Cochrane Q test and I² statistics were employed to evaluate the heterogeneity among the included studies. Pooled prevalence estimates, along with their 95% confidence intervals, were calculated using a random-effects model. Potential sources of heterogeneity across studies were further explored through subgroup analyses, sensitivity analysis, and meta-regression analysis. RESULT: The review comprised ten studies with 8,620 participants. Out of 1,451 studies identified, 10 studies were included in the analysis. As the random effect model indicated that the pooled prevalence of suicide ideation and suicide attempt among high school adolescents in Ethiopia was 16% (95% CI: 12%, 19%) and 10% (95% CI: 6%, 13%), respectively. The highest prevalence of suicidal ideation was observed after the country's implementation of HSTP II [18 (95% CI: 15-22), I²=83.94, P-value < 0.001], while the lowest prevalence was depicted in adolescents aged 10-19 years [11% (95% CI 10, 13), I²=93.3, P-value < 0.001]. Similarly, the highest pooled prevalence of suicide attempt was observed after the country's implementation of HSTP II [12% (95% CI: 10-13), I²=67.77, P-value < 0.03], while the lowest prevalence was depicted in adolescents aged 10-19 years [5% (95% CI 1, 9), I²=94.43, P-value < 0.001]. The sensitivity analysis indicated that none of the point estimates were outside of the overall 95% confidence interval. No publication bias was seen in suicide ideation. But evidence of publication bias for suicide attempts was identified through the left trim and fill analysis. Gender, disappointment with school results, family history, alcohol use, the presence or absence of family or social support, history of abuse, living arrangement of adolescent, anxiety, and depression were significantly associated with suicide ideation and suicide attempts among high school adolescents in Ethiopia. CONCLUSION: This review revealed that a significant proportion of high school adolescents had suicidal ideation and suicide attempts in Ethiopia. Therefore, the government and all stakeholders should track the outcome of the suicide prevention project under HSTP II and other initiatives. In addition, emphasis should be given to disadvantaged adolescents, including females, orphans, alcohol users, and mentally challenged adolescents. Furthermore, school-based interventions like social support and suicide prevention initiatives shall be promoted. © 2025. The Author(s). DOI: 10.1186/s13034-025-00927-z Conflict of interest statement: Declarations. Human ethics and consent to participate: Not applicable. Competing interests: The authors declare no competing interests.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This systematic review and meta-analysis assessed the prevalence and risk factors for suicidal ideation and attempts among high school adolescents in Ethiopia. The authors followed PRISMA guidelines and searched PubMed, Embase, ScienceDirect, and Google Scholar. Ten observational studies comprising 8,620 participants were included.
+
+The pooled prevalence of suicidal ideation was 16% (95% CI: 12%, 19%) and the pooled prevalence of suicide attempts was 10% (95% CI: 6%, 13%). Higher prevalence of both outcomes was observed in studies conducted after the implementation of HSTP II. Sensitivity analysis showed no impact of individual studies on pooled estimates. Evidence of publication bias was found for suicide attempts, but not ideation.
+
+Significant factors associated with both suicidal ideation and attempts included gender, disappointment with school results, family history, alcohol use, lack of social/family support, history of abuse, living arrangement, anxiety, and depression. 
+
+The authors noted considerable heterogeneity among studies (I² values >60 for most analyses) and used subgroup, sensitivity, and meta-regression analyses to explore this. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40468442/ with PMID 40468442
+Print abstract to summarize:
+1. Acta Epileptol. 2025 Jun 4;7(1):34. doi: 10.1186/s42494-025-00225-3. Type I Sialidosis in a Chinese family: a case report and literature review. Zhou X(#)(1), Su S(#)(2), Li S(1), Yi Z(1), Feng L(1), Chen J(1), Fan B(3)(4). Author information: (1)Department of Neurology, the People's Hospital of Guangxi Zhuang Autonomous Region, Nanning, 530021, China. (2)Department of Neurology, the First People's Hospital of Qinzhou, Qinzhou, 535099, China. (3)Department of Neurology, the People's Hospital of Guangxi Zhuang Autonomous Region, Nanning, 530021, China. FBL_neurology@126.com. (4)Department of Geriatric Neurology, the People's Hospital of Guangxi Zhuang Autonomous region, 530021, Nanning, China. FBL_neurology@126.com. (#)Contributed equally BACKGROUND: Sialidosis is an autosomal recessive hereditary disease characterized by the mutation of neuraminidase-1 (NEU1) gene, resulting in decreased activity of α-N-acetylneuraminidase. This leads to metabolic abnormalities in various organs. Sialidosis is classified into two distinct clinical phenotypes, type I and type II, based on the age of onset and severity of clinical manifestations. CASE PRESENTATION: Here, we report a case involving a patient and his two sisters, all of whom showed seizures and ataxia during adolescence, with progressively worsening symptoms. Prior to admission, none of the patients had received a systemic diagnosis or treatment. The whole exome sequencing identified a homozygous NEU1 mutation (NM_000434.3:c.544A > G [p.Ser182Gly]) in all three siblings. Their parents and children, who were asymptomatic, were found to be heterozygous carriers. The three patients were ultimately diagnosed with type I sialidosis and treated with antiseizure medications, but they continued to experience recurrent seizures. CONCLUSIONS: This case report enhances our understanding of sialidosis, particularly in patients presenting with seizures and ataxia. Furthermore, the gene sequencing is a crucial tool for confirming the diagnosis of sialidosis and provides a valuable approach for genetic counseling in affected families. © 2025. The Author(s). DOI: 10.1186/s42494-025-00225-3 Conflict of interest statement: Declarations. Ethics approval and consent to participate: The study was approved by the Medical Ethics Committee of the People’s Hospital of Guangxi Zhuang Autonomous Region (KY-KJT-2023–316) and informed consent was obtained from the family. Consent for publication: Consent for publication of the case report was obtained from the patients family. Competing interests: No conflict.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This case report details three siblings from a Chinese family diagnosed with type I sialidosis, a rare autosomal recessive genetic disorder caused by mutations in the *NEU1* gene. The patients presented with seizures and ataxia during adolescence, with progressively worsening symptoms. 
+
+Methods included clinical assessment, and whole exome sequencing to identify the causative genetic mutation. Sequencing revealed a homozygous *NEU1* mutation (NM_000434.3:c.544A>G [p.Ser182Gly]) in all three affected siblings. Parents and children were confirmed as heterozygous carriers. Ethical approval was obtained, and informed consent was provided by the family.
+
+Key findings: all three siblings received a diagnosis of type I sialidosis confirmed by genetic sequencing. Treatment with antiseizure medications did not prevent recurrent seizures. 
+
+Limitations: This is a case report detailing only three patients, and therefore does not establish prevalence or treatment efficacy. The report does not detail long-term outcomes or response to other potential therapies. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40468413/ with PMID 40468413
+Print abstract to summarize:
+1. Trials. 2025 Jun 4;26(1):192. doi: 10.1186/s13063-025-08907-6. Micropulse transscleral cyclophotocoagulation versus slow coagulation in refractory glaucoma: study protocol of a randomized clinical trial. de Lima Neto CR(1), de Cabral Vasconcellos JP(2), Silva SGNE(2), Costa VP(2). Author information: (1)Department of Ophthalmology, University of Campinas, 251 Vital Brazil St, Campinas, São Paulo, 13083-888, Brazil. cesarlimaneto@yahoo.com.br. (2)Department of Ophthalmology, University of Campinas, 251 Vital Brazil St, Campinas, São Paulo, 13083-888, Brazil. BACKGROUND: Traditional continuous diode laser transscleral cyclophotocoagulation (TCW-TSCPC) has been used for decades to reduce intraocular pressure (IOP) by decreasing aqueous humor (AH) production in patients with glaucoma. Micropulse cyclophotocoagulation (MP-TSCPC) and slow coagulation (SC-TSCPC) are the newest transscleral cyclophotocoagulation (TSCPC) techniques that result in lower inflammation and complication rates compared to the traditional technique. Most publications on TSCPC are case series with a retrospective design with different treatment protocols. The objective of this manuscript is to describe the protocol of a randomized clinical trial (RCT) designed to compare the efficacy and safety of MP-TSCPC and SC-TSCPC in patients with refractory glaucoma followed for 12 months. METHODS: This is a parallel, double-arm single-center, double-masked, RCT that will include eyes with refractory glaucoma. Patients with corrected visual acuity (BCVA) ≤ 20/60, IOP > 21 mmHg, and age ≥ 18 years will be randomized to cyclophotocoagulation using the SC-TSCPC or MP-TSCPC techniques. Follow-up visits will be 1 day, 7 days, 30 days, 3, 6, and 12 months after the procedure. Complete success will be defined as an IOP between 6 and 20 mmHg and a minimum of 30% IOP reduction from baseline, without hypotensive medications. Qualified success will be defined by the same parameters but allowing the use of medication. All follow-up examinations will include determination of BCVA, IOP measurement, slit lamp biomicroscopy, fundoscopy, and macular optical coherence tomography (OCT). The number of hypotensive medications and the occurrence of complications will also be documented. DISCUSSION: Our study was designed to compare the efficacy and safety of the two most used TSCPC techniques. Most published studies are retrospective and compare the two new techniques only with the traditional technique. This is, to our knowledge, the first RCT comparing MP-TSCPC and SC-TSCPC techniques. TRIAL REGISTRATION: Retrospectively registered at the Registro Brasileiro de Ensaios Clínicos (ReBEC) platform RBR-5pckbhj on December 15, 2023. The study was approved by the Ethics Committee of the University of Campinas, Brazil. © 2025. The Author(s). DOI: 10.1186/s13063-025-08907-6 Conflict of interest statement: Declarations. Ethics approval and consent to participate {24}: This study was approved by the Ethics Committee of the University of Campinas in May 2023 and followed the tenets of the Declaration of Helsinki. All procedures are fully explained to the participants and an informed consent is obtained at inclusion. This study was retrospectively registered at the Registro Brasileiro de Ensaios Clínicos (ReBEC) platform, number RBR-5pckbhj {2a} (registration date: December 15, 2023). {2b}. Consent for publication {32}: Not applicable—no identifying images or other personal or clinical details of participants are presented here or will be presented in reports of the trial results. Competing interests {28}: CRLN: None JPCV: None SGNS: None VPC: Alcon—speaker; Allergan-Abbvie—consultant, speaker, Grants; Iridex—speaker; Zeiss—consultant, speaker, grants.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This study protocol describes a randomized, double-masked, single-center clinical trial comparing micropulse transscleral cyclophotocoagulation (MP-TSCPC) to slow coagulation transscleral cyclophotocoagulation (SC-TSCPC) in patients with refractory glaucoma. 
+
+The trial will enroll patients aged 18 years or older with corrected visual acuity ≤20/60, intraocular pressure (IOP) >21 mmHg. Participants will be randomized to either MP-TSCPC or SC-TSCPC. Follow-up examinations will occur at 1 day, 7 days, 30 days, 3, 6, and 12 months post-procedure, including measurements of best-corrected visual acuity, IOP, slit lamp biomicroscopy, fundoscopy, and macular optical coherence tomography (OCT). 
+
+The primary outcome is complete success, defined as IOP between 6-20 mmHg and a ≥30% reduction from baseline, without hypotensive medications. Qualified success is defined similarly, but allows for medication use. The number of hypotensive medications used and the occurrence of complications will also be recorded. 
+
+The trial was retrospectively registered (RBR-5pckbhj) and approved by the University of Campinas Ethics Committee. One author reports financial conflicts of interest (Alcon, Allergan-Abbvie, Iridex, Zeiss). 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40468395/ with PMID 40468395
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step6 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step6: Reduce to Evidence
+...
+...
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: This drink detoxifies the liver and kidneys. 
+ Evidence Summary: This retrospective study investigated liver and kidney damage in pediatric patients with congenital heart defects (CHDs) undergoing corrective cardiac surgery with cardiopulmonary bypass (CPB). Researchers reviewed the records of 51 patients (37 months mean age, 52.9% male) who underwent surgery between 2013-2019 at two hospitals in Iran.
+
+Data collected included demographics, disease severity, liver function tests (AST, ALT, ALKP, bilirubin, albumin, total protein), cardiac ejection fraction, and hematocrit. Postoperative levels of AST, ALT, and ALKP significantly increased (P < 0.001), while indirect bilirubin, albumin, and total protein significantly decreased (P < 0.001). Cardiac ejection fraction improved significantly (P < 0.001). No significant changes were observed in creatinine or direct bilirubin. 
+
+AST levels were markedly higher in deceased patients compared to survivors. The study concludes that CPB is associated with significant alterations in liver enzyme levels, potentially indicating liver damage, and that elevated postoperative AST levels correlate with increased mortality risk. 
+
+Limitations include the retrospective design and data collection from a single centre. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: This drink detoxifies the liver and kidneys. 
+ Evidence Summary: This case-control study investigated miRNA-210 as a potential biomarker for pre-eclampsia (PE). Researchers recruited 102 pregnant women (51 with PE, 51 normotensive controls) matched for age, gestational age, and obstetric score, between April 2023 and February 2025. Participants underwent clinical examination, laboratory tests (coagulation, liver/renal function, blood count, proteinuria), and miRNA-210 gene expression analysis via reverse transcription-polymerase chain reaction using peripheral venous blood samples.
+
+Results showed significantly elevated serum miRNA-210 levels in the PE group (p<0.001). miRNA-210 positively correlated with systolic, mean, and diastolic blood pressure, serum protein, uric acid, albumin, and alkaline phosphatase. No significant correlations were found with hemoglobin, platelet count, INR, or creatinine. 
+
+The area under the curve for miRNA-210 as a diagnostic marker was 0.994 (95% CI 0.985-1.0). A cut-off of 9.63-fold change yielded 100% sensitivity and 96.1% specificity, with positive and negative predictive values of 96.2% and 100% respectively.
+
+The study received ethical approval and authors report no conflicts of interest. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: This drink detoxifies the liver and kidneys. 
+ Evidence Summary: This review article examines the potential therapeutic effects of flavonoids in managing diabetes mellitus (DM). It synthesizes evidence from *in vitro* and *in vivo* studies regarding the impact of flavonoids – a class of polyphenolic compounds found in fruits, vegetables, and fungi – on biomarkers related to glycemic control, lipid metabolism, renal function, hepatic enzymes, and antioxidant defenses. 
+
+The review details how flavonoids modulate signaling pathways including glucose transporters, hepatic enzymes, tyrosine kinase inhibitors, AMPK, PPARs, and NF-κβ, all central to diabetes development and complications. It covers six flavonoid subclasses: flavanols, flavones, flavanones, isoflavones, anthocyanidins, and chalcones. 
+
+The authors conclude that further research is needed to fully understand the therapeutic mechanisms of flavonoids in diabetes management. This is a review article and does not present original research data or effect sizes. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: This drink detoxifies the liver and kidneys. 
+ Evidence Summary: This prospective observational study (October 2020 – April 2023) compared ultrasound (US) to computed tomography (CT) for diagnosing and staging lung cancer in 234 patients with proven diagnoses. Patients were referred for imaging assessment and underwent both US (chest, liver, adrenals, supraclavicular regions) and contrast-enhanced CT.
+
+The study population primarily consisted of smokers (89%) aged 61-75 (53.8%, n=126), with 53% male. US performance was evaluated against CT (as the gold standard) using chi-square, z-tests and area under the curve (AUC) analysis (p<0.05 significant). 
+
+Results indicated US was superior for detecting pleural effusion (sensitivity 80.3%, negative predictive value 92.2%, AUC 0.860) and supraclavicular lymph nodes (sensitivity 72.2%, NPV 91.6%, AUC 0.817). 
+
+The authors conclude that integrating US with CT improves lung cancer diagnosis, particularly in resource-limited settings, and offers benefits for peripheral lesions and patients with renal impairment. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: This drink helps flush fat from subcutaneous abdominal tissue. 
+ Evidence Summary: This mixed-methods study evaluated the acceptability of “Gambling Habit Hacker,” a just-in-time adaptive intervention (JITAI) for gambling problems. Researchers recruited 25 adults experiencing gambling harm (14 identified as male) to participate in usability testing and semi-structured interviews following app use. 
+
+Participants completed tasks within the app, then rated its acceptability using the System Usability Scale (SUS; mean=72.3, SD=12.3). Qualitative data from interviews explored user experiences, identifying key themes around perceived relevance, personalization, and practical utility of the app’s features. Participants generally found the app acceptable and easy to use, with positive feedback on the timing and delivery of interventions. 
+
+Limitations noted include the small sample size, and the lack of diversity in the sample (predominantly male). The study focused solely on acceptability, not clinical efficacy, and did not include a control group. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: This drink helps flush fat from subcutaneous abdominal tissue. 
+ Evidence Summary: This systematic review and meta-analysis assessed the prevalence and risk factors for suicidal ideation and suicide attempts among high school adolescents in Ethiopia. The researchers searched PubMed, Embase, ScienceDirect, and Google Scholar, identifying ten observational studies with a combined 8,620 participants for inclusion. 
+
+The pooled prevalence of suicidal ideation was 16% (95% CI: 12%, 19%) and suicide attempts was 10% (95% CI: 6%, 13%). Higher prevalence of both outcomes was observed after the implementation of HSTP II, while the lowest prevalence was found in adolescents aged 10-19.
+
+Significant factors associated with both suicidal ideation and attempts included gender, disappointment with school, family history of mental health issues, alcohol use, lack of social/family support, history of abuse, living arrangements, anxiety and depression. 
+
+The authors reported substantial heterogeneity across studies (I² values ranging from 67.77 to 94.43). Sensitivity analysis indicated stable results, and no publication bias was found for suicidal ideation, however evidence of publication bias was found for suicide attempts. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: This drink helps flush fat from subcutaneous abdominal tissue. 
+ Evidence Summary: This case report details three siblings from a Chinese family diagnosed with type I sialidosis, a rare autosomal recessive genetic disorder caused by mutations in the *NEU1* gene. The patients presented with seizures and ataxia during adolescence, with progressively worsening symptoms. 
+
+Methods included clinical assessment, and whole exome sequencing to identify the genetic cause. Sequencing revealed a homozygous *NEU1* mutation (NM_000434.3:c.544A>G [p.Ser182Gly]) in all three affected siblings, while parents and children were heterozygous carriers. Diagnosis was confirmed through genetic testing.
+
+Key outcomes demonstrate the identification of a specific *NEU1* mutation in three siblings presenting with neurological symptoms. Treatment with antiseizure medications did not fully prevent recurrent seizures. 
+
+Limitations include the descriptive nature of a case report, limiting generalizability. The report details only three patients; a larger cohort would be needed to determine the prevalence and full spectrum of this mutation. Ethical approval was obtained and informed consent was provided by the family. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: This drink helps flush fat from subcutaneous abdominal tissue. 
+ Evidence Summary: This study protocol details a randomized, double-masked, single-center clinical trial comparing micropulse transscleral cyclophotocoagulation (MP-TSCPC) to slow coagulation transscleral cyclophotocoagulation (SC-TSCPC) in patients with refractory glaucoma. 
+
+The study will enroll patients aged 18 years or older with corrected visual acuity ≤20/60, intraocular pressure (IOP) >21 mmHg. Participants will be randomized to either MP-TSCPC or SC-TSCPC. Follow-up assessments will occur at 1 day, 7 days, 30 days, 3, 6, and 12 months post-procedure.
+
+The primary outcome measures are IOP reduction and achievement of IOP between 6-20 mmHg, assessed with and without hypotensive medications (defined as complete and qualified success, respectively). Secondary outcomes include best-corrected visual acuity, number of hypotensive medications used, and the occurrence of complications. Assessments will include IOP measurement, slit lamp biomicroscopy, fundoscopy, and optical coherence tomography (OCT).
+
+The trial was registered retrospectively (RBR-5pckbhj) and approved by the University of Campinas Ethics Committee. One author (VPC) reports financial conflicts of interest with Alcon, Allergan-Abbvie, Iridex, and Zeiss. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: This drink is developed by a doctor and functions as a 'true memory saver' before deletion. 
+ Evidence Summary: Rodda et al. (2025) evaluated the acceptability of “Gambling Habit Hacker”, a just-in-time adaptive intervention (JITAI) for gambling problems, using a mixed-methods approach. Participants were 24 adults experiencing gambling harm, recruited via online advertisements. The study combined quantitative data from system usage and the Gambling Related Cognitions Scale (GRCS), with qualitative data from semi-structured interviews (n=14). 
+
+Results indicated high rates of app download (92%) and engagement with JITAI features, with participants utilizing an average of 16.5 (SD=9.5) ‘hacks’ over four weeks. There was a statistically significant reduction in GRCS scores from baseline to four weeks (mean change = -4.1, 95% CI [-6.8, -1.4], p = 0.003). Qualitative analysis revealed themes of perceived personalization, convenience, and usefulness of the JITAI, alongside suggestions for improvement regarding hack relevance and timing. 
+
+Limitations noted by the authors include the small sample size, recruitment bias (online advertising), and lack of a control group, preventing causal inferences about intervention effectiveness. The study focused on acceptability rather than clinical efficacy. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: This drink is developed by a doctor and functions as a 'true memory saver' before deletion. 
+ Evidence Summary: This systematic review and meta-analysis assessed the prevalence and risk factors for suicidal ideation and attempts among high school adolescents in Ethiopia. The authors followed PRISMA guidelines and searched PubMed, Embase, ScienceDirect, and Google Scholar. Ten observational studies comprising 8,620 participants were included.
+
+The pooled prevalence of suicidal ideation was 16% (95% CI: 12%, 19%) and the pooled prevalence of suicide attempts was 10% (95% CI: 6%, 13%). Higher prevalence of both outcomes was observed in studies conducted after the implementation of HSTP II. Sensitivity analysis showed no impact of individual studies on pooled estimates. Evidence of publication bias was found for suicide attempts, but not ideation.
+
+Significant factors associated with both suicidal ideation and attempts included gender, disappointment with school results, family history, alcohol use, lack of social/family support, history of abuse, living arrangement, anxiety, and depression. 
+
+The authors noted considerable heterogeneity among studies (I² values >60 for most analyses) and used subgroup, sensitivity, and meta-regression analyses to explore this. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: This drink is developed by a doctor and functions as a 'true memory saver' before deletion. 
+ Evidence Summary: This case report details three siblings from a Chinese family diagnosed with type I sialidosis, a rare autosomal recessive genetic disorder caused by mutations in the *NEU1* gene. The patients presented with seizures and ataxia during adolescence, with progressively worsening symptoms. 
+
+Methods included clinical assessment, and whole exome sequencing to identify the causative genetic mutation. Sequencing revealed a homozygous *NEU1* mutation (NM_000434.3:c.544A>G [p.Ser182Gly]) in all three affected siblings. Parents and children were confirmed as heterozygous carriers. Ethical approval was obtained, and informed consent was provided by the family.
+
+Key findings: all three siblings received a diagnosis of type I sialidosis confirmed by genetic sequencing. Treatment with antiseizure medications did not prevent recurrent seizures. 
+
+Limitations: This is a case report detailing only three patients, and therefore does not establish prevalence or treatment efficacy. The report does not detail long-term outcomes or response to other potential therapies. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: This drink is developed by a doctor and functions as a 'true memory saver' before deletion. 
+ Evidence Summary: This study protocol describes a randomized, double-masked, single-center clinical trial comparing micropulse transscleral cyclophotocoagulation (MP-TSCPC) to slow coagulation transscleral cyclophotocoagulation (SC-TSCPC) in patients with refractory glaucoma. 
+
+The trial will enroll patients aged 18 years or older with corrected visual acuity ≤20/60, intraocular pressure (IOP) >21 mmHg. Participants will be randomized to either MP-TSCPC or SC-TSCPC. Follow-up examinations will occur at 1 day, 7 days, 30 days, 3, 6, and 12 months post-procedure, including measurements of best-corrected visual acuity, IOP, slit lamp biomicroscopy, fundoscopy, and macular optical coherence tomography (OCT). 
+
+The primary outcome is complete success, defined as IOP between 6-20 mmHg and a ≥30% reduction from baseline, without hypotensive medications. Qualified success is defined similarly, but allows for medication use. The number of hypotensive medications used and the occurrence of complications will also be recorded. 
+
+The trial was retrospectively registered (RBR-5pckbhj) and approved by the University of Campinas Ethics Committee. One author reports financial conflicts of interest (Alcon, Allergan-Abbvie, Iridex, Zeiss). 
+ Response: no 
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step7 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step7: Statement to Truthness
+...
+...
+ --- Step7 Statement to Truthness --> Evidence-Block and claim_text: ---
+Claim Text: This drink detoxifies the liver and kidneys.
+Evidence: No evidence provided.
+ --- Step7-Statement to Truthness --> Model output --- 
+Model output:
+VERDICT: uncertain
+FINALSCORE: 0.05  
+ --- Extracted Information from prompt: ---
+Parsed verdict: uncertain 
+Parsed score: 0.05
+ --- Step7 Statement to Truthness --> Evidence-Block and claim_text: ---
+Claim Text: This drink helps flush fat from subcutaneous abdominal tissue.
+Evidence: No evidence provided.
+ --- Step7-Statement to Truthness --> Model output --- 
+Model output:
+VERDICT: uncertain
+FINALSCORE: 0.05  
+ --- Extracted Information from prompt: ---
+Parsed verdict: uncertain 
+Parsed score: 0.05
+ --- Step7 Statement to Truthness --> Evidence-Block and claim_text: ---
+Claim Text: This drink is developed by a doctor and functions as a 'true memory saver' before deletion.
+Evidence: No evidence provided.
+ --- Step7-Statement to Truthness --> Model output --- 
+Model output:
+VERDICT: uncertain
+FINALSCORE: 0.05  
+ --- Extracted Information from prompt: ---
+Parsed verdict: uncertain 
+Parsed score: 0.05
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step8 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step8: Statement to Score
+...
+...
+ 
+
+
+
+
+
+ --------------------------------------------------------------- 
+
+ --- Runtime Analysis ---
+ 
+ --------------------------------------------------------------- 
+
+update_transcript: 12.768452 seconds
+update_statements: 1.535192 seconds
+update_query: 2.875320 seconds
+query_to_link: 1.491456 seconds
+link_to_summary: 94.893696 seconds
+reduce_to_evidence: 4.769965 seconds
+statement_to_truthness: 2.290416 seconds
+statement_to_score: 0.000123 seconds
+Total elapsed time: 120.624657 seconds
+ 
+
+
+
+
+
+ --------------------------------------------------------------- 
+
+ --- Final Output (JSON) ---
+ 
+ --------------------------------------------------------------- 
+
+{'transcript': 'Du brauchst ne schnelle Entgiftung nach nem Feiertagswochenende? Das hier ist n wahres Wunderwerkzeug. Und es wurde von nem Arzt entwickelt, also weißt du das echte Speichersack, bevor es gelöscht wird. Es wird nämlich deine Leber und deine Niere von schädlichen Giftstoffen befreien und helfen Fett aus deinem Unterbauchgewebe rauszuspülen. Schreib genau mit, du brauchst 2 Teelöffel Apfelessig, den Saft von 1,5 Zitronen, 2 Teelöffel Cayenne Pfeffer, 14 Petersilienblätter, 3 Tassen basisches Wasser, 1 Teelöffel regionalen Blütenpollen, Honig. Mische es. Du fragst dich wie du es einnehmen sollst. Bewerte vorerst das Rezept in den Kommentaren von 1-10', 'statements': [{'id': 1, 'text': 'This drink detoxifies the liver and kidneys.', 'verdict': 'uncertain', 'rationale': 'VERDICT: uncertain\nFINALSCORE: 0.05', 'confidence': 0.05, 'query': '("Liver"[MeSH] OR liver[tiab] OR hepatic[tiab]) AND ("Kidney"[MeSH] OR kidney[tiab] OR renal[tiab]) AND (detoxification[tiab] OR "detoxification, metabolic"[tiab] OR "liver function"[tiab] OR "renal function"[tiab])', 'evidence': []}, {'id': 2, 'text': 'This drink helps flush fat from subcutaneous abdominal tissue.', 'verdict': 'uncertain', 'rationale': 'VERDICT: uncertain\nFINALSCORE: 0.05', 'confidence': 0.05, 'query': 'NONE', 'evidence': []}, {'id': 3, 'text': "This drink is developed by a doctor and functions as a 'true memory saver' before deletion.", 'verdict': 'uncertain', 'rationale': 'VERDICT: uncertain\nFINALSCORE: 0.05', 'confidence': 0.05, 'query': 'NONE', 'evidence': []}], 'overall_truthiness': 0.05, 'generated_at': '2025-06-05T07:04:42Z'}

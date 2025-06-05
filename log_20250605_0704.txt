@@ -1,0 +1,644 @@
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- LLM Configs --- 
+ 
+ --------------------------------------------------------------- 
+
+BASE_URL   : http://localhost:11434/v1
+API_KEY    : ollama
+BASE_MODEL : gemma3:27b
+BASE_TEMP  : 0.7
+
+ STEP2:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 128
+
+ STEP3:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 1024
+
+ STEP5:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 512
+
+ STEP6:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 512
+
+ STEP7:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 512
+
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- LLM Preprompts --- 
+ 
+ --------------------------------------------------------------- 
+
+Preprompt STEP2:
+
+You are part of a medical fact-checking pipeline.  
+If you propagate a false statement, the app may mislead people.
+
+INPUT TRANSCRIPT
+---------------
+{transcript}
+---------------
+
+TASK  
+Extract **medical claims** suitable for fact-checking.
+
+SELECTION RULES  
+1. Return **exactly three** distinct claims.  
+2. Prefer clinically relevant, novel, or potentially harmful claims.  
+3. Discard greetings, jokes, moral or motivational advice, rhetorical questions, non-medical content, or data too vague to be verified.  
+4. Merge duplicate / near-duplicate claims into one concise statement.
+
+STRICT OUTPUT  
+A valid JSON array with 1–3 strings.  
+No commentary, no extra keys, no markdown.
+
+
+
+
+Prepromt STEP3:
+
+You are a biomedical librarian inside a fact‐checking app.  
+If the claim is too vague, non‐medical, or otherwise unlikely to be indexed in PubMed, output the single word: NONE
+
+Otherwise, **think quickly (silently)** about the core PICO concepts in the claim, identify appropriate MeSH headings (in quotes with [MeSH]) and text‐word synonyms (with [tiab]), and produce ONE PubMed Boolean query string that:
+Example:
+(
+  "Smoking"[MeSH] 
+  OR smoking[tiab] 
+  OR smokers[tiab] 
+  OR "tobacco use"[tiab]
+)
+AND
+(
+  "Lung Function Tests"[MeSH] 
+  OR "pulmonary function"[tiab] 
+  OR "lung function"[tiab] 
+  OR FEV1[tiab] 
+  OR FVC[tiab]
+)
+AND
+(
+  "Inflammation"[MeSH] 
+  OR inflammation[tiab] 
+  OR "mucus hypersecretion"[tiab] 
+  OR mucus[tiab]
+)
+AND
+(
+  "Proanthocyanidins"[MeSH] 
+  OR proanthocyanidin*[tiab] 
+  OR OPC[tiab] 
+  OR "Traumotein"[tiab] 
+  OR "pine bark extract"[tiab] 
+  OR Pycnogenol[tiab]
+)
+
+
+• Is exactly one line (no line breaks).  
+• Uses uppercase AND/OR to combine concepts.  
+• Wraps MeSH terms in quotes followed by [MeSH] (e.g., "Smoking"[MeSH]).  
+• Marks synonym or free‐text terms with [tiab] (e.g., smoking[tiab]).  
+• Groups synonyms with parentheses; groups PICO domains by combining with AND.  
+• Does not include field tags other than [MeSH] and [tiab].  
+• Does not include quotation marks around free‐text terms (other than MeSH).  
+• Begins with a letter (A–Z or a–z) and contains no leading/trailing spaces.  
+• Contains no line breaks or extra whitespace.
+
+CLAIM:
+{claim}
+
+
+
+
+Preprompt STEP5:
+
+You are summarising evidence for a medical fact-checker.  
+Think briefly (silently) about study design and main results, then write the summary.
+
+GUIDELINES  
+• ≤ 300 words, plain text.  
+• Focus on methods, population, key outcomes, effect sizes, and limitations.  
+• Do NOT add interpretation beyond the abstract itself.
+
+TEXT TO SUMMARISE
+-----------------
+{abstract}
+-----------------
+
+
+
+
+Preprompt STEP6:
+
+You are verifying whether the summary actually addresses the claim.  
+Think (silently) first; then answer in exactly one word.
+
+STATEMENT: {statement}
+
+EVIDENCE SUMMARY: {evidence_summary}
+
+Does the summary *directly relate to or support* the statement?
+Respond with only: yes   |   no
+
+
+
+
+Prepromt STEP7:
+
+You are a professional medical fact-checker.  
+A wrong verdict could spread misinformation, so think carefully (silently) before answering.
+
+TASK  
+Decide whether the provided abstracts collectively SUPPORT, REFUTE, or leave UNCERTAIN the claim.
+
+CLAIM:
+{claim_text}
+
+EVIDENCE:
+{evidence_block}
+
+Inclunding the Scientific Evidence together with Common Sense and the Context of the Video Transcript:
+{transcript}
+
+give the final response in the following format:
+
+STRICT OUTPUT – exactly two lines, nothing else:
+VERDICT: true|false|uncertain
+FINALSCORE: <probability 0.00–1.00>
+
+
+
+
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step1 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting transcribing: estimated time: 10 - 20 seconds
+...
+...
+ --- Step1 Audio to Transcript ---> LLM Output: ---
+If you stop breathing after exhalation for one and a half minutes, five times more blood flows into the brain and to the heart. This one has never been shown. And now it has been shown through these breathing techniques. I mean, this really goes so deep, we are able to change our blood chemistry. We breathe. Like 30 times like this, you become a little bit dizzy. Why? Because the CO2 levels go way down. You blow it off. Carbon dioxide.
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step2 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step2: Transcript to Medical Statements
+...
+...
+ --- Step2 Transcript to Statements ---> LLM Output: ---
+["Stopping breathing after exhalation for one and a half minutes increases blood flow to the brain and heart fivefold.", "Specific breathing techniques can change blood chemistry.", "Decreasing carbon dioxide levels through breathing exercises causes dizziness."]
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step3 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step3: Statement to PubMed Query
+...
+...
+ --- Step3 Statement to Query ---> LLM Output: ---
+("Breath Holding"[MeSH] OR "breath hold"[tiab] OR "voluntary breath-holding"[tiab] OR apnea[tiab]) AND ("Brain Blood Flow"[MeSH] OR "cerebral blood flow"[tiab] OR "brain perfusion"[tiab]) AND ("Heart Blood Flow"[MeSH] OR "coronary blood flow"[tiab] OR "cardiac output"[tiab] OR "hemodynamics"[tiab])
+ --- Step3 Statement to Query ---> LLM Output: ---
+("Respiration"[MeSH] OR breathing[tiab] OR "breathing exercises"[tiab] OR "diaphragmatic breathing"[tiab]) AND ("Blood Chemical Analysis"[MeSH] OR "blood chemistry"[tiab] OR "blood gas analysis"[tiab] OR "blood gases"[tiab] OR pH[tiab] OR "oxygen saturation"[tiab] OR "carbon dioxide"[tiab])
+ --- Step3 Statement to Query ---> LLM Output: ---
+("Respiration"[MeSH] OR breathing[tiab] OR "breathing exercises"[tiab]) AND ("Carbon Dioxide"[MeSH] OR "carbon dioxide"[tiab] OR CO2[tiab]) AND ("Dizziness"[MeSH] OR dizziness[tiab] OR vertigo[tiab])
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step4 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step4: Query to PubMed Links
+...
+...
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/39481465/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/38945417/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/38464864/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/38085496/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40456822/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40447501/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40438452/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40436754/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/37181373/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/36711385/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/33225970/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/32348561/
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step5 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step5: Link to Summary
+...
+...
+Print abstract to summarize:
+1. Respir Physiol Neurobiol. 2025 Jan;331:104364. doi: 10.1016/j.resp.2024.104364.  Epub 2024 Oct 29. Hemodynamics and vascular oxygenation measured at the forehead during changes in respiration: A SPA-fNIRS study. Guglielmini S(1), Wiggli E(2), Scholkmann F(3), Wolf M(4). Author information: (1)Biomedical Optics Research Laboratory, Department of Neonatology, University Hospital Zurich, University of Zurich, Zurich, Switzerland; Biomedical Family Larsson-Rosenquist Foundation Center for Neurodevelopment, Growth and Nutrition of the Newborn, Department of Neonatology, University Hospital Zurich, University of Zurich, Zurich, Switzerland. (2)Biomedical Optics Research Laboratory, Department of Neonatology, University Hospital Zurich, University of Zurich, Zurich, Switzerland. Electronic address: elena.wiggli@uzh.ch. (3)Biomedical Optics Research Laboratory, Department of Neonatology, University Hospital Zurich, University of Zurich, Zurich, Switzerland; Institute of Complementary and Integrative Medicine, University of Bern, Bern, Switzerland; Neuroscience Center Zurich, University of Zurich and ETH Zurich, Zurich, Switzerland. (4)Biomedical Optics Research Laboratory, Department of Neonatology, University Hospital Zurich, University of Zurich, Zurich, Switzerland; Neuroscience Center Zurich, University of Zurich and ETH Zurich, Zurich, Switzerland. SIGNIFICANCE: Cerebral blood flow is influenced by respiration, primarily through changes in the CO2 concentration of arterial blood. AIM: The objective of this study was to investigate the effect of changes in arterial CO2 concentration induced by respiratory changes on oxygenation and hemodynamics in the cerebral and extracerebral tissue layers of the forehead. APPROACH: We used systemic physiology augmented functional near-infrared spectroscopy (SPA-fNIRS) to assess changes in forehead hemodynamics and oxygenation as well as systemic physiology in 20 healthy subjects. All participants performed two respiratory tasks (breath-holding and hyperventilation). RESULTS: In our SPA-fNIRS study we found that changes in breathing affected hemodynamics and oxygenation in both the extracerebral and cerebral tissue layers of the forehead in characteristic ways, depending on the two respiratory tasks. CONCLUSION: The results show that extracerebrovascular reactivity (ECVR) exists in parallel with the well-known cerebrovascular reactivity (CVR). CVR and ECVR must be considered when performing fNIRS neuroimaging studies involving changes in respiration. Copyright © 2024 The Authors. Published by Elsevier B.V. All rights reserved. DOI: 10.1016/j.resp.2024.104364 PMID: 39481465 [Indexed for MEDLINE] Conflict of interest statement: Declaration of Competing Interest The authors declare no potential conflicts of interest with respect to the research, authorship, and/or publication of this article. F. Scholkmann consulted for NIRx Medizintechnik GmbH (Berlin, Germany) on an unrelated subject matter. M. Wolf is president of the board and co-founder of OxyPrem AG.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This study investigated the effects of respiration on forehead hemodynamics and oxygenation using systemic physiology augmented functional near-infrared spectroscopy (SPA-fNIRS). Researchers assessed 20 healthy adult participants during two respiratory tasks: breath-holding and hyperventilation. 
+
+SPA-fNIRS was used to measure changes in both cerebral and extracerebral tissue layers. Results indicated that changes in breathing significantly affected hemodynamics and oxygenation in both tissue layers, with distinct responses observed for each respiratory task. 
+
+The study concludes that extracerebrovascular reactivity (ECVR) exists alongside cerebrovascular reactivity (CVR), and both should be considered when conducting fNIRS neuroimaging studies involving respiratory changes.
+
+A conflict of interest was noted for F. Scholkmann (consulting for NIRx Medizintechnik GmbH) and M. Wolf (president/co-founder of OxyPrem AG). 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/39481465/ with PMID 39481465
+Print abstract to summarize:
+1. J Stroke Cerebrovasc Dis. 2024 Sep;33(9):107841. doi: 10.1016/j.jstrokecerebrovasdis.2024.107841. Epub 2024 Jun 28. Cerebral vasomotor reactivity in the acute phase and after 6 months in non-disabling stroke/TIA: A prospective cohort study. Brunelli N(1), Altamura C(2), Marcosano M(3), Rossi SS(4), Costa CM(5), Fallacara A(6), Bach-Pages M(7), Silvestrini M(8), Mallio CA(9), Vernieri F(10). Author information: (1)Department of Medicine and Surgery, Unit of Headache and Neurosonology, Unit of Neurology, Università Campus Bio-Medico di Roma, Via Alvaro del Portillo, 21 00128 Roma, Italy; Fondazione Policlinico Universitario Campus Bio-Medico, Via Alvaro del Portillo, 200 00128 Roma, Italy. Electronic address: n.brunelli@policlinicocampus.it. (2)Department of Medicine and Surgery, Unit of Headache and Neurosonology, Unit of Neurology, Università Campus Bio-Medico di Roma, Via Alvaro del Portillo, 21 00128 Roma, Italy; Fondazione Policlinico Universitario Campus Bio-Medico, Via Alvaro del Portillo, 200 00128 Roma, Italy. Electronic address: c.altamura@policlinicocampus.it. (3)Department of Medicine and Surgery, Unit of Headache and Neurosonology, Unit of Neurology, Università Campus Bio-Medico di Roma, Via Alvaro del Portillo, 21 00128 Roma, Italy; Fondazione Policlinico Universitario Campus Bio-Medico, Via Alvaro del Portillo, 200 00128 Roma, Italy. Electronic address: marilena.marcosano@unicampus.it. (4)Department of Medicine and Surgery, Unit of Headache and Neurosonology, Unit of Neurology, Università Campus Bio-Medico di Roma, Via Alvaro del Portillo, 21 00128 Roma, Italy; Fondazione Policlinico Universitario Campus Bio-Medico, Via Alvaro del Portillo, 200 00128 Roma, Italy. Electronic address: sergiosoeren.rossi@unicampus.it. (5)Neurology Unit, Sondrio Hospital, Sondrio, Italy. (6)Neurology Unit, Policlinico of Bari "Aldo Moro", Bari, Italy. (7)Department of Biology, University of Oxford, Oxford OX1 3RB, United Kingdom. (8)Neurological Clinic, Marche Polytechnic University, Ancona, Italy. Electronic address: m.silvestrini@staff.univpm.it. (9)Fondazione Policlinico Universitario Campus Bio-Medico, Via Alvaro del Portillo, 200 00128 Roma, Italy; Unit of Radiology, Università Campus Bio-Medico di Roma, Via Alvaro del Portillo, 21 00128 Rome, Italy. Electronic address: c.mallio@policlinicocampus.it. (10)Department of Medicine and Surgery, Unit of Headache and Neurosonology, Unit of Neurology, Università Campus Bio-Medico di Roma, Via Alvaro del Portillo, 21 00128 Roma, Italy; Fondazione Policlinico Universitario Campus Bio-Medico, Via Alvaro del Portillo, 200 00128 Roma, Italy. Electronic address: f.vernieri@policlinicocampus.it. BACKGROUND AND AIM: Cerebral Vasomotor Reactivity (VMR) is a property of cerebral hemodynamics that protects from cerebrovascular disease. We aimed to explore the VMR longitudinal changes in patients with acute non-disabling stroke/Transient Ischemic Attack (TIA) to understand its implication in stroke ethiopatogenesis. METHODS: VMR by Transcranial Doppler Breath Holding test was performed at 48-72 h from stroke onset (T1) and after 6 months (T2) on MCA of the non-affected hemisphere and PCA of the affected hemisphere. RESULTS: We consecutively enrolled 124 patients with a median age of 66.0 (IQR 54.75-74.25) years with a median NIHSS 2 (IQR 1-3). Both MCA (1.38 %/s SD 0.58) and PCA (1.35 %/s SD 0.75) BHI at T1 did not differ among different stroke subtypes (p=0.067 and p=0.350; N=124). MCA and PCA BHI decreased from T1 to T2 (respectively 1.39 %/s SD 0.56 vs 1.18%/s SD 0.44 and 1.30 %/s SD 0.69 vs 1.20 %/s SD 0.51; N=109) regardless of ethiopatogenesis (respectively p<0.0001 and p=0.111). CONCLUSION: The VMR is higher in acute phase than at 6 months in patients with non-disabling stroke/TIA, regardless of etiopathogenesis. The higher VMR in acute phase could be sustained by an increased Cerebral Blood Flow due to collateral circulation activation supporting the ischemic zone. Copyright © 2024. Published by Elsevier Inc. DOI: 10.1016/j.jstrokecerebrovasdis.2024.107841 PMID: 38945417 [Indexed for MEDLINE] Conflict of interest statement: Declaration of competing interest We declare no competing interests.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This prospective cohort study investigated cerebral vasomotor reactivity (VMR) in patients with non-disabling stroke or transient ischemic attack (TIA). Researchers used Transcranial Doppler breath-holding tests to measure VMR in the middle cerebral artery (MCA) and posterior cerebral artery (PCA) at 48-72 hours post-event (T1) and again after 6 months (T2).
+
+The study enrolled 124 patients with a median age of 66 years and a median NIHSS score of 2. Initial VMR (T1) did not differ significantly based on stroke subtype.  VMR decreased in both MCA (1.39 %/s SD 0.56 to 1.18%/s SD 0.44) and PCA (1.30 %/s SD 0.69 to 1.20 %/s SD 0.51) from T1 to T2 (p<0.0001 for MCA, p=0.111 for PCA) in a cohort of 109 patients with paired measurements. 
+
+The authors report no competing interests. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/38945417/ with PMID 38945417
+Print abstract to summarize:
+1. Neurophotonics. 2024 Jan;11(1):015008. doi: 10.1117/1.NPh.11.1.015008. Epub 2024  Mar 8. Validation of the Openwater wearable optical system: cerebral hemodynamic monitoring during a breath-hold maneuver. Favilla CG(1), Carter S(1), Hartl B(2), Gitlevich R(1), Mullen MT(3), Yodh AG(4), Baker WB(5), Konecky S(2). Author information: (1)University of Pennsylvania, Department of Neurology, Philadelphia, Pennsylvania, United States. (2)Openwater, San Francisco, California, United States. (3)Temple University, Department of Neurology, Philadelphia, Pennsylvania, United States. (4)University of Pennsylvania, Department of Physics and Astronomy, Philadelphia, Pennsylvania, United States. (5)Children's Hospital of Philadelphia, Department of Neurology, Philadelphia, Pennsylvania, United States. Update of medRxiv. 2023 Oct 12:2023.10.11.23296612. doi: 10.1101/2023.10.11.23296612. SIGNIFICANCE: Bedside cerebral blood flow (CBF) monitoring has the potential to inform and improve care for acute neurologic diseases, but technical challenges limit the use of existing techniques in clinical practice. AIM: Here, we validate the Openwater optical system, a novel wearable headset that uses laser speckle contrast to monitor microvascular hemodynamics. APPROACH: We monitored 25 healthy adults with the Openwater system and concurrent transcranial Doppler (TCD) while performing a breath-hold maneuver to increase CBF. Relative blood flow (rBF) was derived from changes in speckle contrast, and relative blood volume (rBV) was derived from changes in speckle average intensity. RESULTS: A strong correlation was observed between beat-to-beat optical rBF and TCD-measured cerebral blood flow velocity (CBFv), R = 0.79; the slope of the linear fit indicates good agreement, 0.87 (95% CI: 0.83 - 0.92). Beat-to-beat rBV and CBFv were also strongly correlated, R = 0.72, but as expected the two variables were not proportional; changes in rBV were smaller than CBFv changes, with linear fit slope of 0.18 (95% CI: 0.17 to 0.19). Further, strong agreement was found between rBF and CBFv waveform morphology and related metrics. CONCLUSIONS: This first in vivo validation of the Openwater optical system highlights its potential as a cerebral hemodynamic monitor, but additional validation is needed in disease states. © 2024 The Authors. DOI: 10.1117/1.NPh.11.1.015008
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This study validated the Openwater wearable optical system for monitoring cerebral hemodynamics. Researchers monitored 25 healthy adults using the Openwater system alongside transcranial Doppler (TCD) during a breath-hold maneuver, which increases cerebral blood flow. 
+
+The Openwater system derives relative blood flow (rBF) from speckle contrast and relative blood volume (rBV) from speckle average intensity. A strong correlation was found between beat-to-beat optical rBF and TCD-measured cerebral blood flow velocity (CBFv) – R = 0.79, with a linear fit slope of 0.87 (95% CI: 0.83 – 0.92). Beat-to-beat rBV and CBFv were also correlated (R = 0.72), but changes in rBV were smaller than CBFv changes, with a slope of 0.18 (95% CI: 0.17 – 0.19). 
+
+The study found strong agreement between rBF and CBFv waveform morphology. The authors conclude the Openwater system shows potential as a cerebral hemodynamic monitor, but further validation in disease states is needed. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/38464864/ with PMID 38464864
+Print abstract to summarize:
+1. Sleep Breath. 2024 May;28(2):763-771. doi: 10.1007/s11325-023-02956-4. Epub 2023  Dec 12. Loop gain response to increased cerebral blood flow at high altitude. Burgess A(1), Andrews G(2), Colby KME(2), Lucas SJE(3), Sprecher K(2), Donnelly J(4), Ainslie PN(5), Basnet AS(6), Burgess KR(7)(8). Author information: (1)Canberra Sleep Clinic, Canberra, Australian Capital Territory, Australia. (2)Peninsula Sleep Clinic, Sydney, NSW, Australia. (3)University of Birmingham, Birmingham, UK. (4)University of Auckland, Auckland, New Zealand. (5)University of British Columbia Okanagan, Kelowna, BC, Canada. (6)Banner University Medical Centre, Phoenix, AZ, USA. (7)Peninsula Sleep Clinic, Sydney, NSW, Australia. krburgess@optusnet.com.au. (8)Macquarie University, Sydney, NSW, Australia. krburgess@optusnet.com.au. PURPOSE: To compare loop gain (LG) before and during pharmacological increases in cerebral blood flow (CBF) at high altitude (HA). Loop gain (LG) describes stability of a negative-feedback control system; defining the magnitude of response to a disturbance, such as hyperpnea to an apnea in periodic breathing (PB). "Controller-gain" sensitivity from afferent peripheral (PCR) and central-chemoreceptors (CCR) plays a key role in perpetuating PB. Changes in CBF may have a critical role via effects on central chemo-sensitivity during sleep. METHODS: Polysomnography (PSG) was performed on volunteers after administration of I.V. Acetazolamide (ACZ-10mg/kg) + Dobutamine (DOB-2-5 μg/kg/min) to increase CBF (via Duplex-ultrasound). Central sleep apnea (CSA) was measured from NREM sleep. The duty ratio (DR) was calculated as ventilatory duration (s) divided by cycle duration (s) (hyperpnea/hyperpnea + apnea), LG = 2π/(2πDR-sin2πDR). RESULTS: A total of 11 volunteers were studied. Compared to placebo-control, ACZ/DOB showed a significant increase in the DR (0.79 ± 0.21 vs 0.52 ± 0.03, P = 0.002) and reduction in LG (1.90 ± 0.23 vs 1.29 ± 0.35, P = 0.0004). ACZ/DOB increased cardiac output (CO) (8.19 ± 2.06 vs 6.58 ± 1.56L/min, P = 0.02) and CBF (718 ± 120 vs 526 ± 110ml/min, P < 0.001). There was no significant change in arterial blood gases, minute ventilation (VE), or hypoxic ventilatory response (HVR). However, there was a reduction of hypercapnic ventilatory response (HCVR) by 29% (5.9 ± 2.7 vs 4.2 ± 2.8 L/min, P = 0.1). CONCLUSION: Pharmacological elevation in CBF significantly reduced LG and severity of CSA. We speculate the effect was on HCVR "controller gain," rather than "plant gain," because PaCO2 and VE were unchanged. An effect via reduced circulation time is unlikely, as the respiratory-cycle length did not change. © 2023. The Author(s), under exclusive licence to Springer Nature Switzerland DOI: 10.1007/s11325-023-02956-4 PMID: 38085496 [Indexed for MEDLINE]
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This study investigated the effect of increased cerebral blood flow (CBF) on loop gain (LG) and central sleep apnea (CSA). Eleven volunteers underwent polysomnography before and during intravenous administration of Acetazolamide and Dobutamine (ACZ/DOB) to increase CBF, measured via Duplex-ultrasound. 
+
+Compared to placebo control, ACZ/DOB significantly increased duty ratio (DR: 0.79 ± 0.21 vs 0.52 ± 0.03, P=0.002) and reduced LG (1.90 ± 0.23 vs 1.29 ± 0.35, P=0.0004).  ACZ/DOB also significantly increased cardiac output (8.19 ± 2.06 vs 6.58 ± 1.56 L/min, P=0.02) and CBF (718 ± 120 vs 526 ± 110 ml/min, P<0.001). 
+
+No significant changes were observed in arterial blood gases, minute ventilation, or hypoxic ventilatory response. Hypercapnic ventilatory response (HCVR) showed a non-significant reduction of 29% (5.9 ± 2.7 vs 4.2 ± 2.8 L/min, P=0.1). 
+
+The authors concluded that increasing CBF significantly reduced LG and CSA severity, suggesting an effect on HCVR “controller gain.” 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/38085496/ with PMID 38085496
+Print abstract to summarize:
+1. Sci Rep. 2025 Jun 2;15(1):19340. doi: 10.1038/s41598-025-04352-2. Effects of external diaphragmatic pacing with neurally adjusted ventilatory assist on diaphragm function in AECOPD patients. Shen Y(#)(1), Wang T(#)(1), Zhang X(1), Shao W(1), Wang Y(1), Kang X(2), Gu C(2), Li Y(2), Mu Z(2), Zhang C(3), Hu R(4). Author information: (1)Department of Respiratory and Critical Care Medicine, The Affiliated Lianyungang Hospital of Xuzhou Medical University, Lianyungang, 222000, Jiangsu, China. (2)Department of Critical Care Medicine, The Affiliated Lianyungang Hospital of Xuzhou Medical University, Lianyungang, 222000, Jiangsu, China. (3)Department of Respiratory and Critical Care Medicine, The Affiliated Lianyungang Hospital of Xuzhou Medical University, Lianyungang, 222000, Jiangsu, China. sijienanjing@163.com. (4)Department of Respiratory and Critical Care Medicine, The Affiliated Lianyungang Hospital of Xuzhou Medical University, Lianyungang, 222000, Jiangsu, China. huronglygyy2018@163.com. (#)Contributed equally Diaphragm dysfunction, a prevalent complication in mechanically ventilated patients, is strongly associated with prolonged weaning periods and increased mortality rates. Neurally adjusted ventilatory assist (NAVA), which synchronizes ventilator support with neural respiratory drive through diaphragmatic electromyography monitoring, has demonstrated efficacy in preserving diaphragm contractility. Complementary to this, the external diaphragmatic pacing (EDP) mitigates ventilation-induced diaphragmatic atrophy through targeted phrenic nerve stimulation. However, the synergistic potential of the NAVA + EDP combination therapy in acute exacerbations of chronic obstructive pulmonary disease (AECOPD) remains unexplored. This prospective randomized trial enrolled 60 mechanically ventilated patients with AECOPD, who were equally allocated into three groups (n = 20 per group): conventional pressure support ventilation (PSV), neurally adjusted ventilatory assist (NAVA), and NAVA combined with external diaphragm pacing (NAVA + EDP). The primary outcome was diaphragmatic function, assessed using two ultrasonographic parameters: diaphragmatic excursion (DE) and diaphragm thickness fraction (DTF). Secondary outcomes included the following: (a) respiratory mechanics parameters, including electrical activity of the diaphragm (EAdi), plateau pressure (Pplat), static lung compliance (Cst), and airway resistance (Raw); (b) gas exchange indices, such as partial pressure of arterial carbon dioxide (PaCO2) and PaO2/FiO2 ratio; and (c) clinical outcomes, namely duration of mechanical ventilation (DMV) and intensive care unit length of stay (ILOS). Compared to the PSV group, the NAVA group exhibited significantly higher DE and DTF values at 72 h and 96 h (all P < 0.05). Furthermore, the NAVA + EDP group demonstrated increased DE levels at 48 h, 72 h, and 96 h, along with elevated DTF values at 72 h and 96 h (all P < 0.05). Additionally, the NAVA group showed significantly shorter durations of DMV and ILOS compared to the PSV group, while the NAVA + EDP group further reduced both DMV and ILOS durations relative to the NAVA group (all P < 0.05). NAVA + EDP treatment exhibited effectively in reducing DMV and improving clinical outcomes for mechanically ventilated patients with AECOPD. © 2025. The Author(s). DOI: 10.1038/s41598-025-04352-2 PMID: 40456822 [Indexed for MEDLINE] Conflict of interest statement: Declarations. Competing interests: The authors declare no competing interests. Ethical approval: This trial was approved by the ethics committee at The First People’s Hospital of Lianyungang according to the requirements of Chinese clinical trial guidelines. All patients provided written informed consent before enrollment.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This prospective randomized trial investigated the effects of external diaphragmatic pacing (EDP) combined with neurally adjusted ventilatory assist (NAVA) in 60 mechanically ventilated patients with acute exacerbation of chronic obstructive pulmonary disease (AECOPD). Patients were randomized to conventional pressure support ventilation (PSV), NAVA, or NAVA+EDP (n=20 per group). 
+
+The primary outcomes were diaphragmatic function assessed by diaphragmatic excursion (DE) and diaphragm thickness fraction (DTF) measured at multiple time points. Secondary outcomes included respiratory mechanics, gas exchange, duration of mechanical ventilation (DMV), and intensive care unit length of stay (ILOS).
+
+Compared to PSV, both NAVA and NAVA+EDP groups showed significantly higher DE and DTF values at 72 and 96 hours (P<0.05). NAVA+EDP further increased DE at 48 hours and DTF at 72 hours compared to NAVA (P<0.05).  Both NAVA and NAVA+EDP groups had significantly shorter DMV and ILOS than the PSV group (P<0.05), with NAVA+EDP resulting in even shorter durations than NAVA (P<0.05). 
+
+The study was approved by an ethics committee, and all patients provided informed consent. No competing interests were declared. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40456822/ with PMID 40456822
+Print abstract to summarize:
+1. Vet Anaesth Analg. 2025 May 1:S1467-2987(25)00100-X. doi: 10.1016/j.vaa.2025.04.008. Online ahead of print. Complete mechanical expiratory obstruction as a result of expiratory valve malposition in an anesthetized dog. Acevedo A(1), Pablo LS(2), Vettorato E(1). Author information: (1)Department of Comparative, Diagnostic and Population Medicine, University of Florida, College of Veterinary Medicine, Gainesville, FL, USA. (2)Department of Comparative, Diagnostic and Population Medicine, University of Florida, College of Veterinary Medicine, Gainesville, FL, USA. Electronic address: pablochi@ufl.edu. A female, mixed-breed dog, aged 8 years, presenting with left temporomandibular joint ankylosis caused by a soft tissue sarcoma was anesthetized for tracheotomy and caudal segmental mandibulectomy. After intramuscular sedation with methadone and dexmedetomidine, oxygen was delivered by face mask, and anesthesia induced and maintained with propofol. A tracheotomy was performed, and a cuffed endotracheal tube was inserted. A circle breathing system that had been leak-tested was connected to the endotracheal tube, and oxygen (2 L minute-1) was administered. End-expiratory carbon dioxide partial pressure was undetectable despite manual ventilation. The breathing system was disconnected and capnograph function confirmed by the anesthetist exhaling into the sampling adaptor. Correct endotracheal tube placement within the tracheal lumen and absence of kinking was confirmed by direct visualization. The breathing system was reconnected to the endotracheal tube and the lungs were auscultated during manual ventilation, verifying airflow during inhalation. A rapid increase in breathing system pressure was observed on the airway manometer despite an open adjustable pressure-limiting valve. The problem was resolved by using a second anesthetic machine: capnograph displayed a waveform and breathing system pressure was 0 cmH2O. Throughout troubleshooting, saturation of arterial hemoglobin (pulse oximetry) remained > 97% and no arrhythmias were detected. A misassembled expiratory valve seat that immobilized the flutter valve was found as the cause of the problem on postanesthetic inspection of the anesthetic machine. Correcting the expiratory valve seat placement restored normal valve function. This case highlights the importance of confirming proper unidirectional valve seat assembly before anesthesia. Performing a leak test alone is insufficient to detect unidirectional valve malfunction. The lack of a safety mechanism to ensure correct valve seat placement reveals a design vulnerability that could lead to fatal anesthetic complications. Copyright © 2025 Association of Veterinary Anaesthetists and American College of Veterinary Anesthesia and Analgesia. Published by Elsevier Ltd. All rights reserved. DOI: 10.1016/j.vaa.2025.04.008 Conflict of interest statement: Conflict of interest statement The authors have no conflict of interest to declare.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This case report details complete mechanical expiratory obstruction during anesthesia in an 8-year-old mixed-breed dog undergoing surgery for temporomandibular joint ankylosis. Following induction and tracheotomy with cuffed endotracheal tube placement, undetectable end-tidal CO2 was observed despite manual ventilation. 
+
+Initial assessment confirmed correct endotracheal tube placement, absence of kinking, and airflow during inhalation, but a rapid increase in breathing system pressure occurred. The problem was resolved by switching to a second anesthetic machine, restoring normal capnography and airway pressure. 
+
+Post-anesthetic inspection revealed a misassembled expiratory valve seat immobilizing the flutter valve as the cause. The authors emphasize that standard leak tests are insufficient to detect this type of unidirectional valve malfunction, and highlight a potential design vulnerability in anesthetic machines lacking a safety mechanism to ensure correct valve seat placement. Throughout the incident, oxygen saturation remained >97% and no arrhythmias were detected. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40447501/ with PMID 40447501
+Print abstract to summarize:
+1. Ethiop J Health Sci. 2024 May;34(3):221-228. doi: 10.4314/ejhs.v34i3.7. Factors Affecting Voluntary Breath-Holding Duration and Breaking Point in Young Adults. Marwah RM(1)(2)(3), Alsulami NA(1)(2)(3), Alyami RS(1)(2)(3), Ahmed ME(4)(2)(3), Kumar RS(4)(2)(3). Author information: (1)Department of Respiratory Therapy, College of Applied Medical Sciences. (2)King Saud bin Abdulaziz University for Health Sciences, Jeddah, Saudi Arabia. (3)King Abdullah International Medical Research Center (KAIMRC), Jeddah, Saudi Arabia. (4)Department of Basic Sciences, College of Science and Health Professions. BACKGROUND: Studies have reported that breath-holding duration (BHD) in humans varies and can be influenced by several factors. The breaking point is an involuntary respiratory act that overrides the urge to hold one's breath, preventing unconsciousness. This study investigated the effects of the isometric handgrip test, cold pressor test and mental arithmetic task on BHD and its breakpoint in young, healthy Saudi Arabian subjects. METHODS: This interventional study, with a single-arm design, involved 78 young adults. Before conducting breath-holding duration (BHD) testing, their age, gender, height, weight, and systolic and diastolic blood pressure were recorded. BHD was assessed under various experimental conditions, such as rest, during an isometric handgrip test, a cold pressor test, and mental arithmetic tasks. Blood pressure (BP) and oxygen saturation (SpO2) levels were continuously monitored. RESULTS: The study subjects had a mean age of 21.23 years, with 47 (60.3%) females and 31 (39.7%) males. The mean Body Mass Index was 24.14 kg/m2. During rest, the mean BHD value was 29.67 seconds, while it was 26.21 seconds during isometric handgrip. The cold pressor test recorded a mean value of 32.69 seconds, and the mental arithmetic test recorded a mean value of 33.08 seconds. CONCLUSION: The findings of this study indicate a reduction in BHD during isometric handgrip and augmentation during the cold pressor and mental arithmetic tests. Copyright: May 2024. Rahaf M.R.M, et al. DOI: 10.4314/ejhs.v34i3.7 PMID: 40438452 [Indexed for MEDLINE]
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This single-arm interventional study investigated factors affecting voluntary breath-holding duration (BHD) in 78 young, healthy Saudi Arabian adults (mean age 21.23 years, 60.3% female). Researchers recorded age, gender, height, weight, and blood pressure. BHD was assessed under four conditions: rest, isometric handgrip, cold pressor test, and mental arithmetic task. Blood pressure and oxygen saturation were continuously monitored. 
+
+Mean BHD was 29.67 seconds at rest, 26.21 seconds during the handgrip test, 32.69 seconds with the cold pressor test, and 33.08 seconds during mental arithmetic. The study found a reduction in BHD during the isometric handgrip test and an augmentation during the cold pressor and mental arithmetic tests. 
+
+The study design lacks a control group for comparison. BMI was reported as 24.14 kg/m2. The study is limited to a specific population of young, healthy adults, potentially limiting generalizability. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40438452/ with PMID 40438452
+Print abstract to summarize:
+1. Intern Med. 2025 May 29. doi: 10.2169/internalmedicine.5130-24. Online ahead of  print. A Case of Muscular Sarcoidosis with Type II Respiratory Failure. Aritake H(1), Tamada T(1), Kikuchi T(1), Onodera K(2), Sugiura H(1). Author information: (1)Department of Respiratory Medicine, Tohoku University Graduate School of Medicine, Japan. (2)Department of Respiratory Medicine, Iwate Prefectural Isawa Hospital, Japan. A 66-year-old woman who had been diagnosed with sarcoidosis 1 year prior to identifying a non-caseating granuloma in the nodule in her femur fell into a state of presyncope and had difficulty breathing. She was transported to the emergency department and placed on mechanical ventilation. A blood gas analysis suggested CO2 narcosis. The cause was thought to be ventilatory failure due to muscular sarcoidosis, for which systemic steroid treatment was initiated. Although her consciousness recovered, the ventilatory impairment persisted. This case demonstrates an unusual clinical presentation of life-threatening nodular and myopathy types, characterized by the development of Type II respiratory failure. DOI: 10.2169/internalmedicine.5130-24
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This case report details a 66-year-old woman with previously diagnosed sarcoidosis who presented with presyncope and difficulty breathing, requiring mechanical ventilation. Investigation revealed Type II respiratory failure thought to be caused by muscular sarcoidosis – sarcoidosis affecting muscle tissue. 
+
+Methods were limited to case report details: clinical presentation, diagnostic findings (including blood gas analysis showing CO2 narcosis), and treatment with systemic steroids.
+
+Key findings: The patient exhibited both nodular sarcoidosis (femoral nodule) and myopathy (muscle involvement) leading to ventilatory failure and Type II respiratory failure. Consciousness improved with steroid treatment, but ventilatory impairment persisted.
+
+Limitations: This is a single case report and therefore does not establish causation or prevalence. It describes the clinical course in one patient only, precluding generalizability. No control group or comparative data are presented. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40436754/ with PMID 40436754
+Print abstract to summarize:
+1. Front Med (Lausanne). 2023 Apr 26;10:1128414. doi: 10.3389/fmed.2023.1128414. eCollection 2023. The utility of cardiopulmonary exercise testing in athletes and physically active individuals with or without persistent symptoms after COVID-19. Brito GM(1), do Prado DML(1), Rezende DA(1), de Matos LDNJ(2), Loturco I(3)(4), Vieira MLC(2), de Sá Pinto AL(1), Alô ROB(5), de Albuquerque LCA(6), Bianchini FR(2), Pinto AJ(7), Roschel H(1), Lemes ÍR(1), Gualano B(1); Coalition Author information: (1)Applied Physiology and Nutrition Research Group, School of Physical Education and Sport, and School of Medicine, University of São Paulo, São Paulo, Brazil. (2)Hospital Israelita Albert Einstein, São Paulo, Brazil. (3)Nucleous of High Performance in Sport, São Paulo, Brazil. (4)Universidade Federal de São Paulo, São Paulo, Brazil. (5)Instituto Dante Pazzanese de Cardiologia, São Paulo, Brazil. (6)HCor Hospital do Coração, São Paulo, Brazil. (7)Division of Endocrinology, Metabolism, and Diabetes and Anschutz Health and Wellness Center, University of Colorado Anschutz Medical Campus, Aurora, CO, United States. INTRODUCTION: Cardiopulmonary exercise testing (CPET) may capture potential impacts of COVID-19 during exercise. We described CPET data on athletes and physically active individuals with or without cardiorespiratory persistent symptoms. METHODS: Participants' assessment included medical history and physical examination, cardiac troponin T, resting electrocardiogram, spirometry and CPET. Persistent symptoms were defined as fatigue, dyspnea, chest pain, dizziness, tachycardia, and exertional intolerance persisting >2 months after COVID-19 diagnosis. RESULTS: A total of 46 participants were included; sixteen (34.8%) were asymptomatic and thirty participants (65.2%) reported persistent symptoms, with fatigue and dyspnea being the most reported ones (43.5 and 28.1%). There were a higher proportion of symptomatic participants with abnormal data for slope of pulmonary ventilation to carbon dioxide production (VE/VCO2 slope; p<0.001), end-tidal carbon dioxide pressure at rest (PETCO2 rest; p=0.007), PETCO2 max (p=0.009), and dysfunctional breathing (p=0.023) vs. asymptomatic ones. Rates of abnormalities in other CPET variables were comparable between asymptomatic and symptomatic participants. When assessing only elite and highly trained athletes, differences in the rate of abnormal findings between asymptomatic and symptomatic participants were no longer statistically significant, except for expiratory air flow-to-percent of tidal volume ratio (EFL/VT) (more frequent among asymptomatic participants) and dysfunctional breathing (p=0.008). DISCUSSION: A considerable proportion of consecutive athletes and physically active individuals presented with abnormalities on CPET after COVID-19, even those who had had no persistent cardiorespiratory symptomatology. However, the lack of control parameters (e.g., pre-infection data) or reference values for athletic populations preclude stablishing the causality between COVID-19 infection and CPET abnormalities as well as the clinical significance of these findings. Copyright © 2023 Brito, Prado, Rezende, de Matos, Loturco, Vieira, de Sá Pinto, Alô, de Albuquerque, Bianchini, Pinto, Roschel, Lemes, Gualano. DOI: 10.3389/fmed.2023.1128414 Conflict of interest statement: The authors declare that the research was conducted in the absence of any commercial or financial relationships that could be construed as a potential conflict of interest.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This study investigated cardiopulmonary exercise testing (CPET) results in athletes and physically active individuals following COVID-19 infection. Forty-six participants were assessed, including 16 asymptomatic individuals and 30 with persistent symptoms (fatigue and dyspnea most common). Assessments included medical history, physical exam, cardiac troponin T, ECG, spirometry and CPET.
+
+Results showed significantly higher rates of abnormal findings in the symptomatic group for VE/VCO2 slope (p<0.001), PETCO2 at rest (p=0.007), PETCO2 max (p=0.009), and dysfunctional breathing (p=0.023) compared to the asymptomatic group. Other CPET variables showed comparable abnormality rates. 
+
+Analysis limited to elite/highly trained athletes showed no significant differences in abnormality rates between groups, except for EFL/VT (more frequent in asymptomatic) and dysfunctional breathing (p=0.008).
+
+The authors note the study’s limitations including the absence of pre-infection CPET data or established reference values for athletic populations, preventing conclusions about causality or clinical significance. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/37181373/ with PMID 37181373
+Print abstract to summarize:
+1. Front Public Health. 2023 Jan 13;10:1064586. doi: 10.3389/fpubh.2022.1064586. eCollection 2022. Carbon sequestration potential of different forest types in Pakistan and its role in regulating services for public health. Ali S(1), Khan SM(1)(2), Ahmad Z(1), Siddiq Z(3), Ullah A(1), Yoo S(4), Han H(5), Raposo A(6). Author information: (1)Department of Plant Sciences, Quaid-i-Azam University, Islamabad, Pakistan. (2)Member Pakistan Academy of Sciences, Islamabad, Pakistan. (3)Department of Botany, Government College University, Lahore, Pakistan. (4)Audit Team, Hanmoo Convention (Oakwood Premier), Seoul, Republic of Korea. (5)College of Hospitality and Tourism Management, Sejong University, Seoul, Republic of Korea. (6)CBIOS (Research Center for Biosciences and Health Technologies), Universidade Lusófona de Humanidades e Tecnologias, Lisboa, Portugal. A high amount of CO2 causes numerous health effects, including headaches, restlessness, difficulty in breathing, increased heart rate, high blood pressure, asphyxia, and dizziness. This issue of increasing atmospheric CO2 can only be solved via above-ground and below-ground carbon sequestration (CS). This study was designed to determine the relationship between CS with the crown area (CA), diameter at breast height (DBH), height (H), species richness (SR), and elevation in different forest types of Pakistan with the following specific objectives: (1) to quantify the direct and indirect relationship of carbon sequestration with CA, DBH, H, and SR in various natural forest types and (2) to evaluate the effect of elevation on the trees functional traits and resultant CS. We used the linear structural equation model (SEM) for each conceptual model. Our results confirmed that the highest CS potential was recorded for dry temperate conifer forests (DTCF) i.e., 52.67%, followed by moist temperate mix forests (MTMF) and sub-tropical broad-leaved forests (STBLF). The SEM further described the carbon sequestration variation, i.e., 57, 32, 19, and 16% under the influence of CA (β = 0.90 and P-value < 0.001), H (β = 0.13 and p-value = 0.05), DBH (β = 0.07 and p-value = 0.005), and SR (β = -0.55 and p-value = 0.001), respectively. The individual direct effect of SR on carbon sequestration has been negative and significant. At the same time, the separate effect of CA, DBH, and H had a positive and significant effect on carbon sequestration. The remaining 20% of CS variations are indirectly influenced by elevation. This means that elevation affects carbon sequestration indirectly through CA, DBH, H, and SR, i.e., β = 0.133 and P-value < 0.166, followed by β = 0.531 and P-value < 0.001, β = 0.007 and P-value < 0.399, and β = -0.32 and P-value < 0.001, respectively. It is concluded that abiotic factors mainly determined carbon sequestration in forest ecosystems along with the elevation gradients in Pakistan. Quantifying the role of various forest types in carbon dioxide (CO2) reduction leads to improved air quality, which positively impacts human health. This is an imperative and novel study that links the dynamics of the biosphere and atmosphere. Copyright © 2023 Ali, Khan, Ahmad, Siddiq, Ullah, Yoo, Han and Raposo. DOI: 10.3389/fpubh.2022.1064586 PMID: 36711385 [Indexed for MEDLINE] Conflict of interest statement: The authors declare that the research was conducted in the absence of any commercial or financial relationships that could be construed as a potential conflict of interest.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This study investigated carbon sequestration (CS) potential in different forest types of Pakistan and its relationship to tree characteristics and elevation. Researchers used linear structural equation modelling (SEM) to quantify the relationships between CS, crown area (CA), diameter at breast height (DBH), height (H), species richness (SR), and elevation.
+
+The highest CS potential was found in dry temperate conifer forests (52.67%), followed by moist temperate mix forests and sub-tropical broad-leaved forests. SEM analysis indicated that CA (β = 0.90, p < 0.001) had the strongest direct positive effect on CS, followed by H (β = 0.13, p = 0.05) and DBH (β = 0.07, p = 0.005). SR had a significant negative effect (β = -0.55, p = 0.001). Approximately 20% of CS variation was indirectly influenced by elevation via CA, DBH, H, and SR (β values ranging from 0.133 to -0.32, with p-values < 0.399). 
+
+The study concludes that abiotic factors, particularly elevation, significantly determine carbon sequestration in Pakistani forest ecosystems. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/36711385/ with PMID 36711385
+Print abstract to summarize:
+1. Trials. 2020 Nov 23;21(1):943. doi: 10.1186/s13063-020-04906-x. Safety and efficacy of herbal extracts to restore respiratory health and improve innate immunity in COVID-19 positive patients with mild to moderate severity: A structured summary of a study protocol for a randomised controlled trial. Rangnekar H(1), Patankar S(2), Suryawanshi K(3), Soni P(3). Author information: (1)Quest Clinicals and Ayurceuticals, Pune, India. h.rangnekar@questclinicalservices.co.in. (2)AMAI Charitable Trust, Pune, India. (3)YCM Hospital, Pune, India. OBJECTIVES: Primary Objective • To assess the efficacy of herbal extracts in boosting innate immunity of patients with COVID-19 infection. Secondary Objectives • To assess the efficacy of herbal extracts in restoring respiratory health • To assess the efficacy of Cap. IP in early recovery of patients and decline in viral load • To assess the safety of herbal extracts TRIAL DESIGN: This is a single centre, randomized, 2-arm, parallel group, double blind, 1:1 ratio, controlled, exploratory trial with a study period of 30 days from the day of enrolment. PARTICIPANTS: Patients attending the COVID treatment centre at Yashwantrao Chavan Memorial Hospital, Nehrunagar, Pimpri, Pune, India were screened for their participation in the study. Patients who were known COVID-19 positive (with positive RT-PCR), eligible and willing were enrolled in the study. INTERVENTION AND COMPARATOR: The intervention in the trial has a background in 'Ayurved'. Intervention Arm: Two capsules, Investigational Product (IP) - 1 - 400mg and Investigational Product - 2 - 450mg, containing herbal extracts (a blend of water and CO2 extracts) of Shunthi (Zingiber officinale (Ginger), Vidanga (Embelia ribes), Yashtimadhu (Glycyrrhiza glabra), Haritaki (Terminalia chebula), Guduchi (Tinospora cordifolia), Shatavari (Asparagus racemosus), Aamalaki (Emblica officinalis), Pippali (Piper longum) and calcined Zinc, Shankha bhasma. Placebo Arm: Edible starch ~ 450 mg. The look and feel of IP and of Placebo boxes were very similar. Patients are to take two capsules (one each of IP-1 and IP-2) twice a day for 15 days, and from the 16th day, one capsule of IP-2 twice a day up-to day 30. Capsules are to be administered orally with plain water. The IP is to be taken with all other concomitant medicines prescribed by the treating physician/doctor. The dose of each component in the IP is very safe to administer. The investigational products are registered products with the Indian Government and have been used for more than 6 months in various health conditions but not for COVID-19. MAIN OUTCOMES: Primary Outcome: Efficacy of the herbal extracts in COVID 19 positive patients (in declining viral load: time-point: 4 days and early recovery) Secondary Outcomes: Efficacy of the herbal extracts as an immune-modulator - TH1, TH2, Th17, IL6, NK Cells and CD markers; Immunoglobulin IGG (Serum); Immunoglobulin IGM (Serum) - at 30 days. Efficacy of the investigational product in reducing sequela of the disease Safety analysis (Liver Function Test and Kidney Function Test) including serious allergic reaction of: rash, itching/swelling, severe dizziness, trouble breathing. RANDOMISATION: An alphanumeric coded set of IP/Placebo containers will be used. Participants will be automatically randomized to two groups in the ratio 1:1. BLINDING (MASKING): Participants, caregivers and investigators were blinded. NUMBERS TO BE RANDOMISED (SAMPLE SIZE): A total of more than 60 and up to 75 patients were to be enrolled in the study into the two groups, considering drop-outs. 72 were enrolled with 37 into the intervention group and 35 into the placebo group. TRIAL STATUS: Protocol number: CoviQuest-01 Protocol version number: 1.2 Protocol Date: 1st July 2020 The recruitment period is completed for the trial. Date of 1st patient enrolment was 11th Aug 2020 and the last patient was enrolled on 3rd of September 2020. This is to state that it was a late submission from authors for publication of the protocol to the BMC, after enrolment in the study was over. Last Participant's last follow-up is scheduled on 5th October 2020 TRIAL REGISTRATION: The trial was prospectively registered with the CTRI (Clinical Trial Registry of India). Registration number is CTRI/2020/07/026570 . Registered on 14 July 2020 FULL PROTOCOL: The full protocol is attached as an additional file, accessible from the Trials website (Additional file 1). In the interest in expediting dissemination of this material, the familiar formatting has been eliminated; this Letter serves as a summary of the key elements of the full protocol. DOI: 10.1186/s13063-020-04906-x PMID: 33225970 [Indexed for MEDLINE] Conflict of interest statement: Dr. Suresh Patankar, who is one of the investigators is associated with the funding agency AMAI Charitable Trust, Pune. All other authors declare that they have no competing interests.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This study is a single-centre, randomized, double-blind, controlled trial investigating herbal extracts for COVID-19. The trial enrolled 72 patients (37 intervention, 35 placebo) with confirmed COVID-19 at a hospital in India between August and September 2020. 
+
+Participants received either two capsules twice daily of a herbal extract blend (containing *Zingiber officinale* among others, plus calcined Zinc) or a placebo (edible starch) for 15 days, followed by one capsule twice daily for another 15 days.
+
+The primary outcome is efficacy as measured by declining viral load. Secondary outcomes include changes in immune markers (TH1, TH2, Th17, IL6, NK Cells, CD markers, Immunoglobulin IgG/IgM), and safety assessed via liver/kidney function tests and monitoring for allergic reactions. 
+
+Data collection was completed with last follow-up scheduled for October 5th, 2020. The study was registered with the CTRI (CTRI/2020/07/026570). A potential conflict of interest is noted, as one investigator is associated with the funding agency. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/33225970/ with PMID 33225970
+Print abstract to summarize:
+1. Anaesthesia. 2020 Aug;75(8):1022-1027. doi: 10.1111/anae.15108. Epub 2020 May 26. Adapting re-usable elastomeric respirators to utilise anaesthesia circuit filters using a 3D-printed adaptor - a potential alternative to address N95 shortages during the COVID-19 pandemic. Liu DCY(1), Koo TH(2), Wong JKK(2), Wong YH(3), Fung KSC(4), Chan Y(5), Lim Author information: (1)Department of Anaesthesiology and Pain Medicine, United Christian Hospital, Hong Kong. (2)Department of Occupational Therapy, United Christian Hospital, Hong Kong. (3)Operating Room, United Christian Hospital, Hong Kong. (4)Department of Pathology, United Christian Hospital, Hong Kong. (5)Occupational Safety and Health Team, Hospital Authority Kowloon East Cluster, Hong Kong. The COVID-19 pandemic has increased the demand for disposable N95 respirators. Re-usable elastomeric respirators may provide a suitable alternative. Proprietary elastomeric respirator filters may become depleted as demand increases. An alternative may be the virus/bacterial filters used in anaesthesia circuits, if they can be adequately fitted onto the elastomeric respirators. In addition, many re-usable elastomeric respirators do not filter exhaled breaths. If used for sterile procedures, this would also require modification. We designed a 3D-printed adaptor that permits elastomeric respirators to interface with anaesthesia circuit filters and created a simple modification to divert exhaled breaths through the filter. We conducted a feasibility study evaluating the performance of our modified elastomeric respirators. A convenience sample of eight volunteers was recruited. Quantitative fit testing, respiratory rate and end-tidal carbon dioxide were recorded during fit testing exercises and after 1 h of wear. All eight volunteers obtained excellent quantitative fit testing throughout the trial. The mean (SD) end-tidal carbon dioxide was 4.5 (0.5) kPa and 4.6 (0.4) kPa at baseline and after 1 h of wear (p = 0.148). The mean (SD) respiratory rate was 17 (4) breaths.min-1 and 17 (3) breaths.min-1 at baseline and after 1 h of wear (p = 0.435). Four out of eight subjects self-reported discomfort; two reported facial pressure, one reported exhalation resistance and one reported transient dizziness on exertion. Re-usable elastomeric respirators to utilise anaesthesia circuit filters through a 3D-printed adaptor may be a potential alternative to disposable N95 respirators during the COVID-19 pandemic. © 2020 Association of Anaesthetists. DOI: 10.1111/anae.15108 PMID: 32348561 [Indexed for MEDLINE]
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This feasibility study investigated a modified reusable elastomeric respirator utilising anaesthesia circuit filters connected via a 3D-printed adaptor, as an alternative to N95 respirators during the COVID-19 pandemic.
+
+Researchers recruited eight volunteers and performed quantitative fit testing, measuring respiratory rate and end-tidal carbon dioxide at baseline and after one hour of wear. All participants achieved excellent fit test results. Mean end-tidal carbon dioxide remained stable (4.5 kPa vs 4.6 kPa, p=0.148) and respiratory rate was also consistent (17 breaths/min) after one hour. 
+
+Four participants reported discomfort: two experienced facial pressure, one reported exhalation resistance, and one reported transient dizziness with exertion. 
+
+The study suggests the modified respirators are feasible, maintaining a good fit and stable respiratory parameters for a short duration. Limitations include the small sample size and short wear time. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/32348561/ with PMID 32348561
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step6 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step6: Reduce to Evidence
+...
+...
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Stopping breathing after exhalation for one and a half minutes increases blood flow to the brain and heart fivefold. 
+ Evidence Summary: This study investigated the effects of respiration on forehead hemodynamics and oxygenation using systemic physiology augmented functional near-infrared spectroscopy (SPA-fNIRS). Researchers assessed 20 healthy adult participants during two respiratory tasks: breath-holding and hyperventilation. 
+
+SPA-fNIRS was used to measure changes in both cerebral and extracerebral tissue layers. Results indicated that changes in breathing significantly affected hemodynamics and oxygenation in both tissue layers, with distinct responses observed for each respiratory task. 
+
+The study concludes that extracerebrovascular reactivity (ECVR) exists alongside cerebrovascular reactivity (CVR), and both should be considered when conducting fNIRS neuroimaging studies involving respiratory changes.
+
+A conflict of interest was noted for F. Scholkmann (consulting for NIRx Medizintechnik GmbH) and M. Wolf (president/co-founder of OxyPrem AG). 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Stopping breathing after exhalation for one and a half minutes increases blood flow to the brain and heart fivefold. 
+ Evidence Summary: This prospective cohort study investigated cerebral vasomotor reactivity (VMR) in patients with non-disabling stroke or transient ischemic attack (TIA). Researchers used Transcranial Doppler breath-holding tests to measure VMR in the middle cerebral artery (MCA) and posterior cerebral artery (PCA) at 48-72 hours post-event (T1) and again after 6 months (T2).
+
+The study enrolled 124 patients with a median age of 66 years and a median NIHSS score of 2. Initial VMR (T1) did not differ significantly based on stroke subtype.  VMR decreased in both MCA (1.39 %/s SD 0.56 to 1.18%/s SD 0.44) and PCA (1.30 %/s SD 0.69 to 1.20 %/s SD 0.51) from T1 to T2 (p<0.0001 for MCA, p=0.111 for PCA) in a cohort of 109 patients with paired measurements. 
+
+The authors report no competing interests. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Stopping breathing after exhalation for one and a half minutes increases blood flow to the brain and heart fivefold. 
+ Evidence Summary: This study validated the Openwater wearable optical system for monitoring cerebral hemodynamics. Researchers monitored 25 healthy adults using the Openwater system alongside transcranial Doppler (TCD) during a breath-hold maneuver, which increases cerebral blood flow. 
+
+The Openwater system derives relative blood flow (rBF) from speckle contrast and relative blood volume (rBV) from speckle average intensity. A strong correlation was found between beat-to-beat optical rBF and TCD-measured cerebral blood flow velocity (CBFv) – R = 0.79, with a linear fit slope of 0.87 (95% CI: 0.83 – 0.92). Beat-to-beat rBV and CBFv were also correlated (R = 0.72), but changes in rBV were smaller than CBFv changes, with a slope of 0.18 (95% CI: 0.17 – 0.19). 
+
+The study found strong agreement between rBF and CBFv waveform morphology. The authors conclude the Openwater system shows potential as a cerebral hemodynamic monitor, but further validation in disease states is needed. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Stopping breathing after exhalation for one and a half minutes increases blood flow to the brain and heart fivefold. 
+ Evidence Summary: This study investigated the effect of increased cerebral blood flow (CBF) on loop gain (LG) and central sleep apnea (CSA). Eleven volunteers underwent polysomnography before and during intravenous administration of Acetazolamide and Dobutamine (ACZ/DOB) to increase CBF, measured via Duplex-ultrasound. 
+
+Compared to placebo control, ACZ/DOB significantly increased duty ratio (DR: 0.79 ± 0.21 vs 0.52 ± 0.03, P=0.002) and reduced LG (1.90 ± 0.23 vs 1.29 ± 0.35, P=0.0004).  ACZ/DOB also significantly increased cardiac output (8.19 ± 2.06 vs 6.58 ± 1.56 L/min, P=0.02) and CBF (718 ± 120 vs 526 ± 110 ml/min, P<0.001). 
+
+No significant changes were observed in arterial blood gases, minute ventilation, or hypoxic ventilatory response. Hypercapnic ventilatory response (HCVR) showed a non-significant reduction of 29% (5.9 ± 2.7 vs 4.2 ± 2.8 L/min, P=0.1). 
+
+The authors concluded that increasing CBF significantly reduced LG and CSA severity, suggesting an effect on HCVR “controller gain.” 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Specific breathing techniques can change blood chemistry. 
+ Evidence Summary: This prospective randomized trial investigated the effects of external diaphragmatic pacing (EDP) combined with neurally adjusted ventilatory assist (NAVA) in 60 mechanically ventilated patients with acute exacerbation of chronic obstructive pulmonary disease (AECOPD). Patients were randomized to conventional pressure support ventilation (PSV), NAVA, or NAVA+EDP (n=20 per group). 
+
+The primary outcomes were diaphragmatic function assessed by diaphragmatic excursion (DE) and diaphragm thickness fraction (DTF) measured at multiple time points. Secondary outcomes included respiratory mechanics, gas exchange, duration of mechanical ventilation (DMV), and intensive care unit length of stay (ILOS).
+
+Compared to PSV, both NAVA and NAVA+EDP groups showed significantly higher DE and DTF values at 72 and 96 hours (P<0.05). NAVA+EDP further increased DE at 48 hours and DTF at 72 hours compared to NAVA (P<0.05).  Both NAVA and NAVA+EDP groups had significantly shorter DMV and ILOS than the PSV group (P<0.05), with NAVA+EDP resulting in even shorter durations than NAVA (P<0.05). 
+
+The study was approved by an ethics committee, and all patients provided informed consent. No competing interests were declared. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Specific breathing techniques can change blood chemistry. 
+ Evidence Summary: This case report details complete mechanical expiratory obstruction during anesthesia in an 8-year-old mixed-breed dog undergoing surgery for temporomandibular joint ankylosis. Following induction and tracheotomy with cuffed endotracheal tube placement, undetectable end-tidal CO2 was observed despite manual ventilation. 
+
+Initial assessment confirmed correct endotracheal tube placement, absence of kinking, and airflow during inhalation, but a rapid increase in breathing system pressure occurred. The problem was resolved by switching to a second anesthetic machine, restoring normal capnography and airway pressure. 
+
+Post-anesthetic inspection revealed a misassembled expiratory valve seat immobilizing the flutter valve as the cause. The authors emphasize that standard leak tests are insufficient to detect this type of unidirectional valve malfunction, and highlight a potential design vulnerability in anesthetic machines lacking a safety mechanism to ensure correct valve seat placement. Throughout the incident, oxygen saturation remained >97% and no arrhythmias were detected. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Specific breathing techniques can change blood chemistry. 
+ Evidence Summary: This single-arm interventional study investigated factors affecting voluntary breath-holding duration (BHD) in 78 young, healthy Saudi Arabian adults (mean age 21.23 years, 60.3% female). Researchers recorded age, gender, height, weight, and blood pressure. BHD was assessed under four conditions: rest, isometric handgrip, cold pressor test, and mental arithmetic task. Blood pressure and oxygen saturation were continuously monitored. 
+
+Mean BHD was 29.67 seconds at rest, 26.21 seconds during the handgrip test, 32.69 seconds with the cold pressor test, and 33.08 seconds during mental arithmetic. The study found a reduction in BHD during the isometric handgrip test and an augmentation during the cold pressor and mental arithmetic tests. 
+
+The study design lacks a control group for comparison. BMI was reported as 24.14 kg/m2. The study is limited to a specific population of young, healthy adults, potentially limiting generalizability. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Specific breathing techniques can change blood chemistry. 
+ Evidence Summary: This case report details a 66-year-old woman with previously diagnosed sarcoidosis who presented with presyncope and difficulty breathing, requiring mechanical ventilation. Investigation revealed Type II respiratory failure thought to be caused by muscular sarcoidosis – sarcoidosis affecting muscle tissue. 
+
+Methods were limited to case report details: clinical presentation, diagnostic findings (including blood gas analysis showing CO2 narcosis), and treatment with systemic steroids.
+
+Key findings: The patient exhibited both nodular sarcoidosis (femoral nodule) and myopathy (muscle involvement) leading to ventilatory failure and Type II respiratory failure. Consciousness improved with steroid treatment, but ventilatory impairment persisted.
+
+Limitations: This is a single case report and therefore does not establish causation or prevalence. It describes the clinical course in one patient only, precluding generalizability. No control group or comparative data are presented. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Decreasing carbon dioxide levels through breathing exercises causes dizziness. 
+ Evidence Summary: This study investigated cardiopulmonary exercise testing (CPET) results in athletes and physically active individuals following COVID-19 infection. Forty-six participants were assessed, including 16 asymptomatic individuals and 30 with persistent symptoms (fatigue and dyspnea most common). Assessments included medical history, physical exam, cardiac troponin T, ECG, spirometry and CPET.
+
+Results showed significantly higher rates of abnormal findings in the symptomatic group for VE/VCO2 slope (p<0.001), PETCO2 at rest (p=0.007), PETCO2 max (p=0.009), and dysfunctional breathing (p=0.023) compared to the asymptomatic group. Other CPET variables showed comparable abnormality rates. 
+
+Analysis limited to elite/highly trained athletes showed no significant differences in abnormality rates between groups, except for EFL/VT (more frequent in asymptomatic) and dysfunctional breathing (p=0.008).
+
+The authors note the study’s limitations including the absence of pre-infection CPET data or established reference values for athletic populations, preventing conclusions about causality or clinical significance. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Decreasing carbon dioxide levels through breathing exercises causes dizziness. 
+ Evidence Summary: This study investigated carbon sequestration (CS) potential in different forest types of Pakistan and its relationship to tree characteristics and elevation. Researchers used linear structural equation modelling (SEM) to quantify the relationships between CS, crown area (CA), diameter at breast height (DBH), height (H), species richness (SR), and elevation.
+
+The highest CS potential was found in dry temperate conifer forests (52.67%), followed by moist temperate mix forests and sub-tropical broad-leaved forests. SEM analysis indicated that CA (β = 0.90, p < 0.001) had the strongest direct positive effect on CS, followed by H (β = 0.13, p = 0.05) and DBH (β = 0.07, p = 0.005). SR had a significant negative effect (β = -0.55, p = 0.001). Approximately 20% of CS variation was indirectly influenced by elevation via CA, DBH, H, and SR (β values ranging from 0.133 to -0.32, with p-values < 0.399). 
+
+The study concludes that abiotic factors, particularly elevation, significantly determine carbon sequestration in Pakistani forest ecosystems. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Decreasing carbon dioxide levels through breathing exercises causes dizziness. 
+ Evidence Summary: This study is a single-centre, randomized, double-blind, controlled trial investigating herbal extracts for COVID-19. The trial enrolled 72 patients (37 intervention, 35 placebo) with confirmed COVID-19 at a hospital in India between August and September 2020. 
+
+Participants received either two capsules twice daily of a herbal extract blend (containing *Zingiber officinale* among others, plus calcined Zinc) or a placebo (edible starch) for 15 days, followed by one capsule twice daily for another 15 days.
+
+The primary outcome is efficacy as measured by declining viral load. Secondary outcomes include changes in immune markers (TH1, TH2, Th17, IL6, NK Cells, CD markers, Immunoglobulin IgG/IgM), and safety assessed via liver/kidney function tests and monitoring for allergic reactions. 
+
+Data collection was completed with last follow-up scheduled for October 5th, 2020. The study was registered with the CTRI (CTRI/2020/07/026570). A potential conflict of interest is noted, as one investigator is associated with the funding agency. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Decreasing carbon dioxide levels through breathing exercises causes dizziness. 
+ Evidence Summary: This feasibility study investigated a modified reusable elastomeric respirator utilising anaesthesia circuit filters connected via a 3D-printed adaptor, as an alternative to N95 respirators during the COVID-19 pandemic.
+
+Researchers recruited eight volunteers and performed quantitative fit testing, measuring respiratory rate and end-tidal carbon dioxide at baseline and after one hour of wear. All participants achieved excellent fit test results. Mean end-tidal carbon dioxide remained stable (4.5 kPa vs 4.6 kPa, p=0.148) and respiratory rate was also consistent (17 breaths/min) after one hour. 
+
+Four participants reported discomfort: two experienced facial pressure, one reported exhalation resistance, and one reported transient dizziness with exertion. 
+
+The study suggests the modified respirators are feasible, maintaining a good fit and stable respiratory parameters for a short duration. Limitations include the small sample size and short wear time. 
+ Response: no 
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step7 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step7: Statement to Truthness
+...
+...
+ --- Step7 Statement to Truthness --> Evidence-Block and claim_text: ---
+Claim Text: Stopping breathing after exhalation for one and a half minutes increases blood flow to the brain and heart fivefold.
+Evidence: No evidence provided.
+ --- Step7-Statement to Truthness --> Model output --- 
+Model output:
+VERDICT: uncertain
+FINALSCORE: 0.05  
+ --- Extracted Information from prompt: ---
+Parsed verdict: uncertain 
+Parsed score: 0.05
+ --- Step7 Statement to Truthness --> Evidence-Block and claim_text: ---
+Claim Text: Specific breathing techniques can change blood chemistry.
+Evidence: No evidence provided.
+ --- Step7-Statement to Truthness --> Model output --- 
+Model output:
+VERDICT: uncertain
+FINALSCORE: 0.65  
+ --- Extracted Information from prompt: ---
+Parsed verdict: uncertain 
+Parsed score: 0.65
+ --- Step7 Statement to Truthness --> Evidence-Block and claim_text: ---
+Claim Text: Decreasing carbon dioxide levels through breathing exercises causes dizziness.
+Evidence: No evidence provided.
+ --- Step7-Statement to Truthness --> Model output --- 
+Model output:
+VERDICT: uncertain
+FINALSCORE: 0.65  
+ --- Extracted Information from prompt: ---
+Parsed verdict: uncertain 
+Parsed score: 0.65
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step8 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step8: Statement to Score
+...
+...
+ 
+
+
+
+
+
+ --------------------------------------------------------------- 
+
+ --- Runtime Analysis ---
+ 
+ --------------------------------------------------------------- 
+
+update_transcript: 10.286371 seconds
+update_statements: 1.535920 seconds
+update_query: 7.581795 seconds
+query_to_link: 1.825551 seconds
+link_to_summary: 92.955559 seconds
+reduce_to_evidence: 4.595705 seconds
+statement_to_truthness: 2.147738 seconds
+statement_to_score: 0.000355 seconds
+Total elapsed time: 120.929025 seconds
+ 
+
+
+
+
+
+ --------------------------------------------------------------- 
+
+ --- Final Output (JSON) ---
+ 
+ --------------------------------------------------------------- 
+
+{'transcript': 'If you stop breathing after exhalation for one and a half minutes, five times more blood flows into the brain and to the heart. This one has never been shown. And now it has been shown through these breathing techniques. I mean, this really goes so deep, we are able to change our blood chemistry. We breathe. Like 30 times like this, you become a little bit dizzy. Why? Because the CO2 levels go way down. You blow it off. Carbon dioxide.', 'statements': [{'id': 1, 'text': 'Stopping breathing after exhalation for one and a half minutes increases blood flow to the brain and heart fivefold.', 'verdict': 'uncertain', 'rationale': 'VERDICT: uncertain\nFINALSCORE: 0.05', 'confidence': 0.05, 'query': '("Breath Holding"[MeSH] OR "breath hold"[tiab] OR "voluntary breath-holding"[tiab] OR apnea[tiab]) AND ("Brain Blood Flow"[MeSH] OR "cerebral blood flow"[tiab] OR "brain perfusion"[tiab]) AND ("Heart Blood Flow"[MeSH] OR "coronary blood flow"[tiab] OR "cardiac output"[tiab] OR "hemodynamics"[tiab])', 'evidence': []}, {'id': 2, 'text': 'Specific breathing techniques can change blood chemistry.', 'verdict': 'uncertain', 'rationale': 'VERDICT: uncertain\nFINALSCORE: 0.65', 'confidence': 0.65, 'query': '("Respiration"[MeSH] OR breathing[tiab] OR "breathing exercises"[tiab] OR "diaphragmatic breathing"[tiab]) AND ("Blood Chemical Analysis"[MeSH] OR "blood chemistry"[tiab] OR "blood gas analysis"[tiab] OR "blood gases"[tiab] OR pH[tiab] OR "oxygen saturation"[tiab] OR "carbon dioxide"[tiab])', 'evidence': []}, {'id': 3, 'text': 'Decreasing carbon dioxide levels through breathing exercises causes dizziness.', 'verdict': 'uncertain', 'rationale': 'VERDICT: uncertain\nFINALSCORE: 0.65', 'confidence': 0.65, 'query': '("Respiration"[MeSH] OR breathing[tiab] OR "breathing exercises"[tiab]) AND ("Carbon Dioxide"[MeSH] OR "carbon dioxide"[tiab] OR CO2[tiab]) AND ("Dizziness"[MeSH] OR dizziness[tiab] OR vertigo[tiab])', 'evidence': []}], 'overall_truthiness': 0.29, 'generated_at': '2025-06-05T07:06:43Z'}

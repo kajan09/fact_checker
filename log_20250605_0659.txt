@@ -1,0 +1,572 @@
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- LLM Configs --- 
+ 
+ --------------------------------------------------------------- 
+
+BASE_URL   : http://localhost:11434/v1
+API_KEY    : ollama
+BASE_MODEL : gemma3:27b
+BASE_TEMP  : 0.7
+
+ STEP2:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 128
+
+ STEP3:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 1024
+
+ STEP5:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 512
+
+ STEP6:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 512
+
+ STEP7:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 512
+
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- LLM Preprompts --- 
+ 
+ --------------------------------------------------------------- 
+
+Preprompt STEP2:
+
+You are part of a medical fact-checking pipeline.  
+If you propagate a false statement, the app may mislead people.
+
+INPUT TRANSCRIPT
+---------------
+{transcript}
+---------------
+
+TASK  
+Extract **medical claims** suitable for fact-checking.
+
+SELECTION RULES  
+1. Return **exactly three** distinct claims.  
+2. Prefer clinically relevant, novel, or potentially harmful claims.  
+3. Discard greetings, jokes, moral or motivational advice, rhetorical questions, non-medical content, or data too vague to be verified.  
+4. Merge duplicate / near-duplicate claims into one concise statement.
+
+STRICT OUTPUT  
+A valid JSON array with 1–3 strings.  
+No commentary, no extra keys, no markdown.
+
+
+
+
+Prepromt STEP3:
+
+You are a biomedical librarian inside a fact‐checking app.  
+If the claim is too vague, non‐medical, or otherwise unlikely to be indexed in PubMed, output the single word: NONE
+
+Otherwise, **think quickly (silently)** about the core PICO concepts in the claim, identify appropriate MeSH headings (in quotes with [MeSH]) and text‐word synonyms (with [tiab]), and produce ONE PubMed Boolean query string that:
+Example:
+(
+  "Smoking"[MeSH] 
+  OR smoking[tiab] 
+  OR smokers[tiab] 
+  OR "tobacco use"[tiab]
+)
+AND
+(
+  "Lung Function Tests"[MeSH] 
+  OR "pulmonary function"[tiab] 
+  OR "lung function"[tiab] 
+  OR FEV1[tiab] 
+  OR FVC[tiab]
+)
+AND
+(
+  "Inflammation"[MeSH] 
+  OR inflammation[tiab] 
+  OR "mucus hypersecretion"[tiab] 
+  OR mucus[tiab]
+)
+AND
+(
+  "Proanthocyanidins"[MeSH] 
+  OR proanthocyanidin*[tiab] 
+  OR OPC[tiab] 
+  OR "Traumotein"[tiab] 
+  OR "pine bark extract"[tiab] 
+  OR Pycnogenol[tiab]
+)
+
+
+• Is exactly one line (no line breaks).  
+• Uses uppercase AND/OR to combine concepts.  
+• Wraps MeSH terms in quotes followed by [MeSH] (e.g., "Smoking"[MeSH]).  
+• Marks synonym or free‐text terms with [tiab] (e.g., smoking[tiab]).  
+• Groups synonyms with parentheses; groups PICO domains by combining with AND.  
+• Does not include field tags other than [MeSH] and [tiab].  
+• Does not include quotation marks around free‐text terms (other than MeSH).  
+• Begins with a letter (A–Z or a–z) and contains no leading/trailing spaces.  
+• Contains no line breaks or extra whitespace.
+
+CLAIM:
+{claim}
+
+
+
+
+Preprompt STEP5:
+
+You are summarising evidence for a medical fact-checker.  
+Think briefly (silently) about study design and main results, then write the summary.
+
+GUIDELINES  
+• ≤ 300 words, plain text.  
+• Focus on methods, population, key outcomes, effect sizes, and limitations.  
+• Do NOT add interpretation beyond the abstract itself.
+
+TEXT TO SUMMARISE
+-----------------
+{abstract}
+-----------------
+
+
+
+
+Preprompt STEP6:
+
+You are verifying whether the summary actually addresses the claim.  
+Think (silently) first; then answer in exactly one word.
+
+STATEMENT: {statement}
+
+EVIDENCE SUMMARY: {evidence_summary}
+
+Does the summary *directly relate to or support* the statement?
+Respond with only: yes   |   no
+
+
+
+
+Prepromt STEP7:
+
+You are a professional medical fact-checker.  
+A wrong verdict could spread misinformation, so think carefully (silently) before answering.
+
+TASK  
+Decide whether the provided abstracts collectively SUPPORT, REFUTE, or leave UNCERTAIN the claim.
+
+CLAIM:
+{claim_text}
+
+EVIDENCE:
+{evidence_block}
+
+Inclunding the Scientific Evidence together with Common Sense and the Context of the Video Transcript:
+{transcript}
+
+give the final response in the following format:
+
+STRICT OUTPUT – exactly two lines, nothing else:
+VERDICT: true|false|uncertain
+FINALSCORE: <probability 0.00–1.00>
+
+
+
+
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step1 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting transcribing: estimated time: 10 - 20 seconds
+...
+...
+ --- Step1 Audio to Transcript ---> LLM Output: ---
+If you're planning to drink, you can do things like take glutathione, which is a commonly available supplement that makes alcohol not harm your liver. You could take a probiotic that cancels out alcohol, which is kind of cool, that's available commercially as well, and you can take activated charcoal, which everyone listening should be taking. Activated charcoal's available online all over the place. This binds to toxins in food, man-made, or just because it's been sitting out for a long time. You will have less hangover if you take activated charcoal, and you'll have less gas and bloating for whatever it is you decide to eat. So if you're gonna eat junk food, or a lot of food, activated charcoal will really help you feel better the next day and not be reactive that night.
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step2 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step2: Transcript to Medical Statements
+...
+...
+ --- Step2 Transcript to Statements ---> LLM Output: ---
+["Taking glutathione supplements can prevent liver damage from alcohol consumption.", "Probiotic supplements can cancel out the effects of alcohol.", "Activated charcoal reduces hangovers, gas, and bloating, and mitigates the effects of food toxins."]
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step3 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step3: Statement to PubMed Query
+...
+...
+ --- Step3 Statement to Query ---> LLM Output: ---
+("Liver"[MeSH] OR liver[tiab] OR hepatic[tiab]) AND ("Alcohol Drinking"[MeSH] OR alcohol[tiab] OR "ethanol"[tiab] OR "alcoholic beverages"[tiab]) AND ("Glutathione"[MeSH] OR glutathione[tiab] OR GHS[tiab]) AND ("Liver Injury"[MeSH] OR "liver damage"[tiab] OR hepatotoxicity[tiab] OR "liver disease"[tiab])
+ --- Step3 Statement to Query ---> LLM Output: ---
+("Probiotics"[MeSH] OR probiotic*[tiab] OR "Lactobacillus"[tiab] OR "Bifidobacterium"[tiab]) AND ("Alcohol"[MeSH] OR alcohol*[tiab] OR ethanol[tiab] OR "alcoholic beverages"[tiab]) AND ("Adverse Effects"[MeSH] OR "alcoholism"[tiab] OR "hangover"[tiab] OR "alcohol induced diseases"[tiab] OR "liver damage"[tiab])
+ --- Step3 Statement to Query ---> LLM Output: ---
+("Activated Charcoal"[MeSH] OR "activated carbon"[tiab] OR "charcoal"[tiab]) AND ("Hangover"[tiab] OR "Alcoholism"[MeSH] OR "Alcohol"[tiab]) AND ("Gas"[tiab] OR "Flatulence"[tiab] OR "Abdominal Distension"[tiab]) AND ("Bloating"[tiab] OR "Abdominal Distension"[tiab]) AND ("Foodborne Illness"[tiab] OR "Food Poisoning"[tiab] OR "Toxins"[tiab] OR "Food Contamination"[tiab])
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step4 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step4: Query to PubMed Links
+...
+...
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40409513/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40365931/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40351724/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40347464/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40232069/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40153189/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40044133/
+ --- Step4 Query to Link ---> PubmedLink --- 
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40034049/
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step5 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step5: Link to Summary
+...
+...
+Print abstract to summarize:
+1. J Nutr Biochem. 2025 May 21:109971. doi: 10.1016/j.jnutbio.2025.109971. Online ahead of print. n-3 polyunsaturated fatty acids-enriched fish oil attenuates chronic alcohol-induced liver injury via a mechanism involving the upregulation of Retsat. Zhang Y(1), Pan K(1), Xu A(1), Sun S(1), Huang Q(1), Wang Y(1), Wang H(1), Han Q(1), Li D(2), Ding Q(1), Li J(3). Author information: (1)School of Public Health, Zhejiang Chinese Medical University, 548 Binwen Road, Hangzhou, 310051, China. (2)Institute of Nutrition and Health, Qingdao University, 308 Ningxia Road, Qingdao, 266071, China. (3)School of Public Health, Zhejiang Chinese Medical University, 548 Binwen Road, Hangzhou, 310051, China. Electronic address: jiaomeili90@163.com. This study aimed to delineate the protective role of fish oil against alcoholic liver disease (ALD), identify the principal active component between eicosapentaenoic acid (EPA, C20:5 n-3) and docosahexaenoic acid (DHA, C22:6 n-3), and elucidate the molecular mechanisms. C57BL/6J mice were randomly assigned to receive either an alcohol-fed (AF) or pair-fed control (PF) diet, enriched with fish oil (FO) or corn oil (CO) for four weeks. Additionally, a series of in vitro experiments were performed using AML-12 cells to further investigate potential mechanisms. The results showed that plasma levels of alanine aminotransferase (ALT) and aspartate aminotransferase (AST) were significantly lower in the AF-FO group compared to the AF-CO group, indicating that fish oil alleviated alcohol-induced liver damage. Hepatic antioxidant markers, including glutathione (GSH), superoxide dismutase (SOD), and catalase (CAT) were also higher in the AF-FO group than in the AF-CO group. Transcriptomic analysis revealed FO supplementation significantly affected genes involved in oxidoreductase activity and lipid metabolism pathways, with Retsat being the most up-regulated gene. The in vitro experiments indicated that DHA, but not EPA, markedly increased Retsat expression, cell viability, and the expression of genes related to oxidoreductase activity and lipid metabolism, compared to linoleic acid (LA, C18:2 n-6). Notably, knocking down Retsat abolished the protective effects of DHA. In conclusion, dietary fish oil mitigated chronic alcohol-induced liver injury primarily through DHA by upregulating Retsat and downstream genes associated with oxidoreductase function and lipid metabolism. Copyright © 2025. Published by Elsevier Inc. DOI: 10.1016/j.jnutbio.2025.109971 Conflict of interest statement: Declaration of interest statement The authors assert that they possess no identifiable conflicting financial interests or personal affiliations that may have potentially influenced the findings presented in this research article.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This study investigated the effects of fish oil on alcoholic liver disease (ALD) in mice. Researchers randomly assigned C57BL/6J mice to one of four diets for four weeks: alcohol-fed with fish oil (AF-FO), alcohol-fed with corn oil (AF-CO), pair-fed control with fish oil, or pair-fed control with corn oil. 
+
+Results showed that mice in the AF-FO group had significantly lower plasma alanine aminotransferase (ALT) and aspartate aminotransferase (AST) levels compared to the AF-CO group, suggesting reduced liver damage. The AF-FO group also exhibited higher levels of hepatic glutathione (GSH), superoxide dismutase (SOD), and catalase (CAT). Transcriptomic analysis revealed that fish oil altered gene expression related to oxidoreductase activity and lipid metabolism, notably upregulating Retsat.
+
+*In vitro* experiments using AML-12 cells indicated that docosahexaenoic acid (DHA), but not eicosapentaenoic acid (EPA), increased Retsat expression, cell viability, and expression of genes related to oxidoreductase activity and lipid metabolism. Silencing Retsat reversed the protective effects of DHA.
+
+The study concludes that fish oil, specifically DHA, mitigates chronic alcohol-induced liver injury by upregulating Retsat and related genes. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40409513/ with PMID 40409513
+Print abstract to summarize:
+1. CPT Pharmacometrics Syst Pharmacol. 2025 May 14. doi: 10.1002/psp4.70045. Online  ahead of print. Quantitative Systems Toxicology Modeling of Acetaminophen Pharmacokinetics and Hepatic Biomarkers After Overdoses of Extended-Release and Immediate-Release Formulations in Adults With Chronic Alcohol Use or Low Glutathione. Yang K(1), Beaudoin JJ(1), Howell BA(1), Mullin J(2), Amini E(2), Lai JCK(3), Gelotte CK(4), Sista S(3), Atillasoy E(3). Author information: (1)Quantitative Systems Pharmacology Solutions, Simulations Plus Inc., Research Triangle Park, North Carolina, USA. (2)Physiologically-Based Pharmacokinetics Solutions, Simulations Plus Inc., Research Triangle Park, North Carolina, USA. (3)Kenvue, Summit, New Jersey, USA. (4)Independent Consultant, Westbrook, Connecticut, USA. Acetaminophen (APAP), an over-the-counter analgesic and antipyretic, can cause hepatotoxicity when ingested in large overdoses. APAP has multiple formulations including immediate-release (IR) and extended-release (ER) preparations. A recently published consensus statement on the management of APAP poisoning indicated that management of APAP-ER overdose is the same as that for APAP-IR overdose. Consistent with this consensus, it was previously reported that quantitative systems toxicology (QST) modeling using DILIsym predicted similar pharmacokinetic (PK) and hepatic biomarker profiles for the APAP-ER and APAP-IR formulations after overdose in healthy adults. Hepatic injury from APAP is caused by the reactive metabolite, N-acetyl-ρ-benzoquinone imine (NAPQI), which is formed predominantly by CYP2E1-mediated metabolism and eliminated by hepatic glutathione. As such, conditions that can increase NAPQI production (e.g., CYP2E1 induction by alcohol) or decrease hepatic glutathione stores (e.g., underling liver disease) may impact PK and susceptibility to hepatotoxicity after overdose of APAP-IR and APAP-ER. In the current study, APAP-IR and APAP-ER models in chronic alcohol users and individuals with low hepatic glutathione were developed and verified within DILIsym. Simulations using verified models predicted similar PK and hepatic biomarker profiles for the APAP-ER and APAP-IR formulations in moderate and excessive chronic alcohol users and adults with low hepatic glutathione levels after single acute overdoses up to ~100 g and repeat supratherapeutic ingestions (up to 7.8 g/day for 10 days). These results further support that approaches to manage APAP-IR overdoses can be applied to manage APAP-ER overdoses in adults with chronic alcohol consumption or lower hepatic glutathione levels. © 2025 The Author(s). CPT: Pharmacometrics & Systems Pharmacology published by Wiley Periodicals LLC on behalf of American Society for Clinical Pharmacology and Therapeutics. DOI: 10.1002/psp4.70045
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This study used quantitative systems toxicology (QST) modeling with the DILIsym platform to investigate acetaminophen (APAP) pharmacokinetics (PK) and hepatic biomarker profiles following overdoses of immediate-release (IR) and extended-release (ER) formulations. The models incorporated the impact of chronic alcohol use and low hepatic glutathione levels, conditions known to affect APAP-induced liver injury.
+
+Simulations were performed using verified models for moderate and excessive chronic alcohol users and adults with low glutathione. Results indicated similar PK and hepatic biomarker profiles for both APAP-ER and APAP-IR formulations after single acute overdoses (up to ~100g) and repeat supratherapeutic ingestions (up to 7.8g/day for 10 days).
+
+The study supports the application of current APAP-IR overdose management approaches to APAP-ER overdoses in individuals with chronic alcohol consumption or reduced hepatic glutathione. The research relies on computational modeling and does not include *in vivo* or *in vitro* data. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40365931/ with PMID 40365931
+Print abstract to summarize:
+1. Food Sci Biotechnol. 2025 Apr 29;34(10):2295-2306. doi: 10.1007/s10068-025-01865-4. eCollection 2025 Jun. Fucoidan JHCF4s from Hizikia fusiformis against ethanol-induced damage in vitro and in vivo. Wu T(1), Liu Y(1), Ai X(1), Wang S(1), Hou A(1), Zheng F(1), Yue H(1), Dai Y(1). Author information: (1)Changchun University of Chinese Medicine, Changchun, 130117 China. Fucoidan has strong antioxidant and free radical scavenging activities. We successfully isolated the active fucoidan, JHCF4, from edible Hizikia fusiformis. The effects of high-temperature water-extracted (T-JHCF4) and cellulase-assisted extraction (C-JHCF4) of JHCF4 were compared and to demonstrate those potential for treating alcoholic liver disease (ALD). C-JHCF4 contained higher amounts of fucose, arabinose, rhamnose, mannose, and sulfate groups, whereas T-JHCF4 had a higher galactose content. Importantly, C-JHCF4 downregulated the expression of Bax, Caspase 3, and cytochrome C in alcohol-treated LO2 cells and upregulated Bcl-2 expression, indicating its protective effect via an apoptosis-related pathway. In vivo, C-JHCF4 protected alcohol-induced zebrafish from reduced reactive oxygen species production and cell death, further regulating malondialdehyde and glutathione levels. Collectively, T-JHCF4 has advantages in extraction, such as short extraction time and low cost, making it suitable for large-scale industrial production. C-JHCF4 exhibited a stronger hepatoprotective effect than T-JHCF4, indicating its suitability for treating ALD. SUPPLEMENTARY INFORMATION: The online version contains supplementary material available at 10.1007/s10068-025-01865-4. © The Korean Society of Food Science and Technology 2025. Springer Nature or its licensor (e.g. a society or other partner) holds exclusive rights to this article under a publishing agreement with the author(s) or other rightsholder(s); author self-archiving of the accepted manuscript version of this article is solely governed by the terms of such publishing agreement and applicable law. DOI: 10.1007/s10068-025-01865-4 Conflict of interest statement: Conflict of interestOn behalf of all authors, the corresponding author states that there is no conflict of interest.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This study investigated the hepatoprotective effects of fucoidan, JHCF4, extracted from *Hizikia fusiformis* using two methods: high-temperature water extraction (T-JHCF4) and cellulase-assisted extraction (C-JHCF4). 
+
+*In vitro*, LO2 cells were exposed to ethanol, and treated with either JHCF4 extract. C-JHCF4 demonstrated downregulation of Bax, Caspase 3, and cytochrome C, alongside upregulation of Bcl-2 expression. Compositional analysis revealed C-JHCF4 had higher fucose, arabinose, rhamnose, mannose, and sulfate content, while T-JHCF4 had more galactose. 
+
+*In vivo*, zebrafish were used to model alcohol-induced damage. C-JHCF4 treatment reduced reactive oxygen species production and cell death, and regulated levels of malondialdehyde and glutathione. 
+
+The authors conclude C-JHCF4 exhibits a stronger hepatoprotective effect than T-JHCF4, suggesting its potential for treating alcoholic liver disease, while T-JHCF4 is more suitable for large-scale production due to its simpler extraction process. The study does not report statistical analyses or specific effect sizes. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40351724/ with PMID 40351724
+Print abstract to summarize:
+1. Toxicol Sci. 2025 May 10:kfaf066. doi: 10.1093/toxsci/kfaf066. Online ahead of print. Perfluorooctane sulfonate (PFOS) exposure and alcohol-associated liver disease severity in a mouse chronic-binge ethanol feeding model. Ekuban FA(1)(2)(3)(4), Gripshover TC(1)(2)(3), Ames P(1), Biswas K(5), Bolatimi OE(1)(2), Abramson J(2), Iyer M(2), Luo J(2), Ekuban A(2), Hwang JY(6)(7)(8), Park JW(6)(7)(8), Banerjee M(1)(4), Watson WH(1)(9)(2)(4), Wahlang B(1)(2)(3)(4), Bello D(5), Schlezinger JJ(10), McClain CJ(1)(9)(2)(11)(12)(13), Cave MC(1)(9)(2)(11)(14)(12)(13)(3)(4). Author information: (1)Department of Pharmacology and Toxicology, University of Louisville School of Medicine, Louisville, KY, 40202, USA. (2)Division of Gastroenterology, Hepatology and Nutrition, Department of Medicine, School of Medicine, University of Louisville, Louisville, KY, 40202, (3)University of Louisville Superfund Research Program, University of Louisville, Louisville, KY, 40202, USA. (4)The Center for Integrative Environmental Health Sciences, University of Louisville, Louisville, KY, 40202, USA. (5)Department of Biomedical and Nutritional Sciences, University of Massachusetts Lowell, 883 Broadway Street, Lowell, MA, 01854, USA. (6)The Center for Integrative Environmental Health Sciences Biostatistics and Informatics Facility Core, University of Louisville, Louisville, KY, 40202, USA. (7)Brown Cancer Center Bioinformatics Core, Department of Medicine, University of Louisville, KY, 40202, USA. (8)KY INBRE Bioinformatics Core, University of Louisville, Louisville, KY, (9)Department of Biochemistry and Molecular Genetics, University of Louisville School of Medicine, Louisville, KY, 40202, USA. (10)Department of Environmental Health, Boston University School of Public Health, Boston, MA, 02118, USA. (11)The Robley Rex Veterans Affairs Medical Center, Louisville, KY, 40206, USA. (12)Hepatobiology & Toxicology COBRE, University of Louisville School of Medicine, Louisville, KY, 40202, USA. (13)University of Louisville Alcohol Research Center, University of Louisville, Louisville, KY, 40202, USA. (14)The Liver Transplant Program at UofL Health-Jewish Hospital Trager Transplant Center, Louisville, KY, 40202, USA. BACKGROUND: Exposure to pollutants including the ubiquitous 'forever chemical', Perfluorooctane sulfonate (PFOS) has increasingly been associated with metabolic dysfunction-associated steatotic liver disease (MASLD). Recent epidemiological evidence has identified associations between Per- and polyfluoroalkyl substances (PFAS) exposure and increased liver injury in alcohol consumers, suggesting potential interactions between these exposures. However, the intersection of pollutant exposures and alcohol-associated liver disease (ALD) is not well studied. We hypothesize that pollutants may disrupt hepatic metabolism to modify ALD severity. Recently, we developed a two-hit (ethanol plus pollutant) mouse model, enabling testing of this hypothesis. Here, we elucidate the metabolic and disease-modifying effects of PFOS in this model. METHODS: Male C57BL/6J mice were fed isocaloric control or 5% Ethanol (EtOH) Lieber-DeCarli diet for 15 days. From day 6 of feeding, mice were concurrently gavaged with 1 mg/kg PFOS or 2% tween-80 vehicle for 10 days, followed by a 5 g/kg EtOH binge dose and euthanized 5-6 hours later. RESULTS: Approximately 60% of the administered PFOS dose accumulated in liver. PFOS exacerbated EtOH-induced hepatic steatosis and was associated by higher levels of plasma very low-density lipoprotein (vLDL) and alanine aminotransferase (ALT). PFOS upregulated hepatic ethanol-metabolizing enzymes and lowered blood alcohol levels. Ingenuity Pathway Analysis (IPA) Top Toxicity Functions/Lists associated with hepatic gene expression following PFOS co-exposure in EtOH-fed mice included: Fatty acid metabolism and liver steatosis; nuclear receptor activation, cytochrome P450, and reactive oxygen species (ROS); apoptosis; liver fibrosis; and hepatocellular carcinoma (HCC). GO/KEGG analyses similarly revealed enrichment in fatty acid, xenobiotic, alcohol, or glutathione metabolic processes; and Peroxisome proliferator-activated receptor (PPAR) signaling. PFOS upregulated hepatic expression of several nuclear receptors (e.g., Pparα, Car, and Pxr) and their P450 target genes (e.g., Cyp4a10, Cyp2b10, and Cyp3a11) by RT-PCR or Western blot, confirming key IPA predictions. CONCLUSIONS: PFOS is a metabolism disrupting chemical that worsened ALD severity. PFOS activated hepatic nuclear receptors and enriched hepatic transcriptional pathways associated with steatosis, xenobiotic metabolism, oxidative stress, cell death, fibrosis, and HCC. These data demonstrate a novel mechanism whereby PFOS exacerbates ALD through coordinated dysregulation of lipid homeostasis and liver injury, potentially mediated by nuclear receptor activation. The identification of PFOS as an ALD risk modifier highlight the critical need to evaluate environmental pollutants as potential contributors to liver disease progression. More data are required on environmental pollution as a disease modifying factor in ALD. © The Author(s) 2025. Published by Oxford University Press on behalf of the Society of Toxicology. All rights reserved. For commercial re-use, please contact reprints@oup.com for reprints and translation rights for reprints. All other permissions can be obtained through our RightsLink service via the Permissions link on the article page on our site—for further information please contact journals.permissions@oup.com. DOI: 10.1093/toxsci/kfaf066
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This study investigated the impact of perfluorooctane sulfonate (PFOS) exposure on alcohol-associated liver disease (ALD) severity in a mouse model. Male C57BL/6J mice were fed either a control diet or a 5% ethanol diet for 15 days. From day 6, mice also received daily PFOS (1mg/kg) or vehicle via gavage, followed by an ethanol binge and euthanasia 5-6 hours later.
+
+Results showed approximately 60% of administered PFOS accumulated in the liver. PFOS exacerbated ethanol-induced hepatic steatosis and was associated with higher plasma very low-density lipoprotein (vLDL) and alanine aminotransferase (ALT) levels. PFOS increased expression of hepatic ethanol-metabolizing enzymes and lowered blood alcohol levels. 
+
+Gene expression analysis revealed that PFOS exposure upregulated pathways related to fatty acid metabolism, liver steatosis, cytochrome P450 activity, reactive oxygen species, apoptosis, fibrosis, and hepatocellular carcinoma. PFOS also increased hepatic expression of several nuclear receptors (Pparα, Car, Pxr) and their target genes (Cyp4a10, Cyp2b10, Cyp3a11).
+
+The authors conclude that PFOS exacerbates ALD severity by disrupting hepatic metabolism and activating nuclear receptors, potentially leading to dysregulation of lipid homeostasis and liver injury. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40347464/ with PMID 40347464
+Print abstract to summarize:
+1. Foods. 2025 Mar 19;14(6):1054. doi: 10.3390/foods14061054. The Protective Effect of Limosilactobacillus fermentum FZU501 Against Alcohol-Induced Liver Injury in Mice via Gut Microbiota-Liver Axis. Liang Z(1)(2), Chen S(1)(2), Zhang X(1)(2), Li J(1)(2), Guo W(1)(2), Ni L(1)(2), Lv X(1)(2). Author information: (1)Institute of Food Science and Technology, College of Biological Science and Technology, Fuzhou University, Fuzhou 350108, China. (2)Food Nutrition and Health Research Center, School of Advanced Manufacturing, Fuzhou University, Jinjiang 362200, China. As a probiotic strain isolated from Hongqu rice wine (a traditional Chinese fermented food), Limosilactobacillus fermentum FZU501 (designated as Lf) demonstrates exceptional gastric acid and bile salt tolerance, showing potential application as a functional food. The aim of this study was to investigate the protective effect of dietary Lf intervention on alcohol-induced liver injury (ALI) in mice. The results demonstrated that oral administration of Lf effectively ameliorated alcohol-induced lipid metabolism disorders by reducing the serum levels of TC, TG and LDL-C and increasing the serum levels of HDL-C. In addition, oral administration of Lf effectively prevented alcohol-induced liver damage by increasing the hepatic activities of antioxidant enzymes (CAT, SOD, GSH-Px) and alcohol-metabolizing enzymes (ADH and ALDH). Interestingly, 16S amplicon sequencing showed that oral administration of Lf increased the number of Prevotella, Lachnospiraceae_NK4A136_group and Lactobacillus, but decreased the proportion of Faecalibaculum, Adlercreutzia and Alistipes in the intestines of mice that consumed excessive alcohol, which was highly associated with improved liver function. As revealed by liver untargeted metabolomics studies, oral Lf clearly changed liver metabolic profiles, with the signature biomarkers mainly involving purine metabolism, taurine metabolism, tryptophan, alanine, aspartic acid and glutamate metabolism, etc. Additionally, Lf intervention regulated liver gene transcription in over-drinking mice for cholesterol metabolism, bile acid metabolism, fatty acid β-oxidation, alcohol metabolism and oxidative stress. Taken together, the above research results provide solid scientific support for the biological activity of Lf in ameliorating alcohol-induced liver metabolism disorder and intestinal microbiota imbalance. DOI: 10.3390/foods14061054 Conflict of interest statement: There are no conflicts of interest to declare.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This study investigated the effect of *Limosilactobacillus fermentum* FZU501 (Lf) on alcohol-induced liver injury (ALI) in mice. Researchers administered Lf orally to mice subjected to excessive alcohol consumption. 
+
+Key findings included reduced serum total cholesterol (TC), triglycerides (TG), and low-density lipoprotein cholesterol (LDL-C), alongside increased high-density lipoprotein cholesterol (HDL-C). Hepatic activity of antioxidant enzymes (CAT, SOD, GSH-Px) and alcohol-metabolizing enzymes (ADH and ALDH) was also increased. 
+
+16S amplicon sequencing of gut microbiota revealed Lf administration increased *Prevotella*, *Lachnospiraceae_NK4A136_group*, and *Lactobacillus*, while decreasing *Faecalibaculum*, *Adlercreutzia*, and *Alistipes*. Liver metabolomics showed changes in purine, taurine, tryptophan, alanine, aspartic acid and glutamate metabolism. Gene transcription related to cholesterol metabolism, bile acid metabolism, fatty acid β-oxidation, alcohol metabolism and oxidative stress was also regulated. 
+
+The study utilized a mouse model and assessed biochemical markers, gut microbiota composition, metabolomics and gene transcription. No conflicts of interest were declared. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40232069/ with PMID 40232069
+Print abstract to summarize:
+1. Int Microbiol. 2025 Mar 28. doi: 10.1007/s10123-025-00653-8. Online ahead of print. Screening, characterization, and potential anti-hangover ability of selenium nanoparticle-enriched lactobacillus. Gao J(1), Jiang S(1), Li Z(1), Liu S(1), Gu Q(2), Yu X(3). Author information: (1)Key Laboratory of Industrial Biotechnology, Ministry of Education, School of Biotechnology, Jiangnan University, 1800 Li-Hu Road, Wuxi, Jiangsu, 214122, People's Republic of China. (2)Key Laboratory of Industrial Biotechnology, Ministry of Education, School of Biotechnology, Jiangnan University, 1800 Li-Hu Road, Wuxi, Jiangsu, 214122, People's Republic of China. guqiuya@aliyun.com. (3)Key Laboratory of Industrial Biotechnology, Ministry of Education, School of Biotechnology, Jiangnan University, 1800 Li-Hu Road, Wuxi, Jiangsu, 214122, People's Republic of China. xbyu@jiangnan.edu.cn. This study aimed to develop a selenium nanoparticles (SeNPs)-enriched probiotic strain with potential anti-hangover effects. Pediococcus acidilactici JW-015 was screened for its high tolerance to inorganic selenium (up to 80 mM sodium selenite) and efficient synthesis of SeNPs, achieving a selenium accumulation concentration of 6974 ± 90.71 μg/g, with SeNPs accounting for 86.54% ± 2.48%. Safety and probiotic properties were evaluated, confirming that JW-015 is a safe probiotic strain and that selenium enrichment enhanced its probiotic properties. Furthermore, JW-015 demonstrated significant anti-hangover efficacy, with selenium enrichment improving the oxidative stress capacity, alcohol tolerance, alcohol degradation ability, and relevant enzyme activities (ADH and ALDH) of the strain. This study provides a promising bio-carrier for SeNPs transformation and expands the applications of selenium-enriched LAB. © 2025. The Author(s), under exclusive licence to Springer Nature Switzerland DOI: 10.1007/s10123-025-00653-8 Conflict of interest statement: Declarations. Ethical Approval: Not applicable. Consent to Participate Not applicable. Consent for Publication: All authors have their consent to publish their work. Competing Interests: The authors declare no competing interests.
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This study investigated the potential of *Pediococcus acidilactici* JW-015 enriched with selenium nanoparticles (SeNPs) as an anti-hangover probiotic. Researchers screened JW-015 for selenium tolerance and SeNP synthesis capability, finding it could accumulate 6974 ± 90.71 μg/g of selenium, with 86.54% ± 2.48% as SeNPs. 
+
+The study evaluated the safety and probiotic properties of JW-015, finding selenium enrichment enhanced these properties. JW-015 demonstrated improved oxidative stress capacity, alcohol tolerance, and alcohol degradation ability after selenium enrichment. Enzyme activities related to alcohol metabolism (ADH and ALDH) were also increased. 
+
+The study is *in vitro*; it does not report results from animal or human trials. No ethical approvals or consent statements were necessary as the study did not involve human or animal subjects. The authors declare no competing interests. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40153189/ with PMID 40153189
+Print abstract to summarize:
+1. J Microbiol. 2025 Feb;63(2):e2410026. doi: 10.71150/jm.2410026. Epub 2025 Feb 27. Comprehensive genomic and functional analysis of Leuconostoc lactic acid bacteria in alcohol and acetaldehyde metabolism. Gwak JH(1), Choi YJ(2), Ayub H(2), Seol MK(3), Kim H(3), Jung MY(2)(4). Author information: (1)Department of Biological Sciences and Biotechnology, Chungbuk National University, Cheongju 28644, Republic of Korea. (2)Interdisciplinary Graduate Program in Advance Convergence Technology and Science, Jeju National University, Jeju 63243, Republic of Korea. (3)Vitabio Inc., Sejong 30141, Republic of Korea. (4)Department of Biology Education, Jeju National University, Jeju 63243, Republic of Korea. Alcohol consumption can lead to the accumulation of harmful metabolites, such as acetaldehyde, contributing to various adverse health effects, including hangovers and liver damage. This study presents a comprehensive genomic and functional analysis of Leuconostoc suionicum VITA-PB2, a lactic acid bacterial strain isolated from kimchi, to elucidate its role in enhancing alcohol and acetaldehyde metabolism. Genomic characterization revealed key genes encoding alcohol dehydrogenase (ADH) and aldehyde dehydrogenase (ALDH), providing insights into the metabolic capabilities of strain VITA-PB2. Phylogenomic analyses confirmed its taxonomic classification and genetic similarity to other Leuconostoc species. Functional validation through in vitro and in vivo experiments demonstrated superior ethanol and acetaldehyde decomposition abilities of strain VITA-PB2, with significant reductions in blood ethanol and acetaldehyde levels observed in rats administered with the strain. Further analysis indicated that while hepatic ADH activity did not significantly increase; however, ALDH expression was elevated. This suggests that the microbial ADH of strain VITA-PB2 contributed to ethanol breakdown, while both microbial and host ALDH facilitated acetaldehyde detoxification. These findings highlight the potential of strain VITA-PB2 as a functional probiotic for mitigating the toxic effects of alcohol consumption. DOI: 10.71150/jm.2410026 PMID: 40044133 [Indexed for MEDLINE]
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This study investigated the ability of *Leuconostoc suionicum* VITA-PB2, a lactic acid bacteria isolated from kimchi, to metabolize alcohol and acetaldehyde. Researchers performed genomic characterization to identify genes encoding alcohol dehydrogenase (ADH) and aldehyde dehydrogenase (ALDH) in the strain. Phylogenomic analysis confirmed the strain’s taxonomy and genetic relatedness to other *Leuconostoc* species. 
+
+In vitro and *in vivo* experiments (using rats) demonstrated that administration of VITA-PB2 resulted in significant reductions in blood ethanol and acetaldehyde levels. Hepatic ADH activity did not significantly increase, but ALDH expression was elevated. The researchers suggest the bacterial ADH contributed to ethanol breakdown, while both bacterial and host ALDH facilitated acetaldehyde detoxification.
+
+The study concludes that *L. suionicum* VITA-PB2 may be a functional probiotic for reducing the toxic effects of alcohol. 
+
+PMID: 40044133. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40044133/ with PMID 40044133
+Print abstract to summarize:
+1. Food Funct. 2025 Mar 17;16(6):2545-2563. doi: 10.1039/d4fo03094j. Probiotics isolated from the fermented grains of Chinese baijiu alleviate alcohol-induced liver injury by regulating alcohol metabolism and the gut microbiota in mice. Wang J(1)(2), Xu Q(2), Lu C(2), Cao J(2), Zhuang L(2), Li Y(2), Li Z(2), Song Y(2), Zhou S(2), Zhong F(2), Zhang T(2), Luo X(2). Author information: (1)College of Food Science, Shanxi Normal University, Taiyuan 030031, China. wangjiali816@163.com. (2)Key Laboratory of Industrial Fermentation Microbiology of the Ministry of Education, College of Biotechnology, Tianjin University of Science and Technology, Tianjin 300457, China. luoxuegang@tust.edu.cn. Alcoholic liver disease is one of the diseases with a high mortality rate worldwide, resulting from excessive and chronic alcohol consumption. With the rapid rise of intestinal microbial research, more and more researchers have begun to focus on the role of probiotics in preventing, alleviating or treating diseases. In this study, effects of lactic acid bacteria (LAB), a general type of probiotic, isolated from the fermented grains of Chinese baijiu, on alcohol-induced liver injury and alcohol metabolism were investigated, and the results showed that Lactiplantibacillus pentosus LTJ12, Pediococcus acidilactici LTJ28, Lactiplantibacillus plantarum LTJ30, and Pediococcus acidilactici LTJ32 could prevent drunkenness and sober up, and had a good protective effect on alcoholic liver injury. These LAB, especially Lactiplantibacillus, can reduce the drunken rate and mortality of drinking mice, shorten the sobriety time, decrease the content of ethanol in serum, reduce the activity or content of aspartate aminotransferase (AST), alanine aminotransferase (ALT), alkaline phosphatase (ALP), triglyceride (TG) and malondialdehyde (MDA), increase the activity or content of superoxide dismutase (SOD), glutathione (GSH) and nitric oxide (NO), and also improve the activity of alcohol dehydrogenase (ADH) and acetaldehyde dehydrogenase (ALDH) of the liver. The LAB intervention basically reversed the changes in the mRNA levels of genes related to ethanol/drug metabolism (CYP2E1, ADH1 and ALDH2), antioxidant markers (SOD2 and CAT), cellular inflammation, apoptosis and proliferation (SIRT1, SMYD3 and BRD4) and lipid metabolism (SREBP1 and FASn). In addition, we have found that the regulatory effect of these probiotics may be related to the SMYD3/BRD4 pathway, which needs further detailed research. Besides, the probiotics increased the abundance of gut microbes, restored the imbalance of the intestinal flora caused by alcohol consumption, and regulated the changes in the intestinal short-chain fatty acid content caused by chronic alcohol consumption. These results suggested that these baijiu-derived probiotics can effectively prevent drunkenness and chronic alcoholic liver injury. It is of great significance to provide scientific basis for subsequent research and development of new anti-alcoholism health products based on probiotics and the intestinal microecological regulation mechanism. DOI: 10.1039/d4fo03094j PMID: 40034049 [Indexed for MEDLINE]
+ --- Step5 Link to Summary ---> LLM output --- 
+LLM output (Summary of Abstract): This study investigated the effects of four lactic acid bacteria (LAB) – *Lactiplantibacillus pentosus* LTJ12, *Pediococcus acidilactici* LTJ28, *Lactiplantibacillus plantarum* LTJ30, and *Pediococcus acidilactici* LTJ32 – isolated from Chinese baijiu fermentation on alcohol-induced liver injury in mice. 
+
+Researchers administered the LAB to mice and assessed outcomes related to alcohol metabolism and liver health. Results showed the LAB reduced ‘drunkenness’ rate and mortality, shortened sobriety time, and decreased serum ethanol content. Liver enzyme levels (AST, ALT, ALP), triglyceride and MDA levels were reduced, while SOD, GSH and NO levels increased. The LAB also improved activity of ADH and ALDH. 
+
+Gene expression analysis revealed reversal of changes in genes related to ethanol/drug metabolism, antioxidant markers, inflammation, apoptosis, proliferation, and lipid metabolism. The study also found the LAB increased gut microbial abundance, restored gut flora balance disrupted by alcohol, and regulated short-chain fatty acid content. 
+
+The authors suggest these findings provide a basis for developing probiotic-based anti-alcoholism products, and further research into the SMYD3/BRD4 pathway is warranted. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40034049/ with PMID 40034049
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step6 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step6: Reduce to Evidence
+...
+...
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Taking glutathione supplements can prevent liver damage from alcohol consumption. 
+ Evidence Summary: This study investigated the effects of fish oil on alcoholic liver disease (ALD) in mice. Researchers randomly assigned C57BL/6J mice to one of four diets for four weeks: alcohol-fed with fish oil (AF-FO), alcohol-fed with corn oil (AF-CO), pair-fed control with fish oil, or pair-fed control with corn oil. 
+
+Results showed that mice in the AF-FO group had significantly lower plasma alanine aminotransferase (ALT) and aspartate aminotransferase (AST) levels compared to the AF-CO group, suggesting reduced liver damage. The AF-FO group also exhibited higher levels of hepatic glutathione (GSH), superoxide dismutase (SOD), and catalase (CAT). Transcriptomic analysis revealed that fish oil altered gene expression related to oxidoreductase activity and lipid metabolism, notably upregulating Retsat.
+
+*In vitro* experiments using AML-12 cells indicated that docosahexaenoic acid (DHA), but not eicosapentaenoic acid (EPA), increased Retsat expression, cell viability, and expression of genes related to oxidoreductase activity and lipid metabolism. Silencing Retsat reversed the protective effects of DHA.
+
+The study concludes that fish oil, specifically DHA, mitigates chronic alcohol-induced liver injury by upregulating Retsat and related genes. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Taking glutathione supplements can prevent liver damage from alcohol consumption. 
+ Evidence Summary: This study used quantitative systems toxicology (QST) modeling with the DILIsym platform to investigate acetaminophen (APAP) pharmacokinetics (PK) and hepatic biomarker profiles following overdoses of immediate-release (IR) and extended-release (ER) formulations. The models incorporated the impact of chronic alcohol use and low hepatic glutathione levels, conditions known to affect APAP-induced liver injury.
+
+Simulations were performed using verified models for moderate and excessive chronic alcohol users and adults with low glutathione. Results indicated similar PK and hepatic biomarker profiles for both APAP-ER and APAP-IR formulations after single acute overdoses (up to ~100g) and repeat supratherapeutic ingestions (up to 7.8g/day for 10 days).
+
+The study supports the application of current APAP-IR overdose management approaches to APAP-ER overdoses in individuals with chronic alcohol consumption or reduced hepatic glutathione. The research relies on computational modeling and does not include *in vivo* or *in vitro* data. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Taking glutathione supplements can prevent liver damage from alcohol consumption. 
+ Evidence Summary: This study investigated the hepatoprotective effects of fucoidan, JHCF4, extracted from *Hizikia fusiformis* using two methods: high-temperature water extraction (T-JHCF4) and cellulase-assisted extraction (C-JHCF4). 
+
+*In vitro*, LO2 cells were exposed to ethanol, and treated with either JHCF4 extract. C-JHCF4 demonstrated downregulation of Bax, Caspase 3, and cytochrome C, alongside upregulation of Bcl-2 expression. Compositional analysis revealed C-JHCF4 had higher fucose, arabinose, rhamnose, mannose, and sulfate content, while T-JHCF4 had more galactose. 
+
+*In vivo*, zebrafish were used to model alcohol-induced damage. C-JHCF4 treatment reduced reactive oxygen species production and cell death, and regulated levels of malondialdehyde and glutathione. 
+
+The authors conclude C-JHCF4 exhibits a stronger hepatoprotective effect than T-JHCF4, suggesting its potential for treating alcoholic liver disease, while T-JHCF4 is more suitable for large-scale production due to its simpler extraction process. The study does not report statistical analyses or specific effect sizes. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Taking glutathione supplements can prevent liver damage from alcohol consumption. 
+ Evidence Summary: This study investigated the impact of perfluorooctane sulfonate (PFOS) exposure on alcohol-associated liver disease (ALD) severity in a mouse model. Male C57BL/6J mice were fed either a control diet or a 5% ethanol diet for 15 days. From day 6, mice also received daily PFOS (1mg/kg) or vehicle via gavage, followed by an ethanol binge and euthanasia 5-6 hours later.
+
+Results showed approximately 60% of administered PFOS accumulated in the liver. PFOS exacerbated ethanol-induced hepatic steatosis and was associated with higher plasma very low-density lipoprotein (vLDL) and alanine aminotransferase (ALT) levels. PFOS increased expression of hepatic ethanol-metabolizing enzymes and lowered blood alcohol levels. 
+
+Gene expression analysis revealed that PFOS exposure upregulated pathways related to fatty acid metabolism, liver steatosis, cytochrome P450 activity, reactive oxygen species, apoptosis, fibrosis, and hepatocellular carcinoma. PFOS also increased hepatic expression of several nuclear receptors (Pparα, Car, Pxr) and their target genes (Cyp4a10, Cyp2b10, Cyp3a11).
+
+The authors conclude that PFOS exacerbates ALD severity by disrupting hepatic metabolism and activating nuclear receptors, potentially leading to dysregulation of lipid homeostasis and liver injury. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Probiotic supplements can cancel out the effects of alcohol. 
+ Evidence Summary: This study investigated the effect of *Limosilactobacillus fermentum* FZU501 (Lf) on alcohol-induced liver injury (ALI) in mice. Researchers administered Lf orally to mice subjected to excessive alcohol consumption. 
+
+Key findings included reduced serum total cholesterol (TC), triglycerides (TG), and low-density lipoprotein cholesterol (LDL-C), alongside increased high-density lipoprotein cholesterol (HDL-C). Hepatic activity of antioxidant enzymes (CAT, SOD, GSH-Px) and alcohol-metabolizing enzymes (ADH and ALDH) was also increased. 
+
+16S amplicon sequencing of gut microbiota revealed Lf administration increased *Prevotella*, *Lachnospiraceae_NK4A136_group*, and *Lactobacillus*, while decreasing *Faecalibaculum*, *Adlercreutzia*, and *Alistipes*. Liver metabolomics showed changes in purine, taurine, tryptophan, alanine, aspartic acid and glutamate metabolism. Gene transcription related to cholesterol metabolism, bile acid metabolism, fatty acid β-oxidation, alcohol metabolism and oxidative stress was also regulated. 
+
+The study utilized a mouse model and assessed biochemical markers, gut microbiota composition, metabolomics and gene transcription. No conflicts of interest were declared. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Probiotic supplements can cancel out the effects of alcohol. 
+ Evidence Summary: This study investigated the potential of *Pediococcus acidilactici* JW-015 enriched with selenium nanoparticles (SeNPs) as an anti-hangover probiotic. Researchers screened JW-015 for selenium tolerance and SeNP synthesis capability, finding it could accumulate 6974 ± 90.71 μg/g of selenium, with 86.54% ± 2.48% as SeNPs. 
+
+The study evaluated the safety and probiotic properties of JW-015, finding selenium enrichment enhanced these properties. JW-015 demonstrated improved oxidative stress capacity, alcohol tolerance, and alcohol degradation ability after selenium enrichment. Enzyme activities related to alcohol metabolism (ADH and ALDH) were also increased. 
+
+The study is *in vitro*; it does not report results from animal or human trials. No ethical approvals or consent statements were necessary as the study did not involve human or animal subjects. The authors declare no competing interests. 
+ Response: yes 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Probiotic supplements can cancel out the effects of alcohol. 
+ Evidence Summary: This study investigated the ability of *Leuconostoc suionicum* VITA-PB2, a lactic acid bacteria isolated from kimchi, to metabolize alcohol and acetaldehyde. Researchers performed genomic characterization to identify genes encoding alcohol dehydrogenase (ADH) and aldehyde dehydrogenase (ALDH) in the strain. Phylogenomic analysis confirmed the strain’s taxonomy and genetic relatedness to other *Leuconostoc* species. 
+
+In vitro and *in vivo* experiments (using rats) demonstrated that administration of VITA-PB2 resulted in significant reductions in blood ethanol and acetaldehyde levels. Hepatic ADH activity did not significantly increase, but ALDH expression was elevated. The researchers suggest the bacterial ADH contributed to ethanol breakdown, while both bacterial and host ALDH facilitated acetaldehyde detoxification.
+
+The study concludes that *L. suionicum* VITA-PB2 may be a functional probiotic for reducing the toxic effects of alcohol. 
+
+PMID: 40044133. 
+ Response: yes 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Probiotic supplements can cancel out the effects of alcohol. 
+ Evidence Summary: This study investigated the effects of four lactic acid bacteria (LAB) – *Lactiplantibacillus pentosus* LTJ12, *Pediococcus acidilactici* LTJ28, *Lactiplantibacillus plantarum* LTJ30, and *Pediococcus acidilactici* LTJ32 – isolated from Chinese baijiu fermentation on alcohol-induced liver injury in mice. 
+
+Researchers administered the LAB to mice and assessed outcomes related to alcohol metabolism and liver health. Results showed the LAB reduced ‘drunkenness’ rate and mortality, shortened sobriety time, and decreased serum ethanol content. Liver enzyme levels (AST, ALT, ALP), triglyceride and MDA levels were reduced, while SOD, GSH and NO levels increased. The LAB also improved activity of ADH and ALDH. 
+
+Gene expression analysis revealed reversal of changes in genes related to ethanol/drug metabolism, antioxidant markers, inflammation, apoptosis, proliferation, and lipid metabolism. The study also found the LAB increased gut microbial abundance, restored gut flora balance disrupted by alcohol, and regulated short-chain fatty acid content. 
+
+The authors suggest these findings provide a basis for developing probiotic-based anti-alcoholism products, and further research into the SMYD3/BRD4 pathway is warranted. 
+ Response: yes 
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step7 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step7: Statement to Truthness
+...
+...
+ --- Step7 Statement to Truthness --> Evidence-Block and claim_text: ---
+Claim Text: Taking glutathione supplements can prevent liver damage from alcohol consumption.
+Evidence: No evidence provided.
+ --- Step7-Statement to Truthness --> Model output --- 
+Model output:
+VERDICT: uncertain
+FINALSCORE: 0.10  
+ --- Extracted Information from prompt: ---
+Parsed verdict: uncertain 
+Parsed score: 0.10
+ --- Step7 Statement to Truthness --> Evidence Summary: ---
+Evidence: This study investigated the potential of *Pediococcus acidilactici* JW-015 enriched with selenium nanoparticles (SeNPs) as an anti-hangover probiotic. Researchers screened JW-015 for selenium tolerance and SeNP synthesis capability, finding it could accumulate 6974 ± 90.71 μg/g of selenium, with 86.54% ± 2.48% as SeNPs.   The study evaluated the safety and probiotic properties of JW-015, finding selenium enrichment enhanced these properties. JW-015 demonstrated improved oxidative stress capacity, alcohol tolerance, and alcohol degradation ability after selenium enrichment. Enzyme activities related to alcohol metabolism (ADH and ALDH) were also increased.   The study is *in vitro*; it does not report results from animal or human trials. No ethical approvals or consent statements were necessary as the study did not involve human or animal subjects. The authors declare no competing interests.
+ --- Step7 Statement to Truthness --> Evidence Summary: ---
+Evidence: This study investigated the ability of *Leuconostoc suionicum* VITA-PB2, a lactic acid bacteria isolated from kimchi, to metabolize alcohol and acetaldehyde. Researchers performed genomic characterization to identify genes encoding alcohol dehydrogenase (ADH) and aldehyde dehydrogenase (ALDH) in the strain. Phylogenomic analysis confirmed the strain’s taxonomy and genetic relatedness to other *Leuconostoc* species.   In vitro and *in vivo* experiments (using rats) demonstrated that administration of VITA-PB2 resulted in significant reductions in blood ethanol and acetaldehyde levels. Hepatic ADH activity did not significantly increase, but ALDH expression was elevated. The researchers suggest the bacterial ADH contributed to ethanol breakdown, while both bacterial and host ALDH facilitated acetaldehyde detoxification.  The study concludes that *L. suionicum* VITA-PB2 may be a functional probiotic for reducing the toxic effects of alcohol.   PMID: 40044133.
+ --- Step7 Statement to Truthness --> Evidence Summary: ---
+Evidence: This study investigated the effects of four lactic acid bacteria (LAB) – *Lactiplantibacillus pentosus* LTJ12, *Pediococcus acidilactici* LTJ28, *Lactiplantibacillus plantarum* LTJ30, and *Pediococcus acidilactici* LTJ32 – isolated from Chinese baijiu fermentation on alcohol-induced liver injury in mice.   Researchers administered the LAB to mice and assessed outcomes related to alcohol metabolism and liver health. Results showed the LAB reduced ‘drunkenness’ rate and mortality, shortened sobriety time, and decreased serum ethanol content. Liver enzyme levels (AST, ALT, ALP), triglyceride and MDA levels were reduced, while SOD, GSH and NO levels increased. The LAB also improved activity of ADH and ALDH.   Gene expression analysis revealed reversal of changes in genes related to ethanol/drug metabolism, antioxidant markers, inflammation, apoptosis, proliferation, and lipid metabolism. The study also found the LAB increased gut microbial abundance, restored gut flora balance disrupted by alcohol, and regulated short-chain fatty acid content.   The authors suggest these findings provide a basis for developing probiotic-based anti-alcoholism products, and further research into the SMYD3/BRD4 pathway is warranted.
+ --- Step7 Statement to Truthness --> Evidence-Block and claim_text: ---
+Claim Text: Probiotic supplements can cancel out the effects of alcohol.
+Evidence: - PMID 40153189: This study investigated the potential of *Pediococcus acidilactici* JW-015 enriched with selenium nanoparticles (SeNPs) as an anti-hangover probiotic. Researchers screened JW-015 for selenium tolerance and SeNP synthesis capability, finding it could accumulate 6974 ± 90.71 μg/g of selenium, with 86.54% ± 2.48% as SeNPs.   The study evaluated the safety and probiotic properties of JW-015, finding selenium enrichment enhanced these properties. JW-015 demonstrated improved oxidative stress capacity, alcohol tolerance, and alcohol degradation ability after selenium enrichment. Enzyme activities related to alcohol metabolism (ADH and ALDH) were also increased.   The study is *in vitro*; it does not report results from animal or human trials. No ethical approvals or consent statements were necessary as the study did not involve human or animal subjects. The authors declare no competing interests.
+- PMID 40044133: This study investigated the ability of *Leuconostoc suionicum* VITA-PB2, a lactic acid bacteria isolated from kimchi, to metabolize alcohol and acetaldehyde. Researchers performed genomic characterization to identify genes encoding alcohol dehydrogenase (ADH) and aldehyde dehydrogenase (ALDH) in the strain. Phylogenomic analysis confirmed the strain’s taxonomy and genetic relatedness to other *Leuconostoc* species.   In vitro and *in vivo* experiments (using rats) demonstrated that administration of VITA-PB2 resulted in significant reductions in blood ethanol and acetaldehyde levels. Hepatic ADH activity did not significantly increase, but ALDH expression was elevated. The researchers suggest the bacterial ADH contributed to ethanol breakdown, while both bacterial and host ALDH facilitated acetaldehyde detoxification.  The study concludes that *L. suionicum* VITA-PB2 may be a functional probiotic for reducing the toxic effects of alcohol.   PMID: 40044133.
+- PMID 40034049: This study investigated the effects of four lactic acid bacteria (LAB) – *Lactiplantibacillus pentosus* LTJ12, *Pediococcus acidilactici* LTJ28, *Lactiplantibacillus plantarum* LTJ30, and *Pediococcus acidilactici* LTJ32 – isolated from Chinese baijiu fermentation on alcohol-induced liver injury in mice.   Researchers administered the LAB to mice and assessed outcomes related to alcohol metabolism and liver health. Results showed the LAB reduced ‘drunkenness’ rate and mortality, shortened sobriety time, and decreased serum ethanol content. Liver enzyme levels (AST, ALT, ALP), triglyceride and MDA levels were reduced, while SOD, GSH and NO levels increased. The LAB also improved activity of ADH and ALDH.   Gene expression analysis revealed reversal of changes in genes related to ethanol/drug metabolism, antioxidant markers, inflammation, apoptosis, proliferation, and lipid metabolism. The study also found the LAB increased gut microbial abundance, restored gut flora balance disrupted by alcohol, and regulated short-chain fatty acid content.   The authors suggest these findings provide a basis for developing probiotic-based anti-alcoholism products, and further research into the SMYD3/BRD4 pathway is warranted.
+ --- Step7-Statement to Truthness --> Model output --- 
+Model output:
+VERDICT: uncertain
+FINALSCORE: 0.75  
+ --- Extracted Information from prompt: ---
+Parsed verdict: uncertain 
+Parsed score: 0.75
+ --- Step7 Statement to Truthness --> Evidence-Block and claim_text: ---
+Claim Text: Activated charcoal reduces hangovers, gas, and bloating, and mitigates the effects of food toxins.
+Evidence: No evidence provided.
+ --- Step7-Statement to Truthness --> Model output --- 
+Model output:
+VERDICT: uncertain
+FINALSCORE: 0.35  
+ --- Extracted Information from prompt: ---
+Parsed verdict: uncertain 
+Parsed score: 0.35
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step8 --- 
+ 
+ --------------------------------------------------------------- 
+
+Starting Step8: Statement to Score
+...
+...
+ 
+
+
+
+
+
+ --------------------------------------------------------------- 
+
+ --- Runtime Analysis ---
+ 
+ --------------------------------------------------------------- 
+
+update_transcript: 11.200679 seconds
+update_statements: 1.631110 seconds
+update_query: 9.560620 seconds
+query_to_link: 3.379713 seconds
+link_to_summary: 63.672143 seconds
+reduce_to_evidence: 3.139335 seconds
+statement_to_truthness: 2.855755 seconds
+statement_to_score: 0.000114 seconds
+Total elapsed time: 95.439490 seconds
+ 
+
+
+
+
+
+ --------------------------------------------------------------- 
+
+ --- Final Output (JSON) ---
+ 
+ --------------------------------------------------------------- 
+
+{'transcript': "If you're planning to drink, you can do things like take glutathione, which is a commonly available supplement that makes alcohol not harm your liver. You could take a probiotic that cancels out alcohol, which is kind of cool, that's available commercially as well, and you can take activated charcoal, which everyone listening should be taking. Activated charcoal's available online all over the place. This binds to toxins in food, man-made, or just because it's been sitting out for a long time. You will have less hangover if you take activated charcoal, and you'll have less gas and bloating for whatever it is you decide to eat. So if you're gonna eat junk food, or a lot of food, activated charcoal will really help you feel better the next day and not be reactive that night.", 'statements': [{'id': 1, 'text': 'Taking glutathione supplements can prevent liver damage from alcohol consumption.', 'verdict': 'uncertain', 'rationale': 'VERDICT: uncertain\nFINALSCORE: 0.10', 'confidence': 0.1, 'query': '("Liver"[MeSH] OR liver[tiab] OR hepatic[tiab]) AND ("Alcohol Drinking"[MeSH] OR alcohol[tiab] OR "ethanol"[tiab] OR "alcoholic beverages"[tiab]) AND ("Glutathione"[MeSH] OR glutathione[tiab] OR GHS[tiab]) AND ("Liver Injury"[MeSH] OR "liver damage"[tiab] OR hepatotoxicity[tiab] OR "liver disease"[tiab])', 'evidence': []}, {'id': 2, 'text': 'Probiotic supplements can cancel out the effects of alcohol.', 'verdict': 'uncertain', 'rationale': 'VERDICT: uncertain\nFINALSCORE: 0.75', 'confidence': 0.75, 'query': '("Probiotics"[MeSH] OR probiotic*[tiab] OR "Lactobacillus"[tiab] OR "Bifidobacterium"[tiab]) AND ("Alcohol"[MeSH] OR alcohol*[tiab] OR ethanol[tiab] OR "alcoholic beverages"[tiab]) AND ("Adverse Effects"[MeSH] OR "alcoholism"[tiab] OR "hangover"[tiab] OR "alcohol induced diseases"[tiab] OR "liver damage"[tiab])', 'evidence': [{'pubmed_id': '40153189', 'url': 'https://pubmed.ncbi.nlm.nih.gov/40153189/', 'summary': 'This study investigated the potential of *Pediococcus acidilactici* JW-015 enriched with selenium nanoparticles (SeNPs) as an anti-hangover probiotic. Researchers screened JW-015 for selenium tolerance and SeNP synthesis capability, finding it could accumulate 6974\u2009±\u200990.71\u2009μg/g of selenium, with 86.54%\u2009±\u20092.48% as SeNPs. \n\nThe study evaluated the safety and probiotic properties of JW-015, finding selenium enrichment enhanced these properties. JW-015 demonstrated improved oxidative stress capacity, alcohol tolerance, and alcohol degradation ability after selenium enrichment. Enzyme activities related to alcohol metabolism (ADH and ALDH) were also increased. \n\nThe study is *in vitro*; it does not report results from animal or human trials. No ethical approvals or consent statements were necessary as the study did not involve human or animal subjects. The authors declare no competing interests.', 'relevance': ''}, {'pubmed_id': '40044133', 'url': 'https://pubmed.ncbi.nlm.nih.gov/40044133/', 'summary': 'This study investigated the ability of *Leuconostoc suionicum* VITA-PB2, a lactic acid bacteria isolated from kimchi, to metabolize alcohol and acetaldehyde. Researchers performed genomic characterization to identify genes encoding alcohol dehydrogenase (ADH) and aldehyde dehydrogenase (ALDH) in the strain. Phylogenomic analysis confirmed the strain’s taxonomy and genetic relatedness to other *Leuconostoc* species. \n\nIn vitro and *in vivo* experiments (using rats) demonstrated that administration of VITA-PB2 resulted in significant reductions in blood ethanol and acetaldehyde levels. Hepatic ADH activity did not significantly increase, but ALDH expression was elevated. The researchers suggest the bacterial ADH contributed to ethanol breakdown, while both bacterial and host ALDH facilitated acetaldehyde detoxification.\n\nThe study concludes that *L. suionicum* VITA-PB2 may be a functional probiotic for reducing the toxic effects of alcohol. \n\nPMID: 40044133.', 'relevance': ''}, {'pubmed_id': '40034049', 'url': 'https://pubmed.ncbi.nlm.nih.gov/40034049/', 'summary': 'This study investigated the effects of four lactic acid bacteria (LAB) – *Lactiplantibacillus pentosus* LTJ12, *Pediococcus acidilactici* LTJ28, *Lactiplantibacillus plantarum* LTJ30, and *Pediococcus acidilactici* LTJ32 – isolated from Chinese baijiu fermentation on alcohol-induced liver injury in mice. \n\nResearchers administered the LAB to mice and assessed outcomes related to alcohol metabolism and liver health. Results showed the LAB reduced ‘drunkenness’ rate and mortality, shortened sobriety time, and decreased serum ethanol content. Liver enzyme levels (AST, ALT, ALP), triglyceride and MDA levels were reduced, while SOD, GSH and NO levels increased. The LAB also improved activity of ADH and ALDH. \n\nGene expression analysis revealed reversal of changes in genes related to ethanol/drug metabolism, antioxidant markers, inflammation, apoptosis, proliferation, and lipid metabolism. The study also found the LAB increased gut microbial abundance, restored gut flora balance disrupted by alcohol, and regulated short-chain fatty acid content. \n\nThe authors suggest these findings provide a basis for developing probiotic-based anti-alcoholism products, and further research into the SMYD3/BRD4 pathway is warranted.', 'relevance': ''}]}, {'id': 3, 'text': 'Activated charcoal reduces hangovers, gas, and bloating, and mitigates the effects of food toxins.', 'verdict': 'uncertain', 'rationale': 'VERDICT: uncertain\nFINALSCORE: 0.35', 'confidence': 0.35, 'query': '("Activated Charcoal"[MeSH] OR "activated carbon"[tiab] OR "charcoal"[tiab]) AND ("Hangover"[tiab] OR "Alcoholism"[MeSH] OR "Alcohol"[tiab]) AND ("Gas"[tiab] OR "Flatulence"[tiab] OR "Abdominal Distension"[tiab]) AND ("Bloating"[tiab] OR "Abdominal Distension"[tiab]) AND ("Foodborne Illness"[tiab] OR "Food Poisoning"[tiab] OR "Toxins"[tiab] OR "Food Contamination"[tiab])', 'evidence': []}], 'overall_truthiness': 0.28, 'generated_at': '2025-06-05T07:00:39Z'}
