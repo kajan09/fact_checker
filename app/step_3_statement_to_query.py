@@ -90,9 +90,7 @@ def make_query(claim: str, client: openai.OpenAI) -> str:
             messages=[{"role": "user", "content": prompt}],
         )
         raw = resp.choices[0].message.content
-        print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
         print(" --- Step3 Statement to Query ---> LLM Output: ---")
-        print(" \n --------------------------------------------------------------- \n")
         print(raw)
         
         return clean_query(raw, claim)
@@ -104,7 +102,7 @@ def make_query(claim: str, client: openai.OpenAI) -> str:
 
 # ───────── core ─────────
 def update_query(data: Dict[str, Any]) -> Dict[str, Any]:
-  
+    print("Starting Step3: Statement to PubMed Query")
 
     new_queries: List[str] = []
 

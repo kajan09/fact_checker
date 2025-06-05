@@ -40,6 +40,7 @@ def clean_json_content(content: str) -> str:
 
 def split_into_medical_statements(transcript: str) -> List[str]:
     """LLM → JSON array of medically-relevant claims."""
+    print("Starting Step2: Transcript to Medical Statements")
     prompt = PROMPT_TMPL_S2.format(transcript=transcript.strip())
     try:
         resp = CLIENT_2.chat.completions.create(
@@ -50,9 +51,7 @@ def split_into_medical_statements(transcript: str) -> List[str]:
         )
         content = resp.choices[0].message.content.strip()
         cleaned = clean_json_content(content)
-        print(" \n\n\n\n\n\n --------------------------------------------------------------- \n")
         print(" --- Step2 Transcript to Statements ---> LLM Output: ---")
-        print(" \n --------------------------------------------------------------- \n")
         print(cleaned)
         return json.loads(cleaned)
     except Exception as e:

@@ -50,9 +50,7 @@ def summarize_with_gemma(text: str) -> str:
             max_tokens=MAX_TOKENS_5,
         )
         reply: str = res.choices[0].message.content.strip()
-        print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
         print(" --- Step5 Link to Summary ---> LLM output --- ")
-        print(" \n --------------------------------------------------------------- \n")
         print(f"LLM output: {reply} ")
         return reply
 
@@ -72,6 +70,7 @@ def load_json_relaxed(path: str) -> Any:
 
 
 def link_to_summary(data: Dict[str, Any]) -> Dict[str, Any]:
+    print("Starting Step5: Link to Summary")
     # Helper to process a list of evidence items
     def process_evidence_list(ev_list: List[Dict[str, Any]]):
         for ev in ev_list:

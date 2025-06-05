@@ -1,6 +1,7 @@
 # pipeline.py
-import os, re
+import os, re, sys
 import time
+from datetime import datetime
 import json
 from .step_1_audio_to_transcript import update_transcript
 from .step_2_transcript_to_statement import update_statements
@@ -11,13 +12,23 @@ from .step_6_reduce_to_evidence import reduce_to_evidence
 from .step_7_statement_to_truthness import statement_to_truthness
 from .step_8_statment_to_score import statement_to_score
 
-CHECK_PROMPT_TMPL = (
-    "You are a medical fact-checker.\n"
-    "Given the statement below, reply ONLY with an integer score from 0 (false) to 100 (true).\n"
-    "NO verdict, NO explanation, ONLY the number.\n\n"
-    "STATEMENT:\n{statement}\n"
-)
-score_re = re.compile(r"\b([0-9]{1,3})\b")
+from .preprompts import *
+from .llmconfigs import *
+
+class TeeStream:
+    """
+    Ein „Tee“, der in mehrere Streams gleichzeitig schreibt.
+    """
+    def __init__(self, *streams):
+        self._streams = streams
+
+    def write(self, data):
+        for s in self._streams:
+            s.write(data)
+
+    def flush(self):
+        for s in self._streams:
+            s.flush()
 
 def run_pipeline(tmp_path: str) -> dict:
     """
@@ -25,7 +36,100 @@ def run_pipeline(tmp_path: str) -> dict:
     2) Feed the transcript to an LLM (e.g. fact-check, summary, follow-up Q&A…)
     3) Return a dict you’ll JSON-encode later
     """
-    # 1️⃣ Whisper
+
+    # ─────────────────────────────────────────────────────────────────────────────
+    # ❶ Log-Datei erzeugen und stdout/stderr „teeben“ (nur Datum + Stunden+Minuten)
+    # ─────────────────────────────────────────────────────────────────────────────
+    # Format: YYYYMMDD_HHMM
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+    log_filename = f"log_{timestamp}.txt"
+    log_file = open(log_filename, "w", encoding="utf-8")
+
+    original_stdout = sys.stdout
+    original_stderr = sys.stderr
+
+    tee = TeeStream(original_stdout, log_file)
+    sys.stdout = tee
+    sys.stderr = tee
+
+    # ─────────────────────────────────────────────────────────────────────────────
+    # ❶ Print LLM Configs
+    # ─────────────────────────────────────────────────────────────────────────────
+    print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
+    print(" --- LLM Configs --- ")
+    print(" \n --------------------------------------------------------------- \n")
+
+    # Allgemeine Basis-Settings
+    print(f"BASE_URL   : {OPENAI_BASE_URL}")
+    print(f"API_KEY    : {BASE_API_KEY}")
+    print(f"BASE_MODEL : {BASE_MODEL}")
+    print(f"BASE_TEMP  : {BASE_TEMP}\n")
+
+    # STEP2
+    print(" STEP2:")
+    print(f"   MODEL      = {MODEL_2}")
+    print(f"   TEMP       = {TEMP_2}")
+    print(f"   MAX_TOKENS = {MAX_TOKENS_2}\n")
+
+    # STEP3
+    print(" STEP3:")
+    print(f"   MODEL      = {MODEL_3}")
+    print(f"   TEMP       = {TEMP_3}")
+    print(f"   MAX_TOKENS = {MAX_TOKENS_3}\n")
+
+    # STEP5
+    print(" STEP5:")
+    print(f"   MODEL      = {MODEL_5}")
+    print(f"   TEMP       = {TEMP_5}")
+    print(f"   MAX_TOKENS = {MAX_TOKENS_5}\n")
+
+    # STEP6
+    print(" STEP6:")
+    print(f"   MODEL      = {MODEL_6}")
+    print(f"   TEMP       = {TEMP_6}")
+    print(f"   MAX_TOKENS = {MAX_TOKENS_6}\n")
+
+    # STEP7
+    print(" STEP7:")
+    print(f"   MODEL      = {MODEL_7}")
+    print(f"   TEMP       = {TEMP_7}")
+    print(f"   MAX_TOKENS = {MAX_TOKENS_7}\n")
+
+
+    # ─────────────────────────────────────────────────────────────────────────────
+    # ❶ Print LLM Preprompts
+    # ─────────────────────────────────────────────────────────────────────────────
+    print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
+    print(" --- LLM Preprompts --- ")
+    print(" \n --------------------------------------------------------------- \n")
+
+    # STEP2
+    print(" STEP2:")
+    print(PROMPT_TMPL_S2)
+    print("\n\n")
+    # STEP3
+    print(" STEP3:")
+    print(PROMPT_TMPL_S3)
+    print("\n\n")
+    # STEP5
+    print(" STEP5:")
+    print(PROMPT_TMPL_S5)
+    print("\n\n")
+    # STEP6
+    
+    print(" STEP6:")
+    print(PROMPT_TMPL_S6)
+    print("\n\n")
+
+    # STEP7
+    print(" STEP7:")
+    print(PROMPT_TMPL_S7)
+    print("\n\n")
+
+
+    # ─────────────────────────────────────────────────────────────────────────────
+    # ❷ Pipeline ausführen (alle print() und Fehlermeldungen gehen jetzt in Terminal UND Logdatei)
+    # ─────────────────────────────────────────────────────────────────────────────
     start = time.time()
 
     print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
@@ -97,5 +201,12 @@ def run_pipeline(tmp_path: str) -> dict:
     print(" --- Final Output (JSON) ---")
     print(" \n --------------------------------------------------------------- \n")
     print(scores)
+
+    # ─────────────────────────────────────────────────────────────────────────────
+    # ❸ Am Ende: Streams zurücksetzen und Logdatei schließen
+    # ─────────────────────────────────────────────────────────────────────────────
+    sys.stdout = original_stdout
+    sys.stderr = original_stderr
+    log_file.close()
 
     return scores

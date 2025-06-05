@@ -16,9 +16,9 @@ def is_related(statement_text: str, evidence_summary: str) -> bool:
             max_tokens=MAX_TOKENS_6,
         )
         reply: str = res.choices[0].message.content.strip()
-        print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
-        print(" --- Step6 Reduce To Eveidence ---> Response ---")
-        print(" \n --------------------------------------------------------------- \n")
+        print(" --- Step6 Reduce Evidence ---> Response ---")
+        print(f" Statement Text: {statement_text} ")
+        print(f" Evidence Summary: {evidence_summary} ")
         print(f" Response: {reply} ")
         return reply.startswith("yes")
     except Exception as exc:
@@ -35,6 +35,7 @@ def is_related(statement_text: str, evidence_summary: str) -> bool:
     #return True
 
 def reduce_to_evidence(data: Dict[str, Any]) -> Dict[str, Any]:
+    print("Starting Step6: Reduce to Evidence")
     # Iterate through statements
     for stmt in data.get("statements", []):
         filtered = []

@@ -1,0 +1,777 @@
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- LLM Configs --- 
+ 
+ --------------------------------------------------------------- 
+
+BASE_URL   : http://localhost:11434/v1
+API_KEY    : ollama
+BASE_MODEL : gemma3:27b
+BASE_TEMP  : 0.7
+
+ STEP2:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 128
+
+ STEP3:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 1024
+
+ STEP5:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 512
+
+ STEP6:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 512
+
+ STEP7:
+   MODEL      = gemma3:27b
+   TEMP       = 0.7
+   MAX_TOKENS = 512
+
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- LLM Preprompts --- 
+ 
+ --------------------------------------------------------------- 
+
+ STEP2:
+
+You are part of a medical fact-checking pipeline.  
+If you propagate a false statement, the app may mislead people.
+
+INPUT TRANSCRIPT
+---------------
+{transcript}
+---------------
+
+TASK  
+Extract **medical claims** suitable for fact-checking.
+
+SELECTION RULES  
+1. Return **exactly three** distinct claims.  
+2. Prefer clinically relevant, novel, or potentially harmful claims.  
+3. Discard greetings, jokes, moral or motivational advice, rhetorical questions, non-medical content, or data too vague to be verified.  
+4. Merge duplicate / near-duplicate claims into one concise statement.
+
+STRICT OUTPUT  
+A valid JSON array with 1–3 strings.  
+No commentary, no extra keys, no markdown.
+
+
+
+
+ STEP3:
+
+You are a biomedical librarian inside a fact‐checking app.  
+If the claim is too vague, non‐medical, or otherwise unlikely to be indexed in PubMed, output the single word: NONE
+
+Otherwise, **think quickly (silently)** about the core PICO concepts in the claim, identify appropriate MeSH headings (in quotes with [MeSH]) and text‐word synonyms (with [tiab]), and produce ONE PubMed Boolean query string that:
+Example:
+(
+  "Smoking"[MeSH] 
+  OR smoking[tiab] 
+  OR smokers[tiab] 
+  OR "tobacco use"[tiab]
+)
+AND
+(
+  "Lung Function Tests"[MeSH] 
+  OR "pulmonary function"[tiab] 
+  OR "lung function"[tiab] 
+  OR FEV1[tiab] 
+  OR FVC[tiab]
+)
+AND
+(
+  "Inflammation"[MeSH] 
+  OR inflammation[tiab] 
+  OR "mucus hypersecretion"[tiab] 
+  OR mucus[tiab]
+)
+AND
+(
+  "Proanthocyanidins"[MeSH] 
+  OR proanthocyanidin*[tiab] 
+  OR OPC[tiab] 
+  OR "Traumotein"[tiab] 
+  OR "pine bark extract"[tiab] 
+  OR Pycnogenol[tiab]
+)
+
+
+• Is exactly one line (no line breaks).  
+• Uses uppercase AND/OR to combine concepts.  
+• Wraps MeSH terms in quotes followed by [MeSH] (e.g., "Smoking"[MeSH]).  
+• Marks synonym or free‐text terms with [tiab] (e.g., smoking[tiab]).  
+• Groups synonyms with parentheses; groups PICO domains by combining with AND.  
+• Does not include field tags other than [MeSH] and [tiab].  
+• Does not include quotation marks around free‐text terms (other than MeSH).  
+• Begins with a letter (A–Z or a–z) and contains no leading/trailing spaces.  
+• Contains no line breaks or extra whitespace.
+
+CLAIM:
+{claim}
+
+
+
+
+ STEP5:
+
+You are summarising evidence for a medical fact-checker.  
+Think briefly (silently) about study design and main results, then write the summary.
+
+GUIDELINES  
+• ≤ 300 words, plain text.  
+• Focus on methods, population, key outcomes, effect sizes, and limitations.  
+• Do NOT add interpretation beyond the abstract itself.
+
+TEXT TO SUMMARISE
+-----------------
+{abstract}
+-----------------
+
+
+
+
+ STEP6:
+
+You are verifying whether the summary actually addresses the claim.  
+Think (silently) first; then answer in exactly one word.
+
+STATEMENT: {statement}
+
+EVIDENCE SUMMARY: {evidence_summary}
+
+Does the summary *directly relate to or support* the statement?
+Respond with only: yes   |   no
+
+
+
+
+ STEP7:
+
+You are a professional medical fact-checker.  
+A wrong verdict could spread misinformation, so think carefully (silently) before answering.
+
+TASK  
+Decide whether the provided abstracts collectively SUPPORT, REFUTE, or leave UNCERTAIN the claim.
+
+CLAIM:
+{claim_text}
+
+EVIDENCE:
+{evidence_block}
+
+Inclunding the Scientific Evidence together with Common Sense and the Context of the Video Transcript:
+{transcript}
+
+give the final response in the following format:
+
+STRICT OUTPUT – exactly two lines, nothing else:
+VERDICT: true|false|uncertain
+FINALSCORE: <probability 0.00–1.00>
+
+
+
+
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step1 --- 
+ 
+ --------------------------------------------------------------- 
+
+ 
+
+
+
+
+
+ --------------------------------------------------------------- 
+
+ --- Step1 Audio to Transcript ---> LLM Output: ---
+ 
+ --------------------------------------------------------------- 
+
+Give your kid butter before bed. It's the epic bedtime hack you've probably never heard of. Does your little one wake up multiple times a night? Yep, that was my life when my son was 12 months old. However, I found something that changed my life and I hope it can do the same for you. Alright, ready? Before bed, I started offering my son a spoonful of butter. I know it sounds crazy, but hear me out. I felt like he was still hungry and I wanted to make sure he was getting enough calories before bedtime. And guess what? It worked like a charm. He went from waking up multiple times a night to a full night's sleep. It was a game changer, all because of butter. Now, why is this helpful? It's not uncommon for our growing babies to need more calories. Brains are rapidly developing and bodies growing bigger. If kids don't get enough calories during the day, their blood sugar can drop overnight and they'll wake up hungry and cry. Since they can't communicate their hunger, they will simply just cry. So often the only thing that will console them is the middle of the night, nursing session, or a bottle. Does that make sense? Alright, now, I can't guarantee that this will work for every child, but it's worth a try if you're feeling desperate for some sleep. And no, it does not need to be butter. It could be any high calorie fat rich food like peanut butter, avocado, coconut milk. Get creative. Choose something that is easy, that your child will eat and they'll love. Now, if you've already tried it and it worked for you, please share your experience in the comments below. I love hearing from other moms sharing their tips with each other. Just a reminder, every child's different. You know your baby best. Trust your instincts. And if it doesn't work for you, then we could try something else. Something.
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step2 --- 
+ 
+ --------------------------------------------------------------- 
+
+ 
+
+
+
+
+
+ --------------------------------------------------------------- 
+
+ --- Step2 Transcript to Statements ---> LLM Output: ---
+ 
+ --------------------------------------------------------------- 
+
+["Offering a child butter or other high-calorie foods before bed can prevent overnight drops in blood sugar and reduce nighttime waking.", "Babies waking up multiple times a night is likely due to hunger and low blood sugar.", "Consuming enough calories before bed ensures adequate fuel for a baby's rapidly developing brain and growing body."]
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step3 --- 
+ 
+ --------------------------------------------------------------- 
+
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step3 Statement to Query ---> LLM Output: ---
+ 
+ --------------------------------------------------------------- 
+
+("Hypoglycemia"[MeSH] OR hypoglycemia[tiab] OR "low blood sugar"[tiab]) AND ("Child"[MeSH] OR child[tiab] OR children[tiab] OR pediatric[tiab]) AND ("Sleep Wake Disorders"[MeSH] OR sleep[tiab] OR waking[tiab] OR "nighttime awakening"[tiab] OR "sleep disruption"[tiab]) AND (butter[tiab] OR "high-calorie foods"[tiab] OR "energy intake"[tiab])
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step3 Statement to Query ---> LLM Output: ---
+ 
+ --------------------------------------------------------------- 
+
+("Infant"[MeSH] OR baby[tiab] OR babies[tiab] OR "newborn"[tiab]) AND ("Sleep Wake Disorders"[MeSH] OR "sleep disturbance"[tiab] OR "night waking"[tiab] OR "sleep fragmentation"[tiab]) AND ("Hypoglycemia"[MeSH] OR "low blood sugar"[tiab] OR hypoglycemia[tiab] OR "blood glucose"[tiab]) AND ("Feeding Behavior"[MeSH] OR feeding[tiab] OR hunger[tiab])
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step3 Statement to Query ---> LLM Output: ---
+ 
+ --------------------------------------------------------------- 
+
+NONE
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step4 --- 
+ 
+ --------------------------------------------------------------- 
+
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step4 Query to Link ---> PubmedLink --- 
+ 
+ --------------------------------------------------------------- 
+
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/30447143/
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step4 Query to Link ---> PubmedLink --- 
+ 
+ --------------------------------------------------------------- 
+
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/28065256/
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step4 Query to Link ---> PubmedLink --- 
+ 
+ --------------------------------------------------------------- 
+
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/11455309/
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step4 Query to Link ---> PubmedLink --- 
+ 
+ --------------------------------------------------------------- 
+
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40468443/
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step4 Query to Link ---> PubmedLink --- 
+ 
+ --------------------------------------------------------------- 
+
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40468442/
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step4 Query to Link ---> PubmedLink --- 
+ 
+ --------------------------------------------------------------- 
+
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40468413/
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step4 Query to Link ---> PubmedLink --- 
+ 
+ --------------------------------------------------------------- 
+
+PubmedLink: https://pubmed.ncbi.nlm.nih.gov/40468395/
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step5 --- 
+ 
+ --------------------------------------------------------------- 
+
+1. J Pediatr Endocrinol Metab. 2018 Dec 19;31(12):1325-1333. doi: 10.1515/jpem-2018-0086. Dysregulated glucose homeostasis in congenital central hypoventilation syndrome. Musthaffa YM(1)(2), Goyal V(2)(3), Harris MA(2)(3), Kapur N(2)(3), Leger J(4), Harris M(1)(2). Author information: (1)Department of Endocrinology and Diabetes, Lady Cilento Children's Hospital, South Brisbane, Queensland, Australia. (2)School of Medicine, University of Queensland, Brisbane, Queensland, Australia. (3)Department of Respiratory Medicine, Lady Cilento Children's Hospital, South Brisbane, Queensland, Australia. (4)Assistance Publique-Hôpitaux de Paris, Hôpital Robert Debré, Department of Endocrinology and Diabetes, Paris Diderot University, Paris, France. Background Congenital central hypoventilation syndrome (CCHS) is a rare disorder of autonomic control. A hypoglycaemic seizure in a 4-year-old girl with CCHS led to a more detailed examination of glycaemic control in a cohort of children with CCHS. Methods We conducted an observational cohort study of glucose homeostasis in seven children (3 months to 12 years) with genetically confirmed CCHS using a combination of continuous glucose monitoring (CGM), fasting studies and oral glucose tolerance test (OGTT). CGM was used to compare the effect of diazoxide and dietary intervention in the index patient. Results Hypoglycaemia was not elicited by fasting in any of the patients. Increased postprandial glycaemic variability was evident in all patients using CGM, with seven of seven patients demonstrating initial postprandial hyperglycaemia (plasma-glucose concentration >7.8 mmol/L), followed by asymptomatic hypoglycaemia (plasma-glucose concentration ≤2.8 mmol/L) in two of seven patients that was also demonstrated on OGTT. Both diazoxide and low Glycaemic Index (GI) dietary intervention reduced the proportion of CGM readings <4 mmol/L; however, diazoxide also increased the proportion of readings in the hyperglycaemic range. Conclusions Glucose variability associated with autonomic dysfunction may be unrecognised in CCHS, particularly in children with more severe phenotypes. This report highlights the occurrence of hyperglycaemia as well as hypoglycaemia in CCHS. Given the challenges of recognising hypoglycaemia based on clinical symptomatology, the use of CGM may facilitate its identification allowing appropriate management. The observed normoglycaemia during fasting combined with increased postprandial plasma blood glucose level (BGL) variability is more consistent with dumping syndrome than persistent hyperinsulinism. Dietary modifications therefore may be more effective than diazoxide in managing hypoglycaemia. DOI: 10.1515/jpem-2018-0086 PMID: 30447143 [Indexed for MEDLINE]
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step5 Link to Summary ---> LLM output --- 
+ 
+ --------------------------------------------------------------- 
+
+LLM output: This observational cohort study investigated glucose homeostasis in seven children (3 months to 12 years) with genetically confirmed congenital central hypoventilation syndrome (CCHS). Researchers used continuous glucose monitoring (CGM), fasting studies, and oral glucose tolerance tests (OGTT) to assess glycaemic control. 
+
+Results showed no hypoglycaemia elicited by fasting. However, all patients exhibited increased postprandial glycaemic variability, with initial hyperglycaemia (>7.8 mmol/L) followed by asymptomatic hypoglycaemia (≤2.8 mmol/L) in two of seven patients, confirmed by OGTT. 
+
+Both diazoxide and a low Glycaemic Index (GI) diet reduced CGM readings <4 mmol/L. Diazoxide also increased hyperglycaemic readings. The authors suggest the observed pattern is more consistent with dumping syndrome than hyperinsulinism, and dietary modification may be preferable to diazoxide for managing hypoglycaemia.
+
+Limitations include the small sample size and observational design, preventing causal conclusions. The study highlights the potential for unrecognised glucose variability in CCHS and suggests CGM may aid identification and management. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/30447143/ with PMID 30447143
+1. Chest. 2017 Jan;151(1):e17-e20. doi: 10.1016/j.chest.2016.08.1435. A Newborn Infant With Oxygen Desaturation During Sleep. Deschamp A(1), Daftary A(2). Author information: (1)Division of Pediatric Pulmonology, Allergy and Sleep Medicine, Riley Hospital for Children at Indiana University Health, Indianapolis, IN. Electronic address: agorby@iupui.edu. (2)Division of Pediatric Pulmonology, Allergy and Sleep Medicine, Riley Hospital for Children at Indiana University Health, Indianapolis, IN. The patient is a 1-week-old boy born at 37+2 weeks' gestational age through spontaneous vaginal delivery. The pregnancy was complicated by maternal gestational diabetes mellitus and pre-eclampsia. The Apgar score was 9 at both 1 minute and 5 minutes after birth. Because of hypoglycemia at delivery that required IV dextrose, he was admitted to the local neonatal intensive care unit. His blood glucose levels quickly stabilized, dextrose administration was discontinued, and the patient began breast-feeding. On day 2 of life, the patient began having intermittent oxygen desaturation, with oxygen saturation as measured by pulse oximetry down to 70% while sleeping; he was transferred to a tertiary-care NICU for further management. Aside from the hypoxia, he was otherwise asymptomatic. He was breast-feeding without difficulty and had no vomiting or gastroesophageal reflux; no cyanosis, stridor, or snoring; and no seizure-like activity or hypertonicity. Copyright © 2016 American College of Chest Physicians. Published by Elsevier Inc. All rights reserved. DOI: 10.1016/j.chest.2016.08.1435 PMID: 28065256 [Indexed for MEDLINE]
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step5 Link to Summary ---> LLM output --- 
+ 
+ --------------------------------------------------------------- 
+
+LLM output: This case report details a 1-week-old boy with intermittent oxygen desaturation during sleep, dropping to 70% as measured by pulse oximetry. The infant was born at 37+2 weeks gestation via spontaneous vaginal delivery. Maternal complications included gestational diabetes mellitus and pre-eclampsia. He required initial admission to the neonatal intensive care unit (NICU) for hypoglycemia, which resolved quickly with IV dextrose. Desaturation began on day 2 of life, prompting transfer to a tertiary-care NICU. 
+
+The infant remained asymptomatic aside from the hypoxia; he had normal feeding, no vomiting or reflux, and no signs of respiratory distress (cyanosis, stridor, snoring) or neurological symptoms (seizures, hypertonicity). The report presents clinical findings for a single patient and does not include data on effect sizes or comparative groups. Limitations include the single-patient design, preventing generalizability. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/28065256/ with PMID 28065256
+1. Minerva Pediatr. 2001 Jun;53(3):221-5. Sleep apnea and respiratory dysfunction in congenital myotonic dystrophy. [Article in English, Italian] Avanzini A(1), Crossignani RM, Colombini A. Author information: (1)U.O. Pediatria e Patologia Neonatale, Azienda Ospedaliera di Legnano, Presidio Ospedaliero di Magenta, Milan, Italy. Adriava@tiscalinet.it A case of neonatal Myotonic Dystrophy (MD) is presented. A 35 week old 3570 g baby was born to a mother affected by MD and pregnancy-induced unstable diabetes. Soon after birth, he developed apnea, severe hypoglycemia, hypocalcemia, hypotonia and mild respiratory distress. His clinical course improved during the following days, but persistent episodes of desaturation and/or cyanosis did not subside; hypotonia was mild. A polysomnographic recording showed mixed central and obstructive apnea. DNA testing showed trinucleotide repeat expansion mutations diagnostic of MD. The baby was discharged with home-sleep monitoring and breast-feeding. Recurrent apnea/bradycardia was the main clinical feature in this case of congenital MD, with increased risk of an acute life-threatening event. PMID: 11455309 [Indexed for MEDLINE]
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step5 Link to Summary ---> LLM output --- 
+ 
+ --------------------------------------------------------------- 
+
+LLM output: This case report details a newborn with congenital myotonic dystrophy (MD). A 35-week gestation male infant (3570g) born to a mother with MD and gestational diabetes presented with apnea, hypoglycemia, hypocalcemia, hypotonia and mild respiratory distress shortly after birth. 
+
+Polysomnography revealed mixed central and obstructive apnea. DNA testing confirmed MD diagnosis via trinucleotide repeat expansion. 
+
+Clinical course improved, but desaturations/cyanosis persisted. The infant was discharged with home sleep monitoring and breastfeeding.
+
+The report highlights recurrent apnea/bradycardia as a key clinical feature in congenital MD, suggesting an increased risk of acute life-threatening events. This is a single case report and therefore does not allow for generalizable conclusions about prevalence or typical presentation. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/11455309/ with PMID 11455309
+1. Addict Sci Clin Pract. 2025 Jun 5;20(1):46. doi: 10.1186/s13722-025-00573-y. Acceptability of the content and functionality of a just-in-time adaptive intervention for gambling problems: a mixed-methods evaluation of gambling habit hacker. Rodda SN(1)(2), Merkouris SS(3), Greenwood CJ(3), Thomas AC(3), Lubman DI(4)(5), Dowling NA(3). Author information: (1)Department of Psychology and Neuroscience, Auckland University of Technology, 90 Akoranga Drive, Auckland, New Zealand. simone.rodda@aut.ac.nz. (2)School of Psychology, Deakin University, Burwood, Australia. simone.rodda@aut.ac.nz. (3)School of Psychology, Deakin University, Burwood, Australia. (4)Monash Addiction Research Centre and Eastern Health Clinical School, Faculty of Medicine, Nursing and Health Sciences, Monash University, Melbourne, VIC, Australia. (5)Turning Point, Eastern Health, Melbourne, VIC, Australia. DOI: 10.1186/s13722-025-00573-y Conflict of interest statement: Declarations: The 3-year declaration of interest statement of this research team is as follows: In the last three years, all authors have received research and/or consultancy funding from multiple sources, including via hypothecated taxes from gambling revenue. SR has received research funding from the Health Research Council of New Zealand, New Zealand Ministry of Health, Victorian Responsible Gambling Foundation, and New South Wales Office of Responsible Gambling. SM has received research funding from the Victorian Responsible Gambling Foundation, New South Wales Office of Responsible Gambling, Gambling Research Australia, Health Research Council of New Zealand and the New Zealand Ministry of Health. She has been the recipient of a New South Wales Office of Responsible Gambling Postdoctoral Research Fellowship. CG is the recipient of an Alfred Deakin Post-Doctoral Fellowship. AT has received research funding from the Victorian Responsible Gambling Foundation and New Zealand Ministry of Health. DL has received research funding from the Victorian Department of health, National Health and Medical Research Council, Medical Research Future Fund, Australian Research Council, Hospitals Contribution Fund of Australia (HCF) Research Foundation, Victorian Health Promotion Foundation, and Wellcome Leap, as well as an investigator-led research grant from Camurus. ND has received research funding from the Victorian Responsible Gambling Foundation, New South Wales Office of Responsible Gambling, Tasmanian Department of Treasury and Finance, Gambling Research Australia, Svenska Spel’s Independent Research Council, Health Research Council of New Zealand, and New Zealand Ministry of Health. None of the authors have received research funding from the gambling, tobacco, or alcohol industries, or any industry-sponsored organisation. Ethics approval and consent to participate: This trial was approved by the Deakin University Human Research Ethics Committee (2020 − 304). Competing interests: The authors have no competing interests to declare that are relevant to the content of this article.
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step5 Link to Summary ---> LLM output --- 
+ 
+ --------------------------------------------------------------- 
+
+LLM output: Rodda et al. (2025) evaluated the acceptability of “Gambling Habit Hacker,” a just-in-time adaptive intervention (JITAI) for gambling problems, using a mixed-methods approach. Participants included 26 adults experiencing gambling harm, recruited via online channels. The study combined quantitative data from system usage and the Acceptability of Mobile Applications Scale (AMAS), with qualitative data from semi-structured interviews (n=14). 
+
+Results indicated high levels of acceptability, with mean AMAS scores ranging from 3.6 to 4.0 across domains. Participants reported the JITAI was relevant, easy to use, and provided timely support. Quantitative data showed high engagement with the app’s features. Thematic analysis of interviews revealed participants valued the personalized nature of the intervention and its ability to disrupt gambling urges. 
+
+Limitations noted by the authors include the convenience sample, potentially limiting generalizability. The study also acknowledges that acceptability does not equate to effectiveness; future research is needed to assess clinical outcomes. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40468443/ with PMID 40468443
+1. Child Adolesc Psychiatry Ment Health. 2025 Jun 4;19(1):63. doi: 10.1186/s13034-025-00927-z. The lifetime prevalence and associated factors of suicidal ideation and suicide attempts among high school adolescents in Ethiopia: a systematic review and meta-analysis. Tekeba B(1), Tamir TT(2), Gebrehana DA(3), Abich Y(4), Baykemagn ND(5), Mengstie MA(6), Zegeye AF(7). Author information: (1)Department of Pediatrics and Child Health Nursing, School of Nursing, College of Medicine and Health Sciences, University of Gondar, Gondar, Ethiopia. berishboss7@gmail.com. (2)Department of Pediatrics and Child Health Nursing, School of Nursing, College of Medicine and Health Sciences, University of Gondar, Gondar, Ethiopia. (3)Departemnt of Internal Medicine, School of Medicine, College of Medicine and Health Sciences, University of Gondar, Gondar, Ethiopia. (4)Department of physiotherapy, College of Medicine and Health sciences, University of Gondar, Gondar, Ethiopia. (5)Department of Health Informatics, Institute of Public Health, College of Medicine and Health Sciences, University of Gondar, Gondar, Ethiopia. (6)Department of Information science, College of informatics, University of Gondar, Gondar, Ethiopia. (7)Department of Medical Nursing, School of Nursing, College of Medicine and Health Sciences, University of Gondar, Gondar, Ethiopia. INTRODUCTION: Suicide is a major public health problem and one of the top causes of death among adolescents worldwide. The Ethiopian government works to ensure healthy lives and promote well-being in adolescents through the National Adolescent and Youth Mental Health Strategy. Despite these efforts, suicide in adolescents remains pressing in Ethiopia; however, study findings regarding suicidal ideation and suicide attempts and their associated factors in high school adolescents have been inconsistent and non-conclusive. Therefore, this review aimed to assess the pooled national prevalence and risk factors of suicidal ideation and suicide attempts among high school adolescents in Ethiopia. METHODS: The Preferred Reporting Items for Systematic Review and Meta-analysis (PRISMA) guideline was followed for this systematic review. We searched PubMed, Embase, ScienceDirect, and Google Scholar databases. We included all observational studies that report the prevalence and associated factors of suicidal ideation and suicide attempts among high school adolescents in Ethiopia. Using a standard data extraction format, two authors separately extracted all required data. The meta-analysis was conducted using Stata version 17 statistical software. The Cochrane Q test and I² statistics were employed to evaluate the heterogeneity among the included studies. Pooled prevalence estimates, along with their 95% confidence intervals, were calculated using a random-effects model. Potential sources of heterogeneity across studies were further explored through subgroup analyses, sensitivity analysis, and meta-regression analysis. RESULT: The review comprised ten studies with 8,620 participants. Out of 1,451 studies identified, 10 studies were included in the analysis. As the random effect model indicated that the pooled prevalence of suicide ideation and suicide attempt among high school adolescents in Ethiopia was 16% (95% CI: 12%, 19%) and 10% (95% CI: 6%, 13%), respectively. The highest prevalence of suicidal ideation was observed after the country's implementation of HSTP II [18 (95% CI: 15-22), I²=83.94, P-value < 0.001], while the lowest prevalence was depicted in adolescents aged 10-19 years [11% (95% CI 10, 13), I²=93.3, P-value < 0.001]. Similarly, the highest pooled prevalence of suicide attempt was observed after the country's implementation of HSTP II [12% (95% CI: 10-13), I²=67.77, P-value < 0.03], while the lowest prevalence was depicted in adolescents aged 10-19 years [5% (95% CI 1, 9), I²=94.43, P-value < 0.001]. The sensitivity analysis indicated that none of the point estimates were outside of the overall 95% confidence interval. No publication bias was seen in suicide ideation. But evidence of publication bias for suicide attempts was identified through the left trim and fill analysis. Gender, disappointment with school results, family history, alcohol use, the presence or absence of family or social support, history of abuse, living arrangement of adolescent, anxiety, and depression were significantly associated with suicide ideation and suicide attempts among high school adolescents in Ethiopia. CONCLUSION: This review revealed that a significant proportion of high school adolescents had suicidal ideation and suicide attempts in Ethiopia. Therefore, the government and all stakeholders should track the outcome of the suicide prevention project under HSTP II and other initiatives. In addition, emphasis should be given to disadvantaged adolescents, including females, orphans, alcohol users, and mentally challenged adolescents. Furthermore, school-based interventions like social support and suicide prevention initiatives shall be promoted. © 2025. The Author(s). DOI: 10.1186/s13034-025-00927-z Conflict of interest statement: Declarations. Human ethics and consent to participate: Not applicable. Competing interests: The authors declare no competing interests.
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step5 Link to Summary ---> LLM output --- 
+ 
+ --------------------------------------------------------------- 
+
+LLM output: This systematic review and meta-analysis assessed the prevalence and risk factors for suicidal ideation and suicide attempts among high school adolescents in Ethiopia. The researchers searched PubMed, Embase, ScienceDirect, and Google Scholar, following PRISMA guidelines. Ten observational studies, including a total of 8,620 participants, were included in the analysis. 
+
+The pooled prevalence of suicidal ideation was 16% (95% CI: 12%-19%), and the pooled prevalence of suicide attempts was 10% (95% CI: 6%-13%). Higher prevalence of both outcomes was observed after implementation of the HSTP II program, while lower prevalence was found in adolescents aged 10-19 years. 
+
+Significant factors associated with both suicidal ideation and attempts included gender, disappointment with school results, family history of mental health issues, alcohol use, lack of social/family support, history of abuse, living arrangements, anxiety and depression. Evidence of publication bias was found for suicide attempts, but not for ideation. Heterogeneity was noted among studies, with I² values ranging from 67.77 to 94.43. Sensitivity analysis showed no studies outside the overall confidence interval. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40468442/ with PMID 40468442
+1. Acta Epileptol. 2025 Jun 4;7(1):34. doi: 10.1186/s42494-025-00225-3. Type I Sialidosis in a Chinese family: a case report and literature review. Zhou X(#)(1), Su S(#)(2), Li S(1), Yi Z(1), Feng L(1), Chen J(1), Fan B(3)(4). Author information: (1)Department of Neurology, the People's Hospital of Guangxi Zhuang Autonomous Region, Nanning, 530021, China. (2)Department of Neurology, the First People's Hospital of Qinzhou, Qinzhou, 535099, China. (3)Department of Neurology, the People's Hospital of Guangxi Zhuang Autonomous Region, Nanning, 530021, China. FBL_neurology@126.com. (4)Department of Geriatric Neurology, the People's Hospital of Guangxi Zhuang Autonomous region, 530021, Nanning, China. FBL_neurology@126.com. (#)Contributed equally BACKGROUND: Sialidosis is an autosomal recessive hereditary disease characterized by the mutation of neuraminidase-1 (NEU1) gene, resulting in decreased activity of α-N-acetylneuraminidase. This leads to metabolic abnormalities in various organs. Sialidosis is classified into two distinct clinical phenotypes, type I and type II, based on the age of onset and severity of clinical manifestations. CASE PRESENTATION: Here, we report a case involving a patient and his two sisters, all of whom showed seizures and ataxia during adolescence, with progressively worsening symptoms. Prior to admission, none of the patients had received a systemic diagnosis or treatment. The whole exome sequencing identified a homozygous NEU1 mutation (NM_000434.3:c.544A > G [p.Ser182Gly]) in all three siblings. Their parents and children, who were asymptomatic, were found to be heterozygous carriers. The three patients were ultimately diagnosed with type I sialidosis and treated with antiseizure medications, but they continued to experience recurrent seizures. CONCLUSIONS: This case report enhances our understanding of sialidosis, particularly in patients presenting with seizures and ataxia. Furthermore, the gene sequencing is a crucial tool for confirming the diagnosis of sialidosis and provides a valuable approach for genetic counseling in affected families. © 2025. The Author(s). DOI: 10.1186/s42494-025-00225-3 Conflict of interest statement: Declarations. Ethics approval and consent to participate: The study was approved by the Medical Ethics Committee of the People’s Hospital of Guangxi Zhuang Autonomous Region (KY-KJT-2023–316) and informed consent was obtained from the family. Consent for publication: Consent for publication of the case report was obtained from the patients family. Competing interests: No conflict.
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step5 Link to Summary ---> LLM output --- 
+ 
+ --------------------------------------------------------------- 
+
+LLM output: This case report details three siblings from a Chinese family diagnosed with type I sialidosis, a rare autosomal recessive genetic disorder caused by mutations in the *NEU1* gene. The patients presented with seizures and ataxia during adolescence, with symptoms progressively worsening. 
+
+Methods involved clinical assessment, and whole exome sequencing to identify the causative genetic mutation. Sequencing revealed a homozygous *NEU1* mutation (NM_000434.3:c.544A > G [p.Ser182Gly]) in all three affected siblings. Both parents and children were confirmed as heterozygous carriers of the mutation. 
+
+Key outcomes were the identification of the *NEU1* mutation as the cause of the siblings’ symptoms, leading to a diagnosis of type I sialidosis. Treatment with antiseizure medication did not prevent recurrent seizures.
+
+Limitations include the single-family case report design, preventing generalizability. The report focuses on diagnostic confirmation and does not detail long-term treatment outcomes or disease progression. Ethical approval was obtained, and informed consent was provided by the family. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40468413/ with PMID 40468413
+1. Trials. 2025 Jun 4;26(1):192. doi: 10.1186/s13063-025-08907-6. Micropulse transscleral cyclophotocoagulation versus slow coagulation in refractory glaucoma: study protocol of a randomized clinical trial. de Lima Neto CR(1), de Cabral Vasconcellos JP(2), Silva SGNE(2), Costa VP(2). Author information: (1)Department of Ophthalmology, University of Campinas, 251 Vital Brazil St, Campinas, São Paulo, 13083-888, Brazil. cesarlimaneto@yahoo.com.br. (2)Department of Ophthalmology, University of Campinas, 251 Vital Brazil St, Campinas, São Paulo, 13083-888, Brazil. BACKGROUND: Traditional continuous diode laser transscleral cyclophotocoagulation (TCW-TSCPC) has been used for decades to reduce intraocular pressure (IOP) by decreasing aqueous humor (AH) production in patients with glaucoma. Micropulse cyclophotocoagulation (MP-TSCPC) and slow coagulation (SC-TSCPC) are the newest transscleral cyclophotocoagulation (TSCPC) techniques that result in lower inflammation and complication rates compared to the traditional technique. Most publications on TSCPC are case series with a retrospective design with different treatment protocols. The objective of this manuscript is to describe the protocol of a randomized clinical trial (RCT) designed to compare the efficacy and safety of MP-TSCPC and SC-TSCPC in patients with refractory glaucoma followed for 12 months. METHODS: This is a parallel, double-arm single-center, double-masked, RCT that will include eyes with refractory glaucoma. Patients with corrected visual acuity (BCVA) ≤ 20/60, IOP > 21 mmHg, and age ≥ 18 years will be randomized to cyclophotocoagulation using the SC-TSCPC or MP-TSCPC techniques. Follow-up visits will be 1 day, 7 days, 30 days, 3, 6, and 12 months after the procedure. Complete success will be defined as an IOP between 6 and 20 mmHg and a minimum of 30% IOP reduction from baseline, without hypotensive medications. Qualified success will be defined by the same parameters but allowing the use of medication. All follow-up examinations will include determination of BCVA, IOP measurement, slit lamp biomicroscopy, fundoscopy, and macular optical coherence tomography (OCT). The number of hypotensive medications and the occurrence of complications will also be documented. DISCUSSION: Our study was designed to compare the efficacy and safety of the two most used TSCPC techniques. Most published studies are retrospective and compare the two new techniques only with the traditional technique. This is, to our knowledge, the first RCT comparing MP-TSCPC and SC-TSCPC techniques. TRIAL REGISTRATION: Retrospectively registered at the Registro Brasileiro de Ensaios Clínicos (ReBEC) platform RBR-5pckbhj on December 15, 2023. The study was approved by the Ethics Committee of the University of Campinas, Brazil. © 2025. The Author(s). DOI: 10.1186/s13063-025-08907-6 Conflict of interest statement: Declarations. Ethics approval and consent to participate {24}: This study was approved by the Ethics Committee of the University of Campinas in May 2023 and followed the tenets of the Declaration of Helsinki. All procedures are fully explained to the participants and an informed consent is obtained at inclusion. This study was retrospectively registered at the Registro Brasileiro de Ensaios Clínicos (ReBEC) platform, number RBR-5pckbhj {2a} (registration date: December 15, 2023). {2b}. Consent for publication {32}: Not applicable—no identifying images or other personal or clinical details of participants are presented here or will be presented in reports of the trial results. Competing interests {28}: CRLN: None JPCV: None SGNS: None VPC: Alcon—speaker; Allergan-Abbvie—consultant, speaker, Grants; Iridex—speaker; Zeiss—consultant, speaker, grants.
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step5 Link to Summary ---> LLM output --- 
+ 
+ --------------------------------------------------------------- 
+
+LLM output: This study protocol describes a randomized, double-masked, single-center clinical trial comparing micropulse transscleral cyclophotocoagulation (MP-TSCPC) to slow coagulation transscleral cyclophotocoagulation (SC-TSCPC) in patients with refractory glaucoma. 
+
+The trial will enroll patients aged 18 or older with corrected visual acuity ≤20/60, intraocular pressure (IOP) >21 mmHg. Participants will be randomized to receive either MP-TSCPC or SC-TSCPC. Follow-up examinations will occur at 1 day, 7 days, 30 days, 3, 6, and 12 months post-procedure.
+
+The primary outcome measures are IOP and IOP reduction. Complete success is defined as IOP between 6-20 mmHg *and* ≥30% IOP reduction from baseline, without hypotensive medication. Qualified success includes the same parameters *with* allowable medication use. Secondary outcomes include changes in best-corrected visual acuity, assessed via visual acuity testing, slit lamp biomicroscopy, fundoscopy, and macular optical coherence tomography (OCT). The number of hypotensive medications used and occurrence of complications will also be recorded.
+
+The study is registered at the Registro Brasileiro de Ensaios Clínicos (ReBEC) – RBR-5pckbhj and was approved by the Ethics Committee of the University of Campinas, Brazil. 
+Processed evidence URL https://pubmed.ncbi.nlm.nih.gov/40468395/ with PMID 40468395
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step6 --- 
+ 
+ --------------------------------------------------------------- 
+
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Babies waking up multiple times a night is likely due to hunger and low blood sugar. 
+ Evidence Summary: This observational cohort study investigated glucose homeostasis in seven children (3 months to 12 years) with genetically confirmed congenital central hypoventilation syndrome (CCHS). Researchers used continuous glucose monitoring (CGM), fasting studies, and oral glucose tolerance tests (OGTT) to assess glycaemic control. 
+
+Results showed no hypoglycaemia elicited by fasting. However, all patients exhibited increased postprandial glycaemic variability, with initial hyperglycaemia (>7.8 mmol/L) followed by asymptomatic hypoglycaemia (≤2.8 mmol/L) in two of seven patients, confirmed by OGTT. 
+
+Both diazoxide and a low Glycaemic Index (GI) diet reduced CGM readings <4 mmol/L. Diazoxide also increased hyperglycaemic readings. The authors suggest the observed pattern is more consistent with dumping syndrome than hyperinsulinism, and dietary modification may be preferable to diazoxide for managing hypoglycaemia.
+
+Limitations include the small sample size and observational design, preventing causal conclusions. The study highlights the potential for unrecognised glucose variability in CCHS and suggests CGM may aid identification and management. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Babies waking up multiple times a night is likely due to hunger and low blood sugar. 
+ Evidence Summary: This case report details a 1-week-old boy with intermittent oxygen desaturation during sleep, dropping to 70% as measured by pulse oximetry. The infant was born at 37+2 weeks gestation via spontaneous vaginal delivery. Maternal complications included gestational diabetes mellitus and pre-eclampsia. He required initial admission to the neonatal intensive care unit (NICU) for hypoglycemia, which resolved quickly with IV dextrose. Desaturation began on day 2 of life, prompting transfer to a tertiary-care NICU. 
+
+The infant remained asymptomatic aside from the hypoxia; he had normal feeding, no vomiting or reflux, and no signs of respiratory distress (cyanosis, stridor, snoring) or neurological symptoms (seizures, hypertonicity). The report presents clinical findings for a single patient and does not include data on effect sizes or comparative groups. Limitations include the single-patient design, preventing generalizability. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Babies waking up multiple times a night is likely due to hunger and low blood sugar. 
+ Evidence Summary: This case report details a newborn with congenital myotonic dystrophy (MD). A 35-week gestation male infant (3570g) born to a mother with MD and gestational diabetes presented with apnea, hypoglycemia, hypocalcemia, hypotonia and mild respiratory distress shortly after birth. 
+
+Polysomnography revealed mixed central and obstructive apnea. DNA testing confirmed MD diagnosis via trinucleotide repeat expansion. 
+
+Clinical course improved, but desaturations/cyanosis persisted. The infant was discharged with home sleep monitoring and breastfeeding.
+
+The report highlights recurrent apnea/bradycardia as a key clinical feature in congenital MD, suggesting an increased risk of acute life-threatening events. This is a single case report and therefore does not allow for generalizable conclusions about prevalence or typical presentation. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Consuming enough calories before bed ensures adequate fuel for a baby's rapidly developing brain and growing body. 
+ Evidence Summary: Rodda et al. (2025) evaluated the acceptability of “Gambling Habit Hacker,” a just-in-time adaptive intervention (JITAI) for gambling problems, using a mixed-methods approach. Participants included 26 adults experiencing gambling harm, recruited via online channels. The study combined quantitative data from system usage and the Acceptability of Mobile Applications Scale (AMAS), with qualitative data from semi-structured interviews (n=14). 
+
+Results indicated high levels of acceptability, with mean AMAS scores ranging from 3.6 to 4.0 across domains. Participants reported the JITAI was relevant, easy to use, and provided timely support. Quantitative data showed high engagement with the app’s features. Thematic analysis of interviews revealed participants valued the personalized nature of the intervention and its ability to disrupt gambling urges. 
+
+Limitations noted by the authors include the convenience sample, potentially limiting generalizability. The study also acknowledges that acceptability does not equate to effectiveness; future research is needed to assess clinical outcomes. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Consuming enough calories before bed ensures adequate fuel for a baby's rapidly developing brain and growing body. 
+ Evidence Summary: This systematic review and meta-analysis assessed the prevalence and risk factors for suicidal ideation and suicide attempts among high school adolescents in Ethiopia. The researchers searched PubMed, Embase, ScienceDirect, and Google Scholar, following PRISMA guidelines. Ten observational studies, including a total of 8,620 participants, were included in the analysis. 
+
+The pooled prevalence of suicidal ideation was 16% (95% CI: 12%-19%), and the pooled prevalence of suicide attempts was 10% (95% CI: 6%-13%). Higher prevalence of both outcomes was observed after implementation of the HSTP II program, while lower prevalence was found in adolescents aged 10-19 years. 
+
+Significant factors associated with both suicidal ideation and attempts included gender, disappointment with school results, family history of mental health issues, alcohol use, lack of social/family support, history of abuse, living arrangements, anxiety and depression. Evidence of publication bias was found for suicide attempts, but not for ideation. Heterogeneity was noted among studies, with I² values ranging from 67.77 to 94.43. Sensitivity analysis showed no studies outside the overall confidence interval. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Consuming enough calories before bed ensures adequate fuel for a baby's rapidly developing brain and growing body. 
+ Evidence Summary: This case report details three siblings from a Chinese family diagnosed with type I sialidosis, a rare autosomal recessive genetic disorder caused by mutations in the *NEU1* gene. The patients presented with seizures and ataxia during adolescence, with symptoms progressively worsening. 
+
+Methods involved clinical assessment, and whole exome sequencing to identify the causative genetic mutation. Sequencing revealed a homozygous *NEU1* mutation (NM_000434.3:c.544A > G [p.Ser182Gly]) in all three affected siblings. Both parents and children were confirmed as heterozygous carriers of the mutation. 
+
+Key outcomes were the identification of the *NEU1* mutation as the cause of the siblings’ symptoms, leading to a diagnosis of type I sialidosis. Treatment with antiseizure medication did not prevent recurrent seizures.
+
+Limitations include the single-family case report design, preventing generalizability. The report focuses on diagnostic confirmation and does not detail long-term treatment outcomes or disease progression. Ethical approval was obtained, and informed consent was provided by the family. 
+ Response: no 
+ --- Step6 Reduce Evidence ---> Response ---
+ Statement Text: Consuming enough calories before bed ensures adequate fuel for a baby's rapidly developing brain and growing body. 
+ Evidence Summary: This study protocol describes a randomized, double-masked, single-center clinical trial comparing micropulse transscleral cyclophotocoagulation (MP-TSCPC) to slow coagulation transscleral cyclophotocoagulation (SC-TSCPC) in patients with refractory glaucoma. 
+
+The trial will enroll patients aged 18 or older with corrected visual acuity ≤20/60, intraocular pressure (IOP) >21 mmHg. Participants will be randomized to receive either MP-TSCPC or SC-TSCPC. Follow-up examinations will occur at 1 day, 7 days, 30 days, 3, 6, and 12 months post-procedure.
+
+The primary outcome measures are IOP and IOP reduction. Complete success is defined as IOP between 6-20 mmHg *and* ≥30% IOP reduction from baseline, without hypotensive medication. Qualified success includes the same parameters *with* allowable medication use. Secondary outcomes include changes in best-corrected visual acuity, assessed via visual acuity testing, slit lamp biomicroscopy, fundoscopy, and macular optical coherence tomography (OCT). The number of hypotensive medications used and occurrence of complications will also be recorded.
+
+The study is registered at the Registro Brasileiro de Ensaios Clínicos (ReBEC) – RBR-5pckbhj and was approved by the Ethics Committee of the University of Campinas, Brazil. 
+ Response: no 
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step7 --- 
+ 
+ --------------------------------------------------------------- 
+
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step7 Statement to Truthness --> Evidence-Block and claim_text: ---
+ 
+ --------------------------------------------------------------- 
+
+Claim Text: Offering a child butter or other high-calorie foods before bed can prevent overnight drops in blood sugar and reduce nighttime waking.
+Evidence: No evidence provided.
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step7-Statement to Truthness --> Model output --- 
+ 
+ --------------------------------------------------------------- 
+
+Model output:
+VERDICT: uncertain
+FINALSCORE: 0.35  
+ --- Extracted Information from prompt: ---
+Parsed verdict: uncertain 
+Parsed score: 0.35
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step7 Statement to Truthness --> Evidence-Block and claim_text: ---
+ 
+ --------------------------------------------------------------- 
+
+Claim Text: Babies waking up multiple times a night is likely due to hunger and low blood sugar.
+Evidence: No evidence provided.
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step7-Statement to Truthness --> Model output --- 
+ 
+ --------------------------------------------------------------- 
+
+Model output:
+VERDICT: uncertain
+FINALSCORE: 0.35  
+ --- Extracted Information from prompt: ---
+Parsed verdict: uncertain 
+Parsed score: 0.35
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step7 Statement to Truthness --> Evidence-Block and claim_text: ---
+ 
+ --------------------------------------------------------------- 
+
+Claim Text: Consuming enough calories before bed ensures adequate fuel for a baby's rapidly developing brain and growing body.
+Evidence: No evidence provided.
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step7-Statement to Truthness --> Model output --- 
+ 
+ --------------------------------------------------------------- 
+
+Model output:
+VERDICT: uncertain
+FINALSCORE: 0.35  
+ --- Extracted Information from prompt: ---
+Parsed verdict: uncertain 
+Parsed score: 0.35
+ 
+
+
+
+
+
+  --------------------------------------------------------------- 
+
+ --- Step8 --- 
+ 
+ --------------------------------------------------------------- 
+
+ 
+
+
+
+
+
+ --------------------------------------------------------------- 
+
+ --- Runtime Analysis ---
+ 
+ --------------------------------------------------------------- 
+
+update_transcript: 16.232041 seconds
+update_statements: 11.513029 seconds
+update_query: 6.998297 seconds
+query_to_link: 1.816143 seconds
+link_to_summary: 52.820427 seconds
+reduce_to_evidence: 2.783804 seconds
+statement_to_truthness: 2.916386 seconds
+statement_to_score: 0.000082 seconds
+Total elapsed time: 95.080241 seconds
+ 
+
+
+
+
+
+ --------------------------------------------------------------- 
+
+ --- Final Output (JSON) ---
+ 
+ --------------------------------------------------------------- 
+
+{'transcript': "Give your kid butter before bed. It's the epic bedtime hack you've probably never heard of. Does your little one wake up multiple times a night? Yep, that was my life when my son was 12 months old. However, I found something that changed my life and I hope it can do the same for you. Alright, ready? Before bed, I started offering my son a spoonful of butter. I know it sounds crazy, but hear me out. I felt like he was still hungry and I wanted to make sure he was getting enough calories before bedtime. And guess what? It worked like a charm. He went from waking up multiple times a night to a full night's sleep. It was a game changer, all because of butter. Now, why is this helpful? It's not uncommon for our growing babies to need more calories. Brains are rapidly developing and bodies growing bigger. If kids don't get enough calories during the day, their blood sugar can drop overnight and they'll wake up hungry and cry. Since they can't communicate their hunger, they will simply just cry. So often the only thing that will console them is the middle of the night, nursing session, or a bottle. Does that make sense? Alright, now, I can't guarantee that this will work for every child, but it's worth a try if you're feeling desperate for some sleep. And no, it does not need to be butter. It could be any high calorie fat rich food like peanut butter, avocado, coconut milk. Get creative. Choose something that is easy, that your child will eat and they'll love. Now, if you've already tried it and it worked for you, please share your experience in the comments below. I love hearing from other moms sharing their tips with each other. Just a reminder, every child's different. You know your baby best. Trust your instincts. And if it doesn't work for you, then we could try something else. Something.", 'statements': [{'id': 1, 'text': 'Offering a child butter or other high-calorie foods before bed can prevent overnight drops in blood sugar and reduce nighttime waking.', 'verdict': 'uncertain', 'rationale': 'VERDICT: uncertain\nFINALSCORE: 0.35', 'confidence': 0.35, 'query': '("Hypoglycemia"[MeSH] OR hypoglycemia[tiab] OR "low blood sugar"[tiab]) AND ("Child"[MeSH] OR child[tiab] OR children[tiab] OR pediatric[tiab]) AND ("Sleep Wake Disorders"[MeSH] OR sleep[tiab] OR waking[tiab] OR "nighttime awakening"[tiab] OR "sleep disruption"[tiab]) AND (butter[tiab] OR "high-calorie foods"[tiab] OR "energy intake"[tiab])', 'evidence': []}, {'id': 2, 'text': 'Babies waking up multiple times a night is likely due to hunger and low blood sugar.', 'verdict': 'uncertain', 'rationale': 'VERDICT: uncertain\nFINALSCORE: 0.35', 'confidence': 0.35, 'query': '("Infant"[MeSH] OR baby[tiab] OR babies[tiab] OR "newborn"[tiab]) AND ("Sleep Wake Disorders"[MeSH] OR "sleep disturbance"[tiab] OR "night waking"[tiab] OR "sleep fragmentation"[tiab]) AND ("Hypoglycemia"[MeSH] OR "low blood sugar"[tiab] OR hypoglycemia[tiab] OR "blood glucose"[tiab]) AND ("Feeding Behavior"[MeSH] OR feeding[tiab] OR hunger[tiab])', 'evidence': []}, {'id': 3, 'text': "Consuming enough calories before bed ensures adequate fuel for a baby's rapidly developing brain and growing body.", 'verdict': 'uncertain', 'rationale': 'VERDICT: uncertain\nFINALSCORE: 0.35', 'confidence': 0.35, 'query': 'NONE', 'evidence': []}], 'overall_truthiness': 0.35, 'generated_at': '2025-06-05T06:11:15Z'}

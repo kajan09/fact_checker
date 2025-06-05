@@ -3,7 +3,7 @@ from typing import Dict, Any
 from .preprompts import *
 from .llmconfigs import *
 
-threshold = 0.35
+threshold = 0.15
 
 def statement_to_score(data: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -12,6 +12,7 @@ def statement_to_score(data: Dict[str, Any]) -> Dict[str, Any]:
     Updates the data dict in-place by setting 'overall_truthiness',
     rounded to two decimal places (zwei Nachkommastellen).
     """
+    print("Starting Step8: Statement to Score")
     confidences = [stmt["confidence"] for stmt in data["statements"]]
     weights = [3 if conf < threshold else 1 for conf in confidences]
 

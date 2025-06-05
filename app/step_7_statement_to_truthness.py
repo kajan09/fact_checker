@@ -10,6 +10,7 @@ from .llmconfigs import *
 
 
 def statement_to_truthness(data: Dict[str, Any]) -> Dict[str, Any]:
+    print("Starting Step7: Statement to Truthness")
     transcript = data["transcript"]
     # -------- iterate over statements --------
     for stmt in data.get("statements", []):
@@ -21,17 +22,13 @@ def statement_to_truthness(data: Dict[str, Any]) -> Dict[str, Any]:
         for ev in evidences:
             pmid = ev.get("pubmed_id") or "N/A"
             summary = (ev.get("summary") or "").strip().replace("\n", " ")
-            print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
             print(" --- Step7 Statement to Truthness --> Evidence Summary: ---")
-            print(" \n --------------------------------------------------------------- \n")
             print(f"Evidence: {summary}")
             
             evidence_lines.append(f"- PMID {pmid}: {summary}")
         evidence_block = "\n".join(evidence_lines) or "No evidence provided."
 
-        print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
         print(" --- Step7 Statement to Truthness --> Evidence-Block and claim_text: ---")
-        print(" \n --------------------------------------------------------------- \n")
         print(f"Claim Text: {claim_text}")
         print(f"Evidence: {evidence_block}")
         try:
@@ -52,9 +49,7 @@ def statement_to_truthness(data: Dict[str, Any]) -> Dict[str, Any]:
 
         # -------- parse reply --------
         verdict_match = re.search(r"VERDICT:\s*(true|false|uncertain)", reply, re.I)
-        print(" \n\n\n\n\n\n  --------------------------------------------------------------- \n")
         print(" --- Step7-Statement to Truthness --> Model output --- ")
-        print(" \n --------------------------------------------------------------- \n")
         print(f"Model output:\n{reply}  ")
         
         score_match   = re.search(r"FINALSCORE:\s*([0-1](?:\.\d+)?)", reply, re.I)
