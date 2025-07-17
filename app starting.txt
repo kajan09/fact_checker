@@ -1,0 +1,27 @@
+
+
+~/ollama/bin/ollama serve
+
+uvicorn app.main:app --host 0.0.0.0 --port 6006 --reload
+
+curl.exe http://im-redstone02.hs-regensburg.de:32311/number
+
+curl.exe -X POST \
+  "http://im-redstone02.hs-regensburg.de:32311/process" \
+  -H "Content-Type: application/json" \
+  -d "{\"url\":\"https://www.instagram.com/reels/DIRM85ZifdM/\",\"mock\":\"true\"}"
+
+WINDOWS FUNKTIONIERT:
+curl "http://im-redstone02.hs-regensburg.de:32311/process" `
+     -Method Post `
+     -Body ( @{ url = "https://www.instagram.com/reels/DIRM85ZifdM/"; mock = "true" } | ConvertTo-Json ) `
+     -ContentType "application/json"
+
+
+
+curl -X POST http://localhost:6006/process \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://www.instagram.com/reels/DIRM85ZifdM/","mock":"true"}'
+
+
+https://www.instagram.com/reel/DIRM85ZifdM/
